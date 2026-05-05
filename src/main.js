@@ -74,12 +74,6 @@ class App {
     const backLight = new THREE.DirectionalLight(0x223344, 0.5);
     backLight.position.set(-3, -2, -5);
     this.scene.add(backLight);
-    
-    // 顶部光源 - 蓝色冷光
-    const topLight = new THREE.DirectionalLight(0xa3d4ff, 1.5);
-    topLight.position.set(0, 50, 0);
-    topLight.lookAt(0, 0, 0);
-    this.scene.add(topLight);
   }
 
   addEarth() {

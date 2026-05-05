@@ -222,7 +222,7 @@ function createEarthMesh() {
   const material = new THREE.MeshStandardMaterial({
     color: 0x0a1018,
     emissive: 0x0a1018,
-    emissiveIntensity: 0.35,
+    emissiveIntensity: 0.8,
     roughness: 0.98,
     metalness: 0.0
   });
@@ -232,7 +232,7 @@ function createEarthMesh() {
     material.map = texture;
     material.emissiveMap = texture;
     material.emissive.set(0xffffff);
-    material.emissiveIntensity = 0.9;
+    material.emissiveIntensity = 1.5;
     material.needsUpdate = true;
     console.log('Night texture loaded successfully');
   }, undefined, (err) => {
