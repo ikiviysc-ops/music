@@ -33,9 +33,10 @@ function createSpaceParticles() {
     `,
     fragmentShader: `
       void main() {
-        float dist = length(gl_PointCoord - vec2(0.5));
-        if (dist > 0.5) discard;
-        float alpha = step(dist, 0.35) * 0.15;
+        vec2 coord = gl_PointCoord - vec2(0.5);
+        float dist = length(coord) * 2.0;
+        if (dist > 1.0) discard;
+        float alpha = step(dist, 0.7) * 0.15;
         vec3 color = vec3(0.2, 0.45, 0.8);
         gl_FragColor = vec4(color, alpha);
       }
@@ -77,9 +78,10 @@ function createAtmosphere() {
     `,
     fragmentShader: `
       void main() {
-        float dist = length(gl_PointCoord - vec2(0.5));
-        if (dist > 0.5) discard;
-        float alpha = step(dist, 0.35) * 0.15;
+        vec2 coord = gl_PointCoord - vec2(0.5);
+        float dist = length(coord) * 2.0;
+        if (dist > 1.0) discard;
+        float alpha = step(dist, 0.7) * 0.15;
         vec3 color = vec3(0.2, 0.45, 0.8);
         gl_FragColor = vec4(color, alpha);
       }
@@ -198,9 +200,10 @@ function createContinentParticles() {
     fragmentShader: `
       varying vec3 vColor;
       void main() {
-        float dist = length(gl_PointCoord - vec2(0.5));
-        if (dist > 0.5) discard;
-        float alpha = step(dist, 0.35) * 0.2;
+        vec2 coord = gl_PointCoord - vec2(0.5);
+        float dist = length(coord) * 2.0;
+        if (dist > 1.0) discard;
+        float alpha = step(dist, 0.7) * 0.2;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
@@ -221,9 +224,9 @@ function createEarthMesh() {
   const topologyUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png';
 
   const material = new THREE.MeshStandardMaterial({
-    color: 0x050a12,
-    emissive: 0x050a12,
-    emissiveIntensity: 0.03,
+    color: 0x0a1018,
+    emissive: 0x0a1018,
+    emissiveIntensity: 0.1,
     roughness: 0.98,
     metalness: 0.0
   });
@@ -233,7 +236,7 @@ function createEarthMesh() {
     material.map = texture;
     material.emissiveMap = texture;
     material.emissive.set(0xffffff);
-    material.emissiveIntensity = 0.2;
+    material.emissiveIntensity = 0.4;
     material.needsUpdate = true;
     console.log('Night texture loaded successfully');
   }, undefined, (err) => {
