@@ -24,16 +24,17 @@ function createAtmosphere() {
 
   const material = new THREE.ShaderMaterial({
     vertexShader: `
-      varying vec3 vNormal;
+      varying vec3 vViewNormal;
       void main() {
-        vNormal = normalize(position);
+        vec3 normal = normalize(position);
+        vViewNormal = normalize(normalMatrix * normal);
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
         gl_PointSize = 4.0;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
     fragmentShader: `
-      varying vec3 vNormal;
+      varying vec3 vViewNormal;
       void main() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
@@ -42,8 +43,8 @@ function createAtmosphere() {
         // 超清锐利的粒子形状
         float circleAlpha = 1.0 - smoothstep(0.5, 0.65, dist);
         
-        // 计算视图空间 - 正确处理中心隐藏
-        vec3 viewNormal = normalize(normalMatrix * vNormal);
+        // 在顶点着色器已经转换好了
+        vec3 viewNormal = normalize(vViewNormal);
         vec3 viewDir = vec3(0.0, 0.0, 1.0);
         float dotProduct = dot(viewDir, viewNormal);
         
