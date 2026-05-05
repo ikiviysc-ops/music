@@ -9,13 +9,13 @@ const labelStyles = `
   .city-label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
+    gap: 6px;
+    padding: 4px 8px;
     background: rgba(255,255,255,0.08);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 10px;
+    border-radius: 8px;
     pointer-events: auto;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -27,24 +27,24 @@ const labelStyles = `
     transform: scale(1.05);
   }
   .city-label-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
     background: rgba(255,255,255,0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 12px;
     flex-shrink: 0;
   }
   .city-label-name {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 600;
     color: #fff;
     line-height: 1.2;
   }
   .city-label-listeners {
-    font-size: 11px;
+    font-size: 10px;
     color: rgba(255,255,255,0.55);
     line-height: 1.2;
   }
