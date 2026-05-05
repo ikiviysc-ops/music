@@ -44,12 +44,13 @@ function createAtmosphere() {
         if (dist > 1.0) discard;
         
         // 计算视角方向与粒子法线的点积
-        vec3 viewDir = normalize(vPosition - uCameraPos); // 从粒子指向相机
-        float dotProduct = abs(dot(normalize(vNormal), viewDir));
+        vec3 viewDir = normalize(uCameraPos - vPosition);
+        float dotProduct = dot(viewDir, normalize(vNormal));
         
-        // 只在边缘显示，正对摄像机的地方渐隐（更大隐藏范围）
-        float edgeAlpha = smoothstep(0.95, 0.999, dotProduct);
-        edgeAlpha = 1.0 - pow(edgeAlpha, 0.5);
+        // 只有真正的边缘才显示 - 大部分区域隐藏
+        // dotProduct接近1 = 正对相机（隐藏），接近0或负数 = 边缘（显示）
+        float edgeAlpha = smoothstep(0.8, 0.4, dotProduct);
+        edgeAlpha = clamp(edgeAlpha, 0.0, 1.0);
         
         float baseAlpha = step(dist, 0.65) * 0.1;
         float alpha = baseAlpha * edgeAlpha;
