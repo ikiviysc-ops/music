@@ -292,8 +292,11 @@ function createEarthMesh() {
           finalColor = nightColor * uEmissiveIntensity + glowColor * 1.5;
           finalAlpha = 0.6;
         } else if (uMode == 2) {
-          // DAYTIME - 白天模式 - 只显示白天纹理
-          finalColor = dayColor * 1.2;
+          // DAYTIME - 白天模式 - 只显示白天纹理，抑制过亮白色区域
+          float brightness = dot(dayColor, vec3(0.299, 0.587, 0.114));
+          float overexposureFactor = smoothstep(0.7, 0.95, brightness);
+          vec3 suppressedColor = mix(dayColor, dayColor * 0.8, overexposureFactor);
+          finalColor = suppressedColor * 1.1;
         } else if (uMode == 5) {
           // CITY_LIGHTS - 城市灯光闪烁模式 - 优化版
           float brightness = dot(nightColor, vec3(0.299, 0.587, 0.114));
