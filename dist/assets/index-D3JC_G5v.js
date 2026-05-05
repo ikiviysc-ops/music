@@ -3835,8 +3835,10 @@ void main() {
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        // 硬边小亮点，无光晕
-        float alpha = step(dist, 0.3) * 0.35;
+        // 中心亮点 + 0.2光晕
+        float core = step(dist, 0.25);
+        float halo = (1.0 - smoothstep(0.25, 0.5, dist)) * 0.2;
+        float alpha = (core + halo) * 0.4;
         vec3 color = vec3(0.35, 0.55, 0.9);
         gl_FragColor = vec4(color, alpha);
       }
@@ -3854,8 +3856,10 @@ void main() {
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        // 硬边小亮点，无光晕
-        float alpha = step(dist, 0.3) * 0.45;
+        // 中心亮点 + 0.2光晕
+        float core = step(dist, 0.25);
+        float halo = (1.0 - smoothstep(0.25, 0.5, dist)) * 0.2;
+        float alpha = (core + halo) * 0.5;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,transparent:!0,depthWrite:!1,blending:ri});return new xs(r,a)}function jp(){const i=new ia(Ms,64,64),t=new xp,e="https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg",n="https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png",s=new mp({color:527896,emissive:527896,emissiveIntensity:.1,roughness:.95,metalness:0});return t.load(e,r=>{r.colorSpace=we,s.map=r,s.emissiveMap=r,s.emissive.set(16777215),s.emissiveIntensity=.35,s.needsUpdate=!0,console.log("Night texture loaded successfully")},void 0,r=>{console.log("Night texture failed:",r)}),t.load(n,r=>{s.bumpMap=r,s.bumpScale=.008,s.needsUpdate=!0,console.log("Topology texture loaded successfully")},void 0,()=>{console.log("Topology texture failed")}),new He(i,s)}function Kp(){const i=jp(),t=Yp(),e=qp(),n=new wi;return n.add(i),n.add(t),n.add(e),n.userData={earth:i,atmosphere:t,continents:e,EARTH_RADIUS:Ms,ROTATION_SPEED:Xp},n}function Zp(i,t,e){const{earth:n,ROTATION_SPEED:s}=i.userData;n.rotation.y+=s}const Cn=600,$p=1.5,Jp=`
