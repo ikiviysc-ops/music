@@ -15,71 +15,7 @@ export const EARTH_MODES = {
 
 let currentMode = EARTH_MODES.CITY_LIGHTS;
 
-// ========== 大气层（固定半径，密集粒子） ==========
-function createAtmosphere() {
-  const count = 20000;
-  const radius = EARTH_RADIUS * 1.1;
 
-  const positions = new Float32Array(count * 3);
-
-  for (let i = 0; i < count; i++) {
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-
-    positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-    positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-    positions[i * 3 + 2] = radius * Math.cos(phi);
-  }
-
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-  const material = new THREE.ShaderMaterial({
-    vertexShader: `
-      varying vec3 vViewNormal;
-      void main() {
-        vec3 normal = normalize(position);
-        vViewNormal = normalize(normalMatrix * normal);
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 4.0;
-        gl_Position = projectionMatrix * mvPosition;
-      }
-    `,
-    fragmentShader: `
-      varying vec3 vViewNormal;
-      void main() {
-        vec2 coord = gl_PointCoord - vec2(0.5);
-        float dist = length(coord) * 2.0;
-        if (dist > 1.0) discard;
-        
-        // 超清锐利的粒子形状
-        float circleAlpha = 1.0 - smoothstep(0.5, 0.65, dist);
-        
-        // 在顶点着色器已经转换好了
-        vec3 viewNormal = normalize(vViewNormal);
-        vec3 viewDir = vec3(0.0, 0.0, 1.0);
-        float dotProduct = dot(viewDir, viewNormal);
-        
-        // 只显示边缘 - 正对相机的隐藏
-        float edgeAlpha = 1.0 - smoothstep(0.35, 0.75, dotProduct);
-        edgeAlpha = clamp(edgeAlpha, 0.0, 1.0);
-        
-        float alpha = circleAlpha * edgeAlpha * 0.15;
-        
-        vec3 color = vec3(0.3, 0.6, 1.0);
-        gl_FragColor = vec4(color, alpha);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending
-  });
-
-  // 创建 Points 对象
-  const atmosphere = new THREE.Points(geometry, material);
-
-  return atmosphere;
-}
 
 // ========== 大陆轮廓粒子（更稀疏，间距更大，分布在大陆上） ==========
 function createContinentParticles() {
@@ -357,12 +293,10 @@ export function createEarth() {
   // 创建云图
   const loader = new THREE.TextureLoader();
   const cloudsUrl = 'https://unpkg.com/three-globe@2.31.0/example/clouds/clouds.png';
-  const cloudsGeometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.15, 64, 64);
+  const cloudsGeometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.2, 64, 64);
   const cloudsMaterial = new THREE.MeshBasicMaterial({
-    transparent: true,
-    opacity: 0.9,
-    depthWrite: false,
-    color: 0xffffff
+    color: 0x4488ff,
+    transparent: false
   });
   const clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
   clouds.visible = false;
@@ -371,6 +305,9 @@ export function createEarth() {
   loader.load(cloudsUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
     cloudsMaterial.map = texture;
+    cloudsMaterial.color.setHex(0xffffff);
+    cloudsMaterial.transparent = true;
+    cloudsMaterial.opacity = 0.8;
     cloudsMaterial.needsUpdate = true;
     console.log('Clouds texture loaded successfully');
   }, undefined, (error) => {
