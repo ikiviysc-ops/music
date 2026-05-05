@@ -357,31 +357,11 @@ export function createEarth() {
   // 创建云图
   const loader = new THREE.TextureLoader();
   const cloudsUrl = 'https://unpkg.com/three-globe@2.31.0/example/clouds/clouds.png';
-  const cloudsGeometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.03, 64, 64);
-  const cloudsMaterial = new THREE.ShaderMaterial({
-    uniforms: { uCloudsTexture: { value: null } },
+  const cloudsGeometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.05, 64, 64);
+  const cloudsMaterial = new THREE.MeshBasicMaterial({
     transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform sampler2D uCloudsTexture;
-      varying vec2 vUv;
-      void main() {
-        vec4 cloudsColor = vec4(1.0);
-        if (textureSize(uCloudsTexture, 0).x > 1) {
-          cloudsColor = texture2D(uCloudsTexture, vUv);
-        }
-        float alpha = cloudsColor.a * 0.9;
-        gl_FragColor = vec4(cloudsColor.rgb, alpha);
-      }
-    `
+    opacity: 0.8,
+    depthWrite: false
   });
   const clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
   clouds.visible = false;
@@ -389,9 +369,11 @@ export function createEarth() {
   // 加载云图纹理
   loader.load(cloudsUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
-    cloudsMaterial.uniforms.uCloudsTexture.value = texture;
+    cloudsMaterial.map = texture;
     cloudsMaterial.needsUpdate = true;
     console.log('Clouds texture loaded successfully');
+  }, undefined, (error) => {
+    console.error('Error loading clouds texture:', error);
   });
 
   // 创建线框模式（无线框）：白天纹理 + 云图
