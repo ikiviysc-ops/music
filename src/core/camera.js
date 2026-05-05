@@ -1,39 +1,31 @@
 import * as THREE from 'three';
 
-export class CameraManager {
-  constructor(container, options = {}) {
-    this.container = container;
-    this.options = {
-      fov: 45,
-      near: 0.1,
-      far: 1000,
-      position: new THREE.Vector3(0, 0, 15),
-      ...options
-    };
-    
-    this.camera = null;
-    this.init();
-  }
-  
-  init() {
-    const aspect = this.container.clientWidth / this.container.clientHeight;
-    this.camera = new THREE.PerspectiveCamera(
-      this.options.fov,
-      aspect,
-      this.options.near,
-      this.options.far
-    );
-    this.camera.position.copy(this.options.position);
-    this.camera.lookAt(0, 0, 0);
-  }
-  
-  updateAspect() {
-    const aspect = this.container.clientWidth / this.container.clientHeight;
-    this.camera.aspect = aspect;
-    this.camera.updateProjectionMatrix();
-  }
-  
-  getCamera() {
-    return this.camera;
-  }
+const CONFIG = {
+  fov: 45,
+  near: 0.1,
+  far: 1000,
+  mobileFov: 60,
+  position: { x: 0, y: 2, z: 15 },
+  mobilePosition: { x: 0, y: 1.5, z: 12 }
+};
+
+export function createCamera(container) {
+  const isMobile = window.innerWidth <= 480;
+  const aspect = container.clientWidth / container.clientHeight;
+  const fov = isMobile ? CONFIG.mobileFov : CONFIG.fov;
+  const pos = isMobile ? CONFIG.mobilePosition : CONFIG.position;
+
+  const camera = new THREE.PerspectiveCamera(fov, aspect, CONFIG.near, CONFIG.far);
+  camera.position.set(pos.x, pos.y, pos.z);
+  camera.lookAt(0, 0, 0);
+
+  return camera;
+}
+
+export function updateCameraAspect(camera, container) {
+  const isMobile = window.innerWidth <= 480;
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.fov = isMobile ? CONFIG.mobileFov : CONFIG.fov;
+  camera.position.z = isMobile ? CONFIG.mobilePosition.z : CONFIG.position.z;
+  camera.updateProjectionMatrix();
 }

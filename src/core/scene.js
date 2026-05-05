@@ -1,30 +1,14 @@
 import * as THREE from 'three';
 
-export class SceneManager {
-  constructor(options = {}) {
-    this.options = {
-      bgColor: 0x000000,
-      ...options
-    };
-    
-    this.scene = new THREE.Scene();
-    this.init();
-  }
-  
-  init() {
-    this.scene.background = new THREE.Color(this.options.bgColor);
-    this.scene.fog = new THREE.Fog(this.options.bgColor, 10, 50);
-  }
-  
-  add(object) {
-    this.scene.add(object);
-  }
-  
-  remove(object) {
-    this.scene.remove(object);
-  }
-  
-  getScene() {
-    return this.scene;
-  }
+const CONFIG = {
+  bgColor: 0x050510,
+  fogNear: 10,
+  fogFar: 50
+};
+
+export function createScene() {
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(CONFIG.bgColor);
+  scene.fog = new THREE.Fog(CONFIG.bgColor, CONFIG.fogNear, CONFIG.fogFar);
+  return scene;
 }
