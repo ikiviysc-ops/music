@@ -4,7 +4,6 @@ import { createCamera, updateCameraAspect } from './core/camera.js';
 import { createRenderer, updateRendererSize } from './core/renderer.js';
 import { createControls } from './core/controls.js';
 import { createEarth, updateEarth } from './modules/earth.js';
-import { createParticles, updateParticles } from './modules/particles.js';
 import { createComposer, updateComposerSize } from './effects/bloom.js';
 
 class App {
@@ -16,7 +15,6 @@ class App {
     this.composer = null;
     this.controls = null;
     this.earthGroup = null;
-    this.particleData = null;
     this.clock = new THREE.Clock();
     this.useComposer = true;
   }
@@ -51,9 +49,7 @@ class App {
     this.controls = createControls(this.camera, this.renderer);
 
     this.addLights();
-    this.addStars();
     this.addEarth();
-    this.addParticles();
 
     console.log('Scene children:', this.scene.children.length);
     console.log('Camera position:', this.camera.position);
@@ -80,43 +76,9 @@ class App {
     this.scene.add(backLight);
   }
 
-  addStars() {
-    const starsGeometry = new THREE.BufferGeometry();
-    const starCount = 2000;
-    const positions = new Float32Array(starCount * 3);
-
-    for (let i = 0; i < starCount; i++) {
-      const radius = 30 + Math.random() * 40;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-
-      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      positions[i * 3 + 2] = radius * Math.cos(phi);
-    }
-
-    starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-    const starsMaterial = new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: 0.12,
-      transparent: true,
-      opacity: 0.6,
-      sizeAttenuation: true,
-      depthWrite: false
-    });
-
-    const stars = new THREE.Points(starsGeometry, starsMaterial);
-    this.scene.add(stars);
-  }
-
   addEarth() {
     this.earthGroup = createEarth();
     this.scene.add(this.earthGroup);
-  }
-
-  addParticles() {
-    this.particleData = createParticles(this.scene);
   }
 
   onResize() {
@@ -135,10 +97,6 @@ class App {
 
     if (this.earthGroup) {
       updateEarth(this.earthGroup, delta, elapsed);
-    }
-
-    if (this.particleData) {
-      updateParticles(this.particleData, elapsed, delta);
     }
 
     this.controls.update();
