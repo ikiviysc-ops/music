@@ -3,35 +3,63 @@ import * as THREE from 'three';
 const EARTH_RADIUS = 1.5;
 const ROTATION_SPEED = 0.0003;
 
-function createAtmosphere() {
-  const geometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.05, 64, 64);
+function createAtmosphereParticles() {
+  const count = 400;
+  const innerRadius = EARTH_RADIUS * 1.08;
+  const outerRadius = EARTH_RADIUS * 1.18;
+
+  const positions = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+  const alphas = new Float32Array(count);
+
+  for (let i = 0; i < count; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const radius = innerRadius + Math.random() * (outerRadius - innerRadius);
+
+    positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+    positions[i * 3 + 2] = radius * Math.cos(phi);
+
+    sizes[i] = 0.4 + Math.random() * 1.2;
+    alphas[i] = 0.15 + Math.random() * 0.35;
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+  geometry.setAttribute('aAlpha', new THREE.BufferAttribute(alphas, 1));
+
   const material = new THREE.ShaderMaterial({
     vertexShader: `
-      varying vec3 vNormal;
-      varying vec3 vPosition;
+      attribute float aSize;
+      attribute float aAlpha;
+      varying float vAlpha;
       void main() {
-        vNormal = normalize(normalMatrix * normal);
-        vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        vAlpha = aAlpha;
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = max(0.3, aSize * (50.0 / -mvPosition.z));
+        gl_Position = projectionMatrix * mvPosition;
       }
     `,
     fragmentShader: `
-      varying vec3 vNormal;
-      varying vec3 vPosition;
+      varying float vAlpha;
       void main() {
-        vec3 viewDirection = normalize(-vPosition);
-        float fresnel = pow(1.0 - dot(viewDirection, vNormal), 4.0);
-        vec3 atmosphereColor = vec3(0.15, 0.35, 0.6);
-        float intensity = fresnel * 0.35;
-        gl_FragColor = vec4(atmosphereColor, intensity);
+        float dist = length(gl_PointCoord - vec2(0.5));
+        if (dist > 0.5) discard;
+        float glow = 1.0 - dist * 2.0;
+        glow = pow(glow, 2.0);
+        vec3 color = vec3(0.2, 0.5, 0.9);
+        float alpha = glow * vAlpha * 0.25;
+        gl_FragColor = vec4(color, alpha);
       }
     `,
-    side: THREE.BackSide,
-    blending: THREE.AdditiveBlending,
     transparent: true,
-    depthWrite: false
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
   });
-  return new THREE.Mesh(geometry, material);
+
+  return new THREE.Points(geometry, material);
 }
 
 function createFallbackTexture() {
@@ -172,7 +200,7 @@ export function createEarth() {
   });
 
   const earth = new THREE.Mesh(geometry, material);
-  const atmosphere = createAtmosphere();
+  const atmosphere = createAtmosphereParticles();
 
   const group = new THREE.Group();
   group.add(earth);
