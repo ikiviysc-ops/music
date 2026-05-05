@@ -282,13 +282,14 @@ function createEarthMesh() {
         float finalAlpha = 1.0;
         
         if (uMode == 0) {
-          // STANDARD - 标准夜景模式 - 加深大海颜色
+          // STANDARD - 标准夜景模式 - 只加深大海颜色，保持陆地不变
           vec3 adjustedColor = nightColor;
           float brightness = dot(nightColor, vec3(0.299, 0.587, 0.114));
-          // 判断是大海还是陆地（大海比较暗）
-          if (brightness < 0.22) {
-            // 大幅加深大海，让大海更暗
-            adjustedColor = nightColor * 0.35;
+          // 更精确地判断大海：非常暗且蓝色成分相对较高
+          float blueDominance = nightColor.b - max(nightColor.r, nightColor.g);
+          if (brightness < 0.15 && blueDominance > -0.05) {
+            // 只加深真正的大海区域
+            adjustedColor = nightColor * 0.3;
           }
           finalColor = adjustedColor * uEmissiveIntensity;
         } else if (uMode == 1) {
