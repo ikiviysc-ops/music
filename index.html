@@ -148,6 +148,7 @@
       background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       cursor: pointer;
       display: flex;
@@ -161,10 +162,84 @@
       transform: scale(1.08);
     }
 
+    .control-btn.active {
+      background: rgba(124, 58, 237, 0.3);
+      border-color: #7C3AED;
+    }
+
     .control-btn svg {
       width: 24px;
       height: 24px;
       color: #fff;
+    }
+
+    /* 地球模式选择菜单 */
+    .mode-menu {
+      position: fixed;
+      right: 14px;
+      bottom: 220px;
+      background: rgba(10, 10, 20, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 8px;
+      z-index: 100;
+      min-width: 180px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .mode-menu.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .mode-menu-title {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      padding: 8px 12px 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .mode-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+    }
+
+    .mode-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .mode-item.active {
+      background: rgba(124, 58, 237, 0.25);
+      color: #fff;
+    }
+
+    .mode-item.active::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: transparent;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    .mode-item.active::before {
+      background: #7C3AED;
     }
 
     /* 左下播放指示器 */
@@ -399,6 +474,12 @@
     
     <div class="earth-space">
       <div class="side-controls interactive">
+        <button class="control-btn" id="mode-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6m-7.5-10.5h6m6 0h6m-10.5 7.5h6m6 0h6m-13.5-10.5l4.5 4.5m6 6l4.5 4.5m0-15l-4.5 4.5m-6 6l-4.5 4.5"/>
+          </svg>
+        </button>
         <button class="control-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
@@ -412,6 +493,16 @@
             <line x1="12" y1="2" x2="12" y2="22"/>
           </svg>
         </button>
+      </div>
+      
+      <!-- 地球模式选择菜单 -->
+      <div class="mode-menu interactive" id="mode-menu">
+        <div class="mode-menu-title">地球模式</div>
+        <div class="mode-item" data-mode="standard">标准夜景</div>
+        <div class="mode-item" data-mode="translucent">半透明</div>
+        <div class="mode-item" data-mode="gradient">渐变效果</div>
+        <div class="mode-item" data-mode="glow">发光模式</div>
+        <div class="mode-item" data-mode="cityLights">城市灯光</div>
       </div>
       
       <div class="play-indicator interactive">

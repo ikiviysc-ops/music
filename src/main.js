@@ -58,12 +58,77 @@ class App {
 
     window.addEventListener('resize', this.onResize.bind(this));
     
+    // 设置模式选择UI
+    this.setupModeUI();
+    
     // 立即强制更新一次尺寸，确保刷新后也清晰
     setTimeout(() => {
       this.onResize();
     }, 50);
     
     this.animate();
+  }
+  
+  setupModeUI() {
+    const modeBtn = document.getElementById('mode-btn');
+    const modeMenu = document.getElementById('mode-menu');
+    const modeItems = document.querySelectorAll('.mode-item');
+    
+    if (!modeBtn || !modeMenu || !modeItems.length) return;
+    
+    // 切换菜单显示
+    modeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      modeMenu.classList.toggle('show');
+      modeBtn.classList.toggle('active');
+    });
+    
+    // 点击菜单项
+    modeItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const mode = item.dataset.mode;
+        
+        // 映射到常量
+        const modeMap = {
+          'standard': EARTH_MODES.STANDARD,
+          'translucent': EARTH_MODES.TRANSLUCENT,
+          'gradient': EARTH_MODES.GRADIENT,
+          'glow': EARTH_MODES.GLOW,
+          'cityLights': EARTH_MODES.CITY_LIGHTS
+        };
+        
+        if (modeMap[mode]) {
+          this.setEarthMode(modeMap[mode]);
+          this.updateModeUI(mode);
+        }
+        
+        // 关闭菜单
+        modeMenu.classList.remove('show');
+        modeBtn.classList.remove('active');
+      });
+    });
+    
+    // 点击外部关闭菜单
+    document.addEventListener('click', () => {
+      modeMenu.classList.remove('show');
+      modeBtn.classList.remove('active');
+    });
+    
+    // 初始化当前选中状态
+    const currentMode = getCurrentEarthMode();
+    const modeKey = Object.keys(EARTH_MODES).find(k => EARTH_MODES[k] === currentMode) || 'cityLights';
+    this.updateModeUI(modeKey.toLowerCase());
+  }
+  
+  updateModeUI(activeMode) {
+    const modeItems = document.querySelectorAll('.mode-item');
+    modeItems.forEach(item => {
+      item.classList.remove('active');
+      if (item.dataset.mode === activeMode) {
+        item.classList.add('active');
+      }
+    });
   }
 
   addLights() {
