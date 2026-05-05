@@ -30,7 +30,7 @@ function createAtmosphere() {
         vPosition = position;
         vNormal = normalize(position);
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 3.6;
+        gl_PointSize = 2.5;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -52,7 +52,9 @@ function createAtmosphere() {
         float edgeAlpha = 1.0 - smoothstep(0.2, 0.6, dotProduct);
         edgeAlpha = clamp(edgeAlpha, 0.0, 1.0);
         
-        float baseAlpha = step(dist, 0.65) * 0.1;
+        // 更锐利的粒子形状
+        float baseAlpha = 1.0 - smoothstep(0.3, 0.65, dist);
+        baseAlpha = baseAlpha * 0.2;
         float alpha = baseAlpha * edgeAlpha;
         
         vec3 color = vec3(0.3, 0.6, 1.0);
@@ -190,7 +192,7 @@ function createContinentParticles() {
       void main() {
         vColor = aColor;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 3.6;
+        gl_PointSize = 2.5;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -200,7 +202,9 @@ function createContinentParticles() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        float alpha = step(dist, 0.65) * 0.1;
+        // 更锐利的大陆粒子形状
+        float alpha = 1.0 - smoothstep(0.3, 0.65, dist);
+        alpha = alpha * 0.18;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
