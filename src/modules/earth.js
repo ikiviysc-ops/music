@@ -6,7 +6,7 @@ const ROTATION_SPEED = 0.0003;
 // ========== 大气层（固定半径，密集粒子） ==========
 function createAtmosphere() {
   const count = 20000;
-  const radius = EARTH_RADIUS * 1.08; // 统一高度
+  const radius = EARTH_RADIUS * 1.15; // 更高的大气层
 
   const positions = new Float32Array(count * 3);
 
@@ -227,7 +227,7 @@ function createEarthMesh() {
   const material = new THREE.MeshStandardMaterial({
     color: 0x0a1018,
     emissive: 0x0a1018,
-    emissiveIntensity: 0.8,
+    emissiveIntensity: 1.2,
     roughness: 0.98,
     metalness: 0.0
   });
@@ -237,7 +237,7 @@ function createEarthMesh() {
     material.map = texture;
     material.emissiveMap = texture;
     material.emissive.set(0xffffff);
-    material.emissiveIntensity = 1.5;
+    material.emissiveIntensity = 2.0;
     material.needsUpdate = true;
     console.log('Night texture loaded successfully');
   }, undefined, (err) => {
