@@ -3,22 +3,21 @@ import * as THREE from 'three';
 const EARTH_RADIUS = 1.5;
 const ROTATION_SPEED = 0.0003;
 
-// ========== 深空中的粒子（只在地球背后的半球内显示） ==========
+// ========== 深空中的粒子（和大气粒子一样，更稀疏，只在地球背后） ==========
 function createSpaceParticles() {
-  const count = 5000;
+  const count = 2500;
   const radius = EARTH_RADIUS * 3.0;
 
   const positions = new Float32Array(count * 3);
 
   for (let i = 0; i < count; i++) {
     const theta = Math.random() * Math.PI * 2;
-    // phi限制在0到PI/2，只生成在地球背后的半球（负z方向）
     const phi = Math.acos(Math.random());
     const r = radius * (0.4 + Math.random() * 0.6);
 
     positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
     positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-    positions[i * 3 + 2] = -r * Math.cos(phi); // 负z，地球背后
+    positions[i * 3 + 2] = -r * Math.cos(phi);
   }
 
   const geometry = new THREE.BufferGeometry();
@@ -28,7 +27,7 @@ function createSpaceParticles() {
     vertexShader: `
       void main() {
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 1.5;
+        gl_PointSize = 2.0;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -36,8 +35,8 @@ function createSpaceParticles() {
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        float alpha = step(dist, 0.35) * 0.25;
-        vec3 color = vec3(0.85, 0.9, 1.0);
+        float alpha = step(dist, 0.35) * 0.15;
+        vec3 color = vec3(0.2, 0.45, 0.8);
         gl_FragColor = vec4(color, alpha);
       }
     `,
