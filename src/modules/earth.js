@@ -51,7 +51,7 @@ function createAtmosphere() {
         float edgeAlpha = 1.0 - smoothstep(0.4, 0.85, dotProduct);
         edgeAlpha = pow(edgeAlpha, 0.7);
         
-        float baseAlpha = step(dist, 0.65) * 0.5;
+        float baseAlpha = step(dist, 0.65) * 0.1;
         float alpha = baseAlpha * edgeAlpha;
         
         vec3 color = vec3(0.3, 0.6, 1.0);
