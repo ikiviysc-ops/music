@@ -374,11 +374,8 @@ export function createEarth() {
     console.log('Clouds texture loaded successfully');
   });
 
-  // 创建线框模式的组合：白天纹理 + 线框叠加
-  const wireframeDayGroup = new THREE.Group();
-  
-  // 白天纹理层
-  const wireframeDayBaseMaterial = new THREE.ShaderMaterial({
+  // 创建线框模式（无线框）：白天纹理 + 云图
+  const wireframeDayMaterial = new THREE.ShaderMaterial({
     uniforms: { uDayTexture: { value: null } },
     transparent: true,
     opacity: 0.9,
@@ -405,21 +402,7 @@ export function createEarth() {
       }
     `
   });
-  const earthWireframeBase = new THREE.Mesh(earth.geometry.clone(), wireframeDayBaseMaterial);
-  earthWireframeBase.visible = true;
-  
-  // 线框层
-  const wireframeOverlayMaterial = new THREE.MeshBasicMaterial({
-    color: 0x3366ff,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.7
-  });
-  const earthWireframeOverlay = new THREE.Mesh(earth.geometry.clone(), wireframeOverlayMaterial);
-  earthWireframeOverlay.visible = true;
-  
-  wireframeDayGroup.add(earthWireframeBase);
-  wireframeDayGroup.add(earthWireframeOverlay);
+  const wireframeDayGroup = new THREE.Mesh(earth.geometry.clone(), wireframeDayMaterial);
   wireframeDayGroup.visible = false;
 
   // 创建点模式的网格 - 使用白天纹理
@@ -471,9 +454,9 @@ export function createEarth() {
   const dayUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-blue-marble.jpg';
   loader.load(dayUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
-    if (wireframeDayBaseMaterial.uniforms && wireframeDayBaseMaterial.uniforms.uDayTexture) {
-      wireframeDayBaseMaterial.uniforms.uDayTexture.value = texture;
-      wireframeDayBaseMaterial.needsUpdate = true;
+    if (wireframeDayMaterial.uniforms && wireframeDayMaterial.uniforms.uDayTexture) {
+      wireframeDayMaterial.uniforms.uDayTexture.value = texture;
+      wireframeDayMaterial.needsUpdate = true;
     }
     if (pointsDayMaterial.uniforms && pointsDayMaterial.uniforms.uDayTexture) {
       pointsDayMaterial.uniforms.uDayTexture.value = texture;
