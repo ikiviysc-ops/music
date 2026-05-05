@@ -25,20 +25,16 @@ function createAtmosphere() {
   const material = new THREE.ShaderMaterial({
     vertexShader: `
       varying vec3 vViewNormal;
-      varying vec4 vScreenPosition;
       void main() {
         vec3 normal = normalize(position);
         vViewNormal = normalize(normalMatrix * normal);
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        vec4 clipPos = projectionMatrix * mvPosition;
-        vScreenPosition = clipPos;
         gl_PointSize = 4.0;
-        gl_Position = clipPos;
+        gl_Position = projectionMatrix * mvPosition;
       }
     `,
     fragmentShader: `
       varying vec3 vViewNormal;
-      varying vec4 vScreenPosition;
       void main() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
@@ -56,13 +52,7 @@ function createAtmosphere() {
         float edgeAlpha = 1.0 - smoothstep(0.35, 0.75, dotProduct);
         edgeAlpha = clamp(edgeAlpha, 0.0, 1.0);
         
-        // 屏幕空间下半部分渐隐
-        vec3 ndc = vScreenPosition.xyz / vScreenPosition.w;
-        float screenY = ndc.y;
-        float verticalAlpha = smoothstep(-0.3, 0.1, screenY);
-        verticalAlpha = clamp(verticalAlpha, 0.0, 1.0);
-        
-        float alpha = circleAlpha * edgeAlpha * verticalAlpha * 0.15;
+        float alpha = circleAlpha * edgeAlpha * 0.15;
         
         vec3 color = vec3(0.3, 0.6, 1.0);
         gl_FragColor = vec4(color, alpha);
@@ -188,19 +178,15 @@ function createContinentParticles() {
     vertexShader: `
       attribute vec3 aColor;
       varying vec3 vColor;
-      varying vec4 vScreenPosition;
       void main() {
         vColor = aColor;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        vec4 clipPos = projectionMatrix * mvPosition;
-        vScreenPosition = clipPos;
         gl_PointSize = 4.0;
-        gl_Position = clipPos;
+        gl_Position = projectionMatrix * mvPosition;
       }
     `,
     fragmentShader: `
       varying vec3 vColor;
-      varying vec4 vScreenPosition;
       void main() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
@@ -209,13 +195,7 @@ function createContinentParticles() {
         // 超清锐利的大陆粒子形状
         float circleAlpha = 1.0 - smoothstep(0.5, 0.65, dist);
         
-        // 屏幕空间下半部分渐隐
-        vec3 ndc = vScreenPosition.xyz / vScreenPosition.w;
-        float screenY = ndc.y;
-        float verticalAlpha = smoothstep(-0.3, 0.1, screenY);
-        verticalAlpha = clamp(verticalAlpha, 0.0, 1.0);
-        
-        float alpha = circleAlpha * verticalAlpha * 0.15;
+        float alpha = circleAlpha * 0.15;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
@@ -242,36 +222,22 @@ function createEarthMesh() {
       uEmissiveIntensity: { value: 3.5 }
     },
     vertexShader: `
-      varying vec4 vScreenPosition;
       varying vec2 vUv;
-      varying vec3 vNormal;
       varying vec3 vViewNormal;
       void main() {
         vUv = uv;
-        vNormal = normalize(normalMatrix * normal);
         vViewNormal = normalize(normalMatrix * normal);
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        vec4 clipPos = projectionMatrix * mvPosition;
-        vScreenPosition = clipPos;
-        gl_Position = clipPos;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `,
     fragmentShader: `
       uniform sampler2D uNightTexture;
       uniform sampler2D uTopologyTexture;
       uniform float uEmissiveIntensity;
-      varying vec4 vScreenPosition;
       varying vec2 vUv;
-      varying vec3 vNormal;
       varying vec3 vViewNormal;
       
       void main() {
-        // 屏幕空间下半部分渐隐
-        vec3 ndc = vScreenPosition.xyz / vScreenPosition.w;
-        float screenY = ndc.y;
-        float verticalAlpha = smoothstep(-0.3, 0.1, screenY);
-        verticalAlpha = clamp(verticalAlpha, 0.0, 1.0);
-        
         // 基础颜色
         vec3 baseColor = vec3(0.04, 0.06, 0.09);
         
@@ -283,18 +249,16 @@ function createEarthMesh() {
         
         // Fresnel 边缘发光
         vec3 viewDir = vec3(0.0, 0.0, 1.0);
-        float fresnel = pow(1.0 - max(dot(vViewNormal, viewDir), 0.0), 2.0);
+        float fresnel = pow(1.0 - max(dot(vViewNormal, viewDir), 0.0), 4.0);
         vec3 glowColor = vec3(0.2, 0.4, 0.8) * fresnel * 2.0;
         
         // 最终颜色
         vec3 finalColor = nightColor * uEmissiveIntensity + glowColor;
         
-        gl_FragColor = vec4(finalColor, verticalAlpha);
+        gl_FragColor = vec4(finalColor, 1.0);
       }
     `,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending
+    transparent: false
   });
 
   loader.load(nightUrl, (texture) => {
