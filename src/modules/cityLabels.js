@@ -9,43 +9,42 @@ const labelStyles = `
   .city-label {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
-    background: rgba(255,255,255,0.08);
+    gap: 10px;
+    padding: 6px 10px;
+    background: rgba(0,0,0,0.35);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 8px;
+    border-radius: 12px;
     pointer-events: auto;
     cursor: pointer;
     transition: all 0.3s ease;
     white-space: nowrap;
   }
   .city-label:hover {
-    background: rgba(255,255,255,0.15);
-    border-color: rgba(255,255,255,0.25);
+    background: rgba(0,0,0,0.5);
     transform: scale(1.05);
   }
   .city-label-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 5px;
-    background: rgba(255,255,255,0.1);
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #7C3AED, #00D1FF);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 18px;
     flex-shrink: 0;
+    overflow: hidden;
   }
   .city-label-name {
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 600;
     color: #fff;
     line-height: 1.2;
   }
   .city-label-listeners {
-    font-size: 10px;
-    color: rgba(255,255,255,0.55);
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
     line-height: 1.2;
   }
 `;
@@ -79,13 +78,35 @@ export function updateLabelRendererSize(labelRenderer, container) {
   labelRenderer.setSize(container.clientWidth, container.clientHeight);
 }
 
-function createCityLabelElement(city) {
+const coverImages = [
+  'https://images.unsplash.com/photo-1619983081563-430f63602796?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1514525253440-b393452e8d26?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1484755560615-5af6926427a1?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1514525253440-b393452e8d26?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1484755560615-5af6926427a1?q=80&w=200&auto=format&fit=crop',
+];
+
+function createCityLabelElement(city, index) {
   const color = getCityColor(city.region);
+  const coverImage = coverImages[index % coverImages.length];
   const div = document.createElement('div');
   div.className = 'city-label';
   div.innerHTML = `
-    <div class="city-label-icon" style="background:${color.hex}22;border:1px solid ${color.hex}44;">
-      <span style="color:${color.hex};">&#9835;</span>
+    <div class="city-label-icon" style="background:${color.hex}22;">
+      <img src="${coverImage}" style="width:100%;height:100%;object-fit:cover;" alt="">
     </div>
     <div>
       <div class="city-label-name">${city.city}</div>
@@ -101,8 +122,8 @@ export function createCityLabels(scene) {
   const sortedCities = [...CITY_DATA].sort((a, b) => b.listeners - a.listeners);
   const labels = [];
 
-  sortedCities.slice(0, maxLabels).forEach(city => {
-    const div = createCityLabelElement(city);
+  sortedCities.slice(0, maxLabels).forEach((city, index) => {
+    const div = createCityLabelElement(city, index);
     const label = new CSS2DObject(div);
     const pos = latLngToVector3(city.lat, city.lng, EARTH_RADIUS + 0.5);
     label.position.copy(pos);

@@ -55,12 +55,12 @@
     }
 
     .header-section {
-      padding: 8px 12px;
-      margin-bottom: 4px;
+      padding: 20px 20px 0;
+      margin-bottom: 0;
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 8px;
+      gap: 16px;
     }
 
     .title-block {
@@ -68,34 +68,34 @@
     }
 
     .main-title {
-      font-size: 26px;
-      line-height: 1.1;
+      font-size: 38px;
+      line-height: 1.05;
       font-weight: 800;
       color: #fff;
-      letter-spacing: -0.5px;
+      letter-spacing: -1px;
     }
 
     .wave-icon {
       display: inline-block;
-      margin-left: 4px;
+      margin-left: 8px;
     }
 
     .subtitle {
-      margin-top: 4px;
-      font-size: 12px;
+      margin-top: 8px;
+      font-size: 15px;
       color: rgba(255, 255, 255, 0.6);
     }
 
     .header-right {
       display: flex;
-      gap: 12px;
-      padding-top: 4px;
+      gap: 16px;
+      padding-top: 8px;
     }
 
     .search-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
       border: none;
       background: transparent;
       cursor: pointer;
@@ -105,15 +105,15 @@
     }
 
     .search-icon {
-      width: 22px;
-      height: 22px;
+      width: 26px;
+      height: 26px;
       color: #fff;
     }
 
     .avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 18px;
+      width: 48px;
+      height: 48px;
+      border-radius: 24px;
       border: 2px solid #7C3AED;
       background: linear-gradient(135deg, #7C3AED, #00D1FF);
       display: flex;
@@ -135,22 +135,22 @@
 
     .side-controls {
       position: absolute;
-      right: 12px;
-      bottom: 120px;
+      right: 20px;
+      bottom: 140px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
       z-index: 20;
     }
 
     .control-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      width: 52px;
+      height: 52px;
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -159,36 +159,36 @@
     }
 
     .control-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.12);
       transform: scale(1.05);
     }
 
     .control-btn svg {
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       color: #fff;
     }
 
     .play-indicator {
       position: absolute;
-      left: 10px;
-      bottom: 100px;
+      left: 20px;
+      bottom: 140px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
       background: rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 24px;
-      padding: 6px 12px;
+      border-radius: 30px;
+      padding: 10px 16px;
     }
 
     .play-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.4);
+      width: 44px;
+      height: 44px;
+      border-radius: 22px;
+      border: 2px solid rgba(255, 255, 255, 0.5);
       background: transparent;
       cursor: pointer;
       display: flex;
@@ -197,215 +197,37 @@
     }
 
     .play-btn svg {
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       color: #fff;
     }
 
     .play-texts {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
     }
 
     .play-text {
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
     }
 
     .play-time {
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    .bottom-scroll {
-      padding: 0 10px 110px 10px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      pointer-events: auto;
-    }
-
-    .bottom-scroll::-webkit-scrollbar {
-      display: none;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
-      padding: 12px;
-      margin-bottom: 10px;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-
-    .card-title {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .card-title-text {
-      font-size: 16px;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .card-subtitle {
-      font-size: 12px;
+      font-size: 13px;
       color: rgba(255, 255, 255, 0.6);
     }
 
-    .card-more {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.8);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-    }
-
-    .song-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .song-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-
-    .song-item:hover {
-      transform: translateX(4px);
-    }
-
-    .song-rank {
-      font-size: 16px;
-      font-weight: 800;
-      width: 20px;
-      color: #7C3AED;
-    }
-
-    .song-cover {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #7C3AED, #00D1FF);
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-
-    .song-cover-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .song-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .song-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: #fff;
-    }
-
-    .song-artist {
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.55);
-    }
-
-    .song-stats {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 4px;
-    }
-
-    .song-listeners {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.75);
-    }
-
-    .song-bar {
-      width: 70px;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.12);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .song-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #7C3AED, #00D1FF);
-      border-radius: 2px;
-    }
-
-    .trend-card {
-      background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(0, 209, 255, 0.06));
-      border-color: rgba(124, 58, 237, 0.25);
-    }
-
-    .trend-header {
-      margin-bottom: 12px;
-    }
-
-    .trend-main {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-
-    .trend-label {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.55);
-    }
-
-    .trend-value {
-      font-size: 18px;
-      font-weight: 800;
-      color: #fff;
-    }
-
-    .trend-change {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #00FFA3;
-    }
-
-    .trend-map {
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0.8;
+    .bottom-scroll {
+      display: none;
     }
 
     .bottom-player {
       position: fixed;
-      bottom: 50px;
+      bottom: 60px;
       left: 0;
       right: 0;
-      padding: 0 10px;
+      padding: 0 20px;
       z-index: 25;
       pointer-events: auto;
     }
@@ -415,17 +237,17 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 14px;
-      padding: 10px;
+      border-radius: 20px;
+      padding: 14px 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 14px;
     }
 
     .player-cover {
-      width: 42px;
-      height: 42px;
-      border-radius: 8px;
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
       background: linear-gradient(135deg, #7C3AED, #FF6B9D);
       flex-shrink: 0;
       overflow: hidden;
@@ -435,30 +257,30 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
     }
 
     .player-song-name {
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 600;
       color: #fff;
     }
 
     .player-artist {
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.55);
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
     }
 
     .player-controls {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 16px;
     }
 
     .player-btn {
-      width: 26px;
-      height: 26px;
-      border-radius: 13px;
+      width: 32px;
+      height: 32px;
+      border-radius: 16px;
       border: none;
       background: transparent;
       cursor: pointer;
@@ -468,22 +290,22 @@
     }
 
     .player-btn svg {
-      width: 16px;
-      height: 16px;
+      width: 22px;
+      height: 22px;
       color: #fff;
     }
 
     .player-btn-play {
-      width: 44px;
-      height: 44px;
-      border-radius: 22px;
+      width: 56px;
+      height: 56px;
+      border-radius: 28px;
       border: 2px solid rgba(255, 255, 255, 0.6);
       background: rgba(255, 255, 255, 0.08);
     }
 
     .player-btn-play svg {
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
     }
 
     .bottom-nav {
@@ -491,7 +313,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      height: 50px;
+      height: 60px;
       background: rgba(10, 10, 20, 0.98);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -508,21 +330,21 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2px;
+      gap: 4px;
       cursor: pointer;
-      padding: 6px 12px;
+      padding: 8px 16px;
       transition: all 0.25s ease;
     }
 
     .nav-item svg {
-      width: 20px;
-      height: 20px;
+      width: 26px;
+      height: 26px;
       color: rgba(255, 255, 255, 0.55);
       transition: all 0.25s ease;
     }
 
     .nav-item span {
-      font-size: 10px;
+      font-size: 12px;
       color: rgba(255, 255, 255, 0.55);
       transition: all 0.25s ease;
     }
@@ -599,120 +421,6 @@
         <div class="play-texts">
           <span class="play-text">实时更新</span>
           <span class="play-time" id="update-time">12:34:56</span>
-        </div>
-      </div>
-    </div>
-    
-    <div class="bottom-scroll">
-      <div class="card interactive">
-        <div class="card-header">
-          <div class="card-title">
-            <span class="card-title-text">全球正在听的歌曲</span>
-            <svg width="32" height="20" viewBox="0 0 32 20" fill="none">
-              <path d="M3 12C3 12 5 9 7 7C9 5 13 5 15 7C17 9 19 12 19 12C19 12 21 9 23 7C25 5 29 5 29 5" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div class="card-more">
-            查看全部
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </div>
-        </div>
-        
-        <div class="song-list">
-          <div class="song-item">
-            <span class="song-rank">1</span>
-            <div class="song-cover">
-              <img class="song-cover-img" src="https://images.unsplash.com/photo-1619983081563-430f63602796?q=80&w=200&auto=format&fit=crop" alt="Lose Control">
-            </div>
-            <div class="song-info">
-              <div class="song-name">Lose Control</div>
-              <div class="song-artist">Teddy Swims</div>
-            </div>
-            <div class="song-stats">
-              <span class="song-listeners">1,246,873人在听</span>
-              <div class="song-bar">
-                <div class="song-bar-fill" style="width: 100%"></div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="song-item">
-            <span class="song-rank">2</span>
-            <div class="song-cover">
-              <img class="song-cover-img" src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=200&auto=format&fit=crop" alt="Birds of a Feather">
-            </div>
-            <div class="song-info">
-              <div class="song-name">Birds of a Feather</div>
-              <div class="song-artist">Billie Eilish</div>
-            </div>
-            <div class="song-stats">
-              <span class="song-listeners">987,453人在听</span>
-              <div class="song-bar">
-                <div class="song-bar-fill" style="width: 78%"></div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="song-item">
-            <span class="song-rank">3</span>
-            <div class="song-cover">
-              <img class="song-cover-img" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop" alt="Beautiful Things">
-            </div>
-            <div class="song-info">
-              <div class="song-name">Beautiful Things</div>
-              <div class="song-artist">Benson Boone</div>
-            </div>
-            <div class="song-stats">
-              <span class="song-listeners">876,321人在听</span>
-              <div class="song-bar">
-                <div class="song-bar-fill" style="width: 68%"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="card trend-card interactive">
-        <div class="trend-header">
-          <div class="trend-label">全球听歌热度</div>
-          <div class="trend-main">
-            <span class="trend-value">正在上升</span>
-            <div class="trend-change">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                <polyline points="17 6 23 6 23 12"/>
-              </svg>
-              +12.6%
-            </div>
-          </div>
-          <div class="trend-label">较过去1小时</div>
-        </div>
-        
-        <div class="trend-map">
-          <svg width="100%" height="80" viewBox="0 0 240 80">
-            <g opacity="0.4">
-              <circle cx="60" cy="35" r="2.5" fill="#7C3AED"/>
-              <circle cx="110" cy="30" r="3" fill="#7C3AED"/>
-              <circle cx="180" cy="38" r="2.8" fill="#7C3AED"/>
-              <circle cx="195" cy="50" r="2" fill="#7C3AED"/>
-              <circle cx="80" cy="60" r="2" fill="#7C3AED"/>
-            </g>
-            <g opacity="0.25">
-              <circle cx="40" cy="40" r="1.5"/>
-              <circle cx="90" cy="45" r="1.8"/>
-              <circle cx="150" cy="40" r="1.6"/>
-              <circle cx="200" cy="32" r="1.7"/>
-              <circle cx="160" cy="55" r="1.5"/>
-            </g>
-            <g opacity="0.15">
-              <circle cx="30" cy="48" r="1"/>
-              <circle cx="65" cy="50" r="1"/>
-              <circle cx="120" cy="48" r="1.2"/>
-              <circle cx="210" cy="45" r="1"/>
-            </g>
-          </svg>
         </div>
       </div>
     </div>
