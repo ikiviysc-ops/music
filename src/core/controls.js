@@ -34,8 +34,8 @@ export function createControls(camera, renderer) {
   controls.minDistance = camera.position.length();
   controls.maxDistance = camera.position.length();
   
-  // 设置目标角度（稍微倾斜）
-  controls.target.set(0, 0.3, 0);
+  // 设置目标为地球中心
+  controls.target.set(0, 0, 0);
   
   // 更新一次确保目标生效
   controls.update();

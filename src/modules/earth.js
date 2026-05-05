@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-const EARTH_RADIUS = 4.5;
+const EARTH_RADIUS = 3.5;
 const ROTATION_SPEED = 0.0006;
 
 const ATMOSPHERE_CONFIG = {

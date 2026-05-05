@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 
 const CONFIG = {
-  fov: 50,
+  fov: 40,
   near: 0.1,
   far: 1000,
-  mobileFov: 60,
-  // 相机位置让地球在上半部分
-  position: { x: 0, y: 1.2, z: 10 },
-  mobilePosition: { x: 0, y: 1.0, z: 9 }
+  mobileFov: 45,
+  // 相机位置让地球完整显示在屏幕中央
+  position: { x: 0, y: 0.5, z: 14 },
+  mobilePosition: { x: 0, y: 0.3, z: 15 }
 };
 
 export function createCamera(container) {
@@ -18,8 +18,8 @@ export function createCamera(container) {
 
   const camera = new THREE.PerspectiveCamera(fov, aspect, CONFIG.near, CONFIG.far);
   camera.position.set(pos.x, pos.y, pos.z);
-  // 让相机稍微向上看，让地球位置更合适
-  camera.lookAt(0, 0.2, 0);
+  // 让相机看向地球中心
+  camera.lookAt(0, 0, 0);
 
   return camera;
 }
@@ -30,6 +30,6 @@ export function updateCameraAspect(camera, container) {
   camera.fov = isMobile ? CONFIG.mobileFov : CONFIG.fov;
   const pos = isMobile ? CONFIG.mobilePosition : CONFIG.position;
   camera.position.set(pos.x, pos.y, pos.z);
-  camera.lookAt(0, 0.2, 0);
+  camera.lookAt(0, 0, 0);
   camera.updateProjectionMatrix();
 }
