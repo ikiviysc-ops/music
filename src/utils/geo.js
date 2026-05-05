@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 const EARTH_RADIUS = 5;
 
 export function latLngToVector3(lat, lng, radius = EARTH_RADIUS) {
@@ -10,8 +12,6 @@ export function latLngToVector3(lat, lng, radius = EARTH_RADIUS) {
 
   return new THREE.Vector3(x, y, z);
 }
-
-import * as THREE from 'three';
 
 export function getDistance(pos1, pos2) {
   return pos1.distanceTo(pos2);

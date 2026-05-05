@@ -11,6 +11,13 @@ import { createArcs, updateArcs } from './modules/arc.js';
 import { createComposer, updateComposerSize } from './effects/bloom.js';
 import { InteractionManager } from './modules/interaction.js';
 
+function updateTimeDisplay() {
+  const el = document.getElementById('update-time');
+  if (!el) return;
+  const now = new Date();
+  el.textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
+}
+
 class App {
   constructor() {
     this.container = null;
@@ -54,6 +61,9 @@ class App {
     this.addArcs();
     this.addCityLabels();
     this.setupInteraction();
+
+    updateTimeDisplay();
+    setInterval(updateTimeDisplay, 1000);
 
     window.addEventListener('resize', this.onResize.bind(this));
 
@@ -162,7 +172,7 @@ class App {
     const elapsed = this.clock.getElapsedTime();
 
     if (this.earthGroup) {
-      updateEarth(this.earthGroup, delta);
+      updateEarth(this.earthGroup, delta, elapsed);
     }
 
     if (this.beamData) {
