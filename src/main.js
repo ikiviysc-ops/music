@@ -94,7 +94,7 @@ class App {
           'standard': EARTH_MODES.STANDARD,
           'translucent': EARTH_MODES.TRANSLUCENT,
           'daytime': EARTH_MODES.DAYTIME,
-          'wireframe': EARTH_MODES.WIREFRAME,
+          'clouds': EARTH_MODES.CLOUDS,
           'points': EARTH_MODES.POINTS,
           'cityLights': EARTH_MODES.CITY_LIGHTS
         };
