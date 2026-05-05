@@ -5,7 +5,7 @@ const ROTATION_SPEED = 0.0003;
 
 // ========== 深空中的粒子（和大气粒子一样，更稀疏，只在地球背后） ==========
 function createSpaceParticles() {
-  const count = 2500;
+  const count = 800;
   const radius = EARTH_RADIUS * 3.0;
 
   const positions = new Float32Array(count * 3);
@@ -36,8 +36,8 @@ function createSpaceParticles() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        float alpha = step(dist, 0.65) * 0.18;
-        vec3 color = vec3(0.2, 0.45, 0.8);
+        float alpha = step(dist, 0.65) * 0.25;
+        vec3 color = vec3(0.25, 0.55, 1.0);
         gl_FragColor = vec4(color, alpha);
       }
     `,
@@ -81,8 +81,8 @@ function createAtmosphere() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        float alpha = step(dist, 0.65) * 0.18;
-        vec3 color = vec3(0.2, 0.45, 0.8);
+        float alpha = step(dist, 0.65) * 0.28;
+        vec3 color = vec3(0.3, 0.6, 1.0);
         gl_FragColor = vec4(color, alpha);
       }
     `,
@@ -203,7 +203,7 @@ function createContinentParticles() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        float alpha = step(dist, 0.65) * 0.25;
+        float alpha = step(dist, 0.65) * 0.4;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
@@ -226,7 +226,7 @@ function createEarthMesh() {
   const material = new THREE.MeshStandardMaterial({
     color: 0x0a1018,
     emissive: 0x0a1018,
-    emissiveIntensity: 0.15,
+    emissiveIntensity: 0.35,
     roughness: 0.98,
     metalness: 0.0
   });
@@ -236,7 +236,7 @@ function createEarthMesh() {
     material.map = texture;
     material.emissiveMap = texture;
     material.emissive.set(0xffffff);
-    material.emissiveIntensity = 0.5;
+    material.emissiveIntensity = 0.9;
     material.needsUpdate = true;
     console.log('Night texture loaded successfully');
   }, undefined, (err) => {
@@ -259,20 +259,17 @@ export function createEarth() {
   const earth = createEarthMesh();
   const atmosphere = createAtmosphere();
   const continents = createContinentParticles();
-  const spaceParticles = createSpaceParticles();
 
   const group = new THREE.Group();
   group.add(earth);
   group.add(atmosphere);
   group.add(continents);
-  group.add(spaceParticles);
 
-  group.userData = { earth, atmosphere, continents, spaceParticles, EARTH_RADIUS, ROTATION_SPEED };
+  group.userData = { earth, atmosphere, continents, EARTH_RADIUS, ROTATION_SPEED };
   return group;
 }
 
 export function updateEarth(earthGroup, deltaTime, elapsedTime) {
-  const { earth, spaceParticles, ROTATION_SPEED: speed } = earthGroup.userData;
+  const { earth, ROTATION_SPEED: speed } = earthGroup.userData;
   earth.rotation.y += speed;
-  spaceParticles.rotation.y += speed * 0.3;
 }
