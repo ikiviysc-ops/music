@@ -290,11 +290,11 @@ function createEarthMesh() {
           // CITY_LIGHTS - 城市灯光闪烁模式 - 优化版
           float brightness = dot(nightColor, vec3(0.299, 0.587, 0.114));
           // 更明显的闪烁动画 - 大幅度、快速
-          float mainPulse = sin(uTime * 4.0 + vUv.x * 100.0 + vUv.y * 80.0);
-          float pulse = 0.3 + 1.2 * (mainPulse * 0.5 + 0.5);
-          // 更亮的灯光效果
-          float lightIntensity = smoothstep(0.1, 0.4, brightness);
-          vec3 lightColor = vec3(1.0, 0.95, 0.7) * lightIntensity * pulse * 6.0;
+          float mainPulse = sin(uTime * 3.0);
+          float pulse = max(0.0, mainPulse * 0.7 + 0.3); // 0-1 范围
+          // 更亮的灯光效果 - 让亮的地方很亮
+          float lightIntensity = smoothstep(0.08, 0.35, brightness);
+          vec3 lightColor = vec3(1.0, 0.95, 0.7) * lightIntensity * pulse * 8.0;
           // 基础纹理保持正常亮度
           finalColor = nightColor * uEmissiveIntensity + lightColor + glowColor;
         } else {
