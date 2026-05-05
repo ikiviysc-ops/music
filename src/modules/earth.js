@@ -3,7 +3,7 @@ import * as THREE from 'three';
 const EARTH_RADIUS = 1.5;
 const ROTATION_SPEED = 0.0003;
 
-// ========== 大气层粒子 ==========
+// ========== 大气层粒子（纯亮点，无外发光） ==========
 function createAtmosphereParticles() {
   const count = 2000;
   const innerRadius = EARTH_RADIUS * 1.06;
@@ -11,7 +11,6 @@ function createAtmosphereParticles() {
 
   const positions = new Float32Array(count * 3);
   const sizes = new Float32Array(count);
-  const alphas = new Float32Array(count);
 
   for (let i = 0; i < count; i++) {
     const theta = Math.random() * Math.PI * 2;
@@ -22,36 +21,29 @@ function createAtmosphereParticles() {
     positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
     positions[i * 3 + 2] = radius * Math.cos(phi);
 
-    sizes[i] = 0.8 + Math.random() * 2.5;
-    alphas[i] = 0.3 + Math.random() * 0.5;
+    sizes[i] = 0.6 + Math.random() * 1.2;
   }
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
-  geometry.setAttribute('aAlpha', new THREE.BufferAttribute(alphas, 1));
 
   const material = new THREE.ShaderMaterial({
     vertexShader: `
       attribute float aSize;
-      attribute float aAlpha;
-      varying float vAlpha;
       void main() {
-        vAlpha = aAlpha;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = max(0.5, aSize * (60.0 / -mvPosition.z));
+        gl_PointSize = max(0.5, aSize * (50.0 / -mvPosition.z));
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
     fragmentShader: `
-      varying float vAlpha;
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        float glow = 1.0 - dist * 2.0;
-        glow = pow(glow, 1.5);
-        vec3 color = vec3(0.3, 0.6, 1.0);
-        float alpha = glow * vAlpha * 0.6;
+        // 硬边圆点，没有光晕扩散
+        float alpha = step(dist, 0.35) * 0.7;
+        vec3 color = vec3(0.35, 0.65, 1.0);
         gl_FragColor = vec4(color, alpha);
       }
     `,
@@ -63,33 +55,24 @@ function createAtmosphereParticles() {
   return new THREE.Points(geometry, material);
 }
 
-// ========== 大陆板块粒子 ==========
+// ========== 大陆板块粒子（纯亮点，无外发光） ==========
 function createContinentParticles() {
   const continentData = [
-    // 北美洲
     { lat: 45, lng: -100, spread: 25, count: 300 },
     { lat: 35, lng: -110, spread: 20, count: 200 },
     { lat: 55, lng: -95, spread: 15, count: 150 },
-    // 南美洲
     { lat: -15, lng: -60, spread: 20, count: 250 },
     { lat: -25, lng: -55, spread: 15, count: 180 },
-    // 欧洲
     { lat: 50, lng: 15, spread: 12, count: 200 },
     { lat: 45, lng: 5, spread: 10, count: 150 },
-    // 非洲
     { lat: 5, lng: 20, spread: 22, count: 300 },
     { lat: -20, lng: 25, spread: 15, count: 200 },
-    // 亚洲
     { lat: 35, lng: 100, spread: 28, count: 400 },
     { lat: 50, lng: 80, spread: 20, count: 250 },
     { lat: 25, lng: 110, spread: 15, count: 200 },
-    // 印度
     { lat: 22, lng: 78, spread: 8, count: 120 },
-    // 东南亚
     { lat: 5, lng: 115, spread: 10, count: 150 },
-    // 澳洲
     { lat: -25, lng: 135, spread: 12, count: 180 },
-    // 日本
     { lat: 36, lng: 138, spread: 5, count: 80 },
   ];
 
@@ -105,7 +88,7 @@ function createContinentParticles() {
     for (let i = 0; i < cluster.count; i++) {
       const lat = cluster.lat + (Math.random() - 0.5) * cluster.spread;
       const lng = cluster.lng + (Math.random() - 0.5) * cluster.spread;
-      const r = EARTH_RADIUS + 0.02 + Math.random() * 0.04;
+      const r = EARTH_RADIUS + 0.01 + Math.random() * 0.02;
 
       const phi = (90 - lat) * (Math.PI / 180);
       const theta = (lng + 180) * (Math.PI / 180);
@@ -114,9 +97,8 @@ function createContinentParticles() {
       positions[idx * 3 + 1] = r * Math.cos(phi);
       positions[idx * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
 
-      sizes[idx] = 0.3 + Math.random() * 0.8;
+      sizes[idx] = 0.25 + Math.random() * 0.5;
 
-      // 暖色调：黄、橙、白
       const t = Math.random();
       if (t < 0.3) {
         colors[idx * 3] = 1.0; colors[idx * 3 + 1] = 0.9; colors[idx * 3 + 2] = 0.6;
@@ -145,7 +127,7 @@ function createContinentParticles() {
       void main() {
         vColor = aColor;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = max(0.3, aSize * (80.0 / -mvPosition.z));
+        gl_PointSize = max(0.3, aSize * (60.0 / -mvPosition.z));
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -154,9 +136,8 @@ function createContinentParticles() {
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        float glow = 1.0 - dist * 2.0;
-        glow = pow(glow, 1.8);
-        float alpha = glow * 0.7;
+        // 硬边圆点，没有光晕扩散
+        float alpha = step(dist, 0.3) * 0.8;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
