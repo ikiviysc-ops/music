@@ -6,7 +6,7 @@ const ROTATION_SPEED = 0.0003;
 // ========== 大气层（固定半径，密集粒子） ==========
 function createAtmosphere() {
   const count = 20000;
-  const radius = EARTH_RADIUS * 1.15; // 更高的大气层
+  const radius = EARTH_RADIUS * 1.1;
 
   const positions = new Float32Array(count * 3);
 
