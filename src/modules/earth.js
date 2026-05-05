@@ -3,22 +3,22 @@ import * as THREE from 'three';
 const EARTH_RADIUS = 1.5;
 const ROTATION_SPEED = 0.0003;
 
-// ========== 深空中的粒子（更远，更稀疏） ==========
+// ========== 深空中的粒子（只在地球背后的半球内显示） ==========
 function createSpaceParticles() {
-  const count = 3000;
+  const count = 5000;
   const radius = EARTH_RADIUS * 3.0;
 
   const positions = new Float32Array(count * 3);
 
   for (let i = 0; i < count; i++) {
     const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    // 粒子在球壳内随机分布（不是固定半径）
-    const r = radius * (0.6 + Math.random() * 0.4);
+    // phi限制在0到PI/2，只生成在地球背后的半球（负z方向）
+    const phi = Math.acos(Math.random());
+    const r = radius * (0.4 + Math.random() * 0.6);
 
     positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
     positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-    positions[i * 3 + 2] = r * Math.cos(phi);
+    positions[i * 3 + 2] = -r * Math.cos(phi); // 负z，地球背后
   }
 
   const geometry = new THREE.BufferGeometry();
