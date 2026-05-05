@@ -26,6 +26,7 @@ class App {
       return;
     }
 
+    // 确保容器尺寸就绪
     const w = this.container.clientWidth;
     const h = this.container.clientHeight;
     console.log('Container size:', w, 'x', h);
@@ -56,6 +57,12 @@ class App {
     console.log('Earth group:', this.earthGroup);
 
     window.addEventListener('resize', this.onResize.bind(this));
+    
+    // 立即强制更新一次尺寸，确保刷新后也清晰
+    setTimeout(() => {
+      this.onResize();
+    }, 50);
+    
     this.animate();
   }
 

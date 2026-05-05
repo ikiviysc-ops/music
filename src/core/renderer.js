@@ -29,5 +29,11 @@ export function createRenderer(container) {
 }
 
 export function updateRendererSize(renderer, container) {
+  const isMobile = window.innerWidth <= 480;
+  const pixelRatio = isMobile
+    ? Math.min(window.devicePixelRatio, CONFIG.mobilePixelRatio)
+    : Math.min(window.devicePixelRatio, CONFIG.desktopPixelRatio);
+  
   renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.setPixelRatio(pixelRatio);
 }
