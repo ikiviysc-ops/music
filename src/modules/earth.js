@@ -3,41 +3,52 @@ import * as THREE from 'three';
 const EARTH_RADIUS = 1.5;
 const ROTATION_SPEED = 0.0003;
 
-// ========== 大气层（连续发光薄壳，Fresnel Shader） ==========
+// ========== 大气层（密集粒子系统，看起来像连续壳） ==========
 function createAtmosphere() {
-  const geometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.04, 64, 64);
+  const count = 8000;
+  const radius = EARTH_RADIUS * 1.04;
+
+  const positions = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    // 随机分布，让整体看起来像连续的壳
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+
+    positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+    positions[i * 3 + 2] = radius * Math.cos(phi);
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
   const material = new THREE.ShaderMaterial({
     vertexShader: `
-      varying vec3 vNormal;
-      varying vec3 vPosition;
       void main() {
-        vNormal = normalize(normalMatrix * normal);
-        vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = 0.8;
+        gl_Position = projectionMatrix * mvPosition;
       }
     `,
     fragmentShader: `
-      varying vec3 vNormal;
-      varying vec3 vPosition;
       void main() {
-        vec3 viewDir = normalize(-vPosition);
-        vec3 normal = normalize(vNormal);
-        float fresnel = pow(1.0 - abs(dot(viewDir, normal)), 3.5);
-        vec3 color = vec3(0.2, 0.5, 0.9);
-        float alpha = fresnel * 0.25;
+        float dist = length(gl_PointCoord - vec2(0.5));
+        if (dist > 0.5) discard;
+        float alpha = step(dist, 0.35) * 0.2;
+        vec3 color = vec3(0.25, 0.5, 0.9);
         gl_FragColor = vec4(color, alpha);
       }
     `,
     transparent: true,
     depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    side: THREE.BackSide
+    blending: THREE.AdditiveBlending
   });
 
-  return new THREE.Mesh(geometry, material);
+  return new THREE.Points(geometry, material);
 }
 
-// ========== 大陆城市灯光粒子（密集、随机、暖色） ==========
+// ========== 大陆城市灯光粒子（调暗调小） ==========
 function createContinentParticles() {
   // 更精细的地理分布，模拟真实城市灯光密度
   const cityClusters = [
@@ -213,8 +224,8 @@ function createContinentParticles() {
       positions[idx * 3 + 1] = r * Math.cos(phi);
       positions[idx * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
 
-      // 大小变化：有的亮点大，有的小
-      sizes[idx] = 0.6 + Math.random() * 1.8;
+      // 大小更小：0.4 到 1.2
+      sizes[idx] = 0.4 + Math.random() * 0.8;
 
       // 城市灯光颜色：暖白、黄、橙、冷白
       const t = Math.random();
@@ -252,7 +263,7 @@ function createContinentParticles() {
       void main() {
         vColor = aColor;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = max(0.8, aSize * (50.0 / -mvPosition.z));
+        gl_PointSize = max(0.6, aSize * (35.0 / -mvPosition.z));
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -261,8 +272,8 @@ function createContinentParticles() {
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        // 硬边亮点，无shader光晕
-        float alpha = step(dist, 0.35) * 0.85;
+        // 调暗调小，没有shader光晕
+        float alpha = step(dist, 0.35) * 0.35;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
