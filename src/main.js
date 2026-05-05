@@ -74,6 +74,12 @@ class App {
     const backLight = new THREE.DirectionalLight(0x223344, 0.5);
     backLight.position.set(-3, -2, -5);
     this.scene.add(backLight);
+    
+    // 顶部光源 - 模拟太阳光
+    const topLight = new THREE.DirectionalLight(0xfff6d6, 1.5);
+    topLight.position.set(0, 50, 0);
+    topLight.lookAt(0, 0, 0);
+    this.scene.add(topLight);
   }
 
   addEarth() {
