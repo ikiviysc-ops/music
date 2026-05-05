@@ -281,10 +281,8 @@ function createEarthMesh() {
           finalColor = nightColor * uEmissiveIntensity * 0.8 + glowColor * 1.5;
           finalAlpha = 0.7;
         } else if (uMode == 2) {
-          // GRADIENT - 渐变效果模式 - 上下渐变，顶部更亮
-          float gradient = smoothstep(-1.2, 1.2, vWorldPosition.y);
-          vec3 gradientColor = mix(vec3(0.01, 0.015, 0.025), vec3(0.1, 0.15, 0.3), gradient);
-          finalColor = nightColor * uEmissiveIntensity * 0.4 + gradientColor * 1.5 + glowColor;
+          // GRADIENT - 渐变效果模式 - 只显示夜景纹理本身的原始效果
+          finalColor = nightColor * uEmissiveIntensity + glowColor;
         } else if (uMode == 3) {
           // GLOW - 发光模式
           float strongFresnel = pow(1.0 - max(dot(vViewNormal, viewDir), 0.0), 2.5);
