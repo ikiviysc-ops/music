@@ -156,7 +156,7 @@ function createContinentParticles() {
     for (let i = 0; i < cluster.count; i++) {
       const lat = cluster.lat + (Math.random() - 0.5) * cluster.spread;
       const lng = cluster.lng + (Math.random() - 0.5) * cluster.spread;
-      const r = EARTH_RADIUS + 0.008;
+      const r = EARTH_RADIUS + 0.001; // 紧贴地球表面
 
       const phi = (90 - lat) * (Math.PI / 180);
       const theta = (lng + 180) * (Math.PI / 180);
