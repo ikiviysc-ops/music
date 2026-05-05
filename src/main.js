@@ -4,6 +4,7 @@ import { createCamera, updateCameraAspect } from './core/camera.js';
 import { createRenderer, updateRendererSize } from './core/renderer.js';
 import { createControls } from './core/controls.js';
 import { createEarth, updateEarth, setEarthMode, getCurrentEarthMode, getAvailableEarthModes, EARTH_MODES } from './modules/earth.js';
+import { createBeams, updateBeams } from './modules/beam.js';
 import { createComposer, updateComposerSize } from './effects/bloom.js';
 
 class App {
@@ -15,6 +16,8 @@ class App {
     this.composer = null;
     this.controls = null;
     this.earthGroup = null;
+    this.beamGroup = null;
+    this.beams = null;
     this.clock = new THREE.Clock();
     this.useComposer = true;
   }
@@ -51,6 +54,7 @@ class App {
 
     this.addLights();
     this.addEarth();
+    this.addBeams();
 
     console.log('Scene children:', this.scene.children.length);
     console.log('Camera position:', this.camera.position);
@@ -154,6 +158,12 @@ class App {
     this.scene.add(this.earthGroup);
   }
 
+  addBeams() {
+    const { beamGroup, beams } = createBeams(this.scene);
+    this.beamGroup = beamGroup;
+    this.beams = beams;
+  }
+
   onResize() {
     updateCameraAspect(this.camera, this.container);
     updateRendererSize(this.renderer, this.container);
@@ -170,6 +180,10 @@ class App {
 
     if (this.earthGroup) {
       updateEarth(this.earthGroup, delta, elapsed, this.camera);
+    }
+
+    if (this.beams) {
+      updateBeams(this.beams, elapsed);
     }
 
     this.controls.update();
