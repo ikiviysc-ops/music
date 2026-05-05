@@ -49,7 +49,7 @@ function createAtmosphere() {
         float dotProduct = dot(viewDir, viewNormal);
         
         // 只显示边缘 - 正对相机的隐藏
-        float edgeAlpha = 1.0 - smoothstep(0.2, 0.6, dotProduct);
+        float edgeAlpha = 1.0 - smoothstep(0.35, 0.75, dotProduct);
         edgeAlpha = clamp(edgeAlpha, 0.0, 1.0);
         
         float alpha = circleAlpha * edgeAlpha * 0.15;
