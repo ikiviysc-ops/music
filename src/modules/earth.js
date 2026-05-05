@@ -25,19 +25,20 @@ function createAtmosphere() {
   const material = new THREE.ShaderMaterial({
     vertexShader: `
       varying vec3 vViewNormal;
-      varying vec3 vWorldPosition;
+      varying vec4 vScreenPosition;
       void main() {
         vec3 normal = normalize(position);
         vViewNormal = normalize(normalMatrix * normal);
-        vWorldPosition = position;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        vec4 clipPos = projectionMatrix * mvPosition;
+        vScreenPosition = clipPos;
         gl_PointSize = 4.0;
-        gl_Position = projectionMatrix * mvPosition;
+        gl_Position = clipPos;
       }
     `,
     fragmentShader: `
       varying vec3 vViewNormal;
-      varying vec3 vWorldPosition;
+      varying vec4 vScreenPosition;
       void main() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
@@ -55,8 +56,10 @@ function createAtmosphere() {
         float edgeAlpha = 1.0 - smoothstep(0.35, 0.75, dotProduct);
         edgeAlpha = clamp(edgeAlpha, 0.0, 1.0);
         
-        // 从地球中间往下渐隐
-        float verticalAlpha = smoothstep(-0.2, 0.2, vWorldPosition.y);
+        // 屏幕空间下半部分渐隐
+        vec3 ndc = vScreenPosition.xyz / vScreenPosition.w;
+        float screenY = ndc.y;
+        float verticalAlpha = smoothstep(-0.3, 0.1, screenY);
         verticalAlpha = clamp(verticalAlpha, 0.0, 1.0);
         
         float alpha = circleAlpha * edgeAlpha * verticalAlpha * 0.15;
@@ -185,18 +188,19 @@ function createContinentParticles() {
     vertexShader: `
       attribute vec3 aColor;
       varying vec3 vColor;
-      varying vec3 vPosition;
+      varying vec4 vScreenPosition;
       void main() {
         vColor = aColor;
-        vPosition = position;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        vec4 clipPos = projectionMatrix * mvPosition;
+        vScreenPosition = clipPos;
         gl_PointSize = 4.0;
-        gl_Position = projectionMatrix * mvPosition;
+        gl_Position = clipPos;
       }
     `,
     fragmentShader: `
       varying vec3 vColor;
-      varying vec3 vPosition;
+      varying vec4 vScreenPosition;
       void main() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
@@ -205,8 +209,10 @@ function createContinentParticles() {
         // 超清锐利的大陆粒子形状
         float circleAlpha = 1.0 - smoothstep(0.5, 0.65, dist);
         
-        // 从地球中间往下渐隐
-        float verticalAlpha = smoothstep(-0.2, 0.2, vPosition.y);
+        // 屏幕空间下半部分渐隐
+        vec3 ndc = vScreenPosition.xyz / vScreenPosition.w;
+        float screenY = ndc.y;
+        float verticalAlpha = smoothstep(-0.3, 0.1, screenY);
         verticalAlpha = clamp(verticalAlpha, 0.0, 1.0);
         
         float alpha = circleAlpha * verticalAlpha * 0.15;
@@ -236,27 +242,31 @@ function createEarthMesh() {
       uEmissiveIntensity: { value: 2.0 }
     },
     vertexShader: `
-      varying vec3 vPosition;
+      varying vec4 vScreenPosition;
       varying vec2 vUv;
       varying vec3 vNormal;
       void main() {
-        vPosition = position;
         vUv = uv;
         vNormal = normalize(normalMatrix * normal);
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        vec4 clipPos = projectionMatrix * mvPosition;
+        vScreenPosition = clipPos;
+        gl_Position = clipPos;
       }
     `,
     fragmentShader: `
       uniform sampler2D uNightTexture;
       uniform sampler2D uTopologyTexture;
       uniform float uEmissiveIntensity;
-      varying vec3 vPosition;
+      varying vec4 vScreenPosition;
       varying vec2 vUv;
       varying vec3 vNormal;
       
       void main() {
-        // 从地球中间往下渐隐
-        float verticalAlpha = smoothstep(-0.2, 0.2, vPosition.y);
+        // 屏幕空间下半部分渐隐
+        vec3 ndc = vScreenPosition.xyz / vScreenPosition.w;
+        float screenY = ndc.y;
+        float verticalAlpha = smoothstep(-0.3, 0.1, screenY);
         verticalAlpha = clamp(verticalAlpha, 0.0, 1.0);
         
         // 基础颜色
