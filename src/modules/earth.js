@@ -359,6 +359,9 @@ export function createEarth() {
   group.add(earthPoints);
   group.add(atmosphere);
   group.add(continents);
+  
+  // 先隐藏大陆粒子，以后再优化
+  continents.visible = false;
 
   group.userData = { 
     earth, 
