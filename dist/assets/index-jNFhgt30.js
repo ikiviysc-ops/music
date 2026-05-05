@@ -3845,54 +3845,54 @@ void main() {
         float intensity = fresnel * 1.2;
         gl_FragColor = vec4(atmosphereColor * intensity, intensity * 0.7);
       }
-    `,side:xe,blending:wi,transparent:!0,depthWrite:!1});return new De(i,t)}function jp(){const i=document.createElement("canvas");i.width=2048,i.height=1024;const t=i.getContext("2d");t.fillStyle="#060e1a",t.fillRect(0,0,i.width,i.height),[{path:[[.12,.18],[.14,.14],[.18,.12],[.24,.11],[.3,.12],[.34,.14],[.37,.18],[.38,.24],[.36,.3],[.33,.34],[.28,.37],[.24,.38],[.2,.36],[.16,.32],[.13,.26]]},{path:[[.25,.42],[.28,.4],[.31,.42],[.33,.46],[.34,.52],[.33,.58],[.31,.64],[.28,.68],[.25,.66],[.23,.6],[.22,.54],[.23,.48]]},{path:[[.48,.16],[.5,.14],[.53,.13],[.56,.14],[.58,.16],[.57,.2],[.55,.24],[.52,.26],[.49,.25],[.47,.22],[.46,.19]]},{path:[[.49,.3],[.52,.28],[.56,.29],[.59,.32],[.61,.38],[.62,.44],[.6,.52],[.57,.58],[.54,.6],[.51,.58],[.48,.52],[.47,.44],[.47,.36]]},{path:[[.6,.12],[.65,.1],[.72,.11],[.8,.12],[.86,.14],[.9,.18],[.91,.24],[.88,.3],[.84,.34],[.78,.37],[.72,.38],[.66,.36],[.62,.32],[.59,.26],[.58,.2]]},{path:[[.68,.32],[.71,.3],[.74,.32],[.73,.38],[.71,.42],[.68,.4],[.67,.36]]},{path:[[.78,.34],[.8,.32],[.83,.34],[.84,.38],[.82,.42],[.79,.44],[.77,.4],[.76,.36]]},{path:[[.82,.52],[.86,.5],[.9,.52],[.92,.56],[.9,.6],[.86,.62],[.82,.6],[.8,.56]]},{path:[[.1,.9],[.3,.88],[.5,.87],[.7,.88],[.9,.9],[.92,.94],[.8,.96],[.5,.97],[.2,.96],[.08,.94]]}].forEach(r=>{t.fillStyle="#0d3320",t.beginPath();const a=r.path[0];t.moveTo(a[0]*i.width,a[1]*i.height);for(let o=1;o<r.path.length;o++){const l=r.path[o];t.lineTo(l[0]*i.width,l[1]*i.height)}t.closePath(),t.fill(),t.strokeStyle="rgba(0, 200, 120, 0.6)",t.lineWidth=2.5,t.stroke(),t.strokeStyle="rgba(0, 255, 150, 0.15)",t.lineWidth=8,t.stroke()}),[[.22,.22],[.26,.2],[.3,.26],[.28,.3],[.34,.18],[.28,.5],[.3,.56],[.26,.6],[.52,.2],[.54,.18],[.5,.22],[.56,.22],[.54,.36],[.56,.42],[.52,.48],[.7,.2],[.76,.22],[.82,.18],[.86,.22],[.72,.28],[.7,.36],[.72,.4],[.8,.36],[.82,.4],[.86,.54],[.88,.56]].forEach(([r,a])=>{const o=r*i.width,l=a*i.height,c=2+Math.random()*2,h=c*12,d=t.createRadialGradient(o,l,0,o,l,h);d.addColorStop(0,"rgba(255, 230, 150, 0.9)"),d.addColorStop(.2,"rgba(255, 200, 100, 0.5)"),d.addColorStop(.5,"rgba(255, 180, 80, 0.15)"),d.addColorStop(1,"rgba(255, 180, 80, 0)"),t.fillStyle=d,t.beginPath(),t.arc(o,l,h,0,Math.PI*2),t.fill(),t.fillStyle="rgba(255, 250, 230, 0.95)",t.beginPath(),t.arc(o,l,c,0,Math.PI*2),t.fill()});for(let r=0;r<1500;r++){const a=Math.random()*i.width,o=Math.random()*i.height,l=Math.random()*.8+.2,c=Math.random()*.25+.05;t.fillStyle=`rgba(255, 230, 180, ${c})`,t.beginPath(),t.arc(a,o,l,0,Math.PI*2),t.fill()}const s=new pp(i);return s.colorSpace=ye,s.wrapS=fs,s.wrapT=Sn,s.needsUpdate=!0,s}function Kp(){const i=new Ms(kr,64,64),t=new Mp,e="https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg",n="https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png",s=jp(),r=new _p({map:s,emissive:2241365,emissiveIntensity:.8,emissiveMap:s,roughness:.85,metalness:.05});t.load(e,c=>{c.colorSpace=ye,r.map=c,r.emissiveMap=c,r.emissive.set(16777215),r.emissiveIntensity=1,r.needsUpdate=!0,console.log("Night texture loaded successfully")},c=>{c.total>0&&console.log("Night texture loading:",Math.round(c.loaded/c.total*100)+"%")},c=>{console.log("Night texture failed, using fallback:",c)}),t.load(n,c=>{r.bumpMap=c,r.bumpScale=.015,r.needsUpdate=!0,console.log("Topology texture loaded successfully")},void 0,()=>{console.log("Topology texture failed, using flat surface")});const a=new De(i,r),o=qp(),l=new Ai;return l.add(a),l.add(o),l.userData={earth:a,atmosphere:o,EARTH_RADIUS:kr,ROTATION_SPEED:Yp},l}function Zp(i,t,e){const{earth:n,ROTATION_SPEED:s}=i.userData;n.rotation.y+=s}const Pn=2e3,$p=1.5,Jp=`
+    `,side:xe,blending:wi,transparent:!0,depthWrite:!1});return new De(i,t)}function jp(){const i=document.createElement("canvas");i.width=2048,i.height=1024;const t=i.getContext("2d");t.fillStyle="#060e1a",t.fillRect(0,0,i.width,i.height),[{path:[[.12,.18],[.14,.14],[.18,.12],[.24,.11],[.3,.12],[.34,.14],[.37,.18],[.38,.24],[.36,.3],[.33,.34],[.28,.37],[.24,.38],[.2,.36],[.16,.32],[.13,.26]]},{path:[[.25,.42],[.28,.4],[.31,.42],[.33,.46],[.34,.52],[.33,.58],[.31,.64],[.28,.68],[.25,.66],[.23,.6],[.22,.54],[.23,.48]]},{path:[[.48,.16],[.5,.14],[.53,.13],[.56,.14],[.58,.16],[.57,.2],[.55,.24],[.52,.26],[.49,.25],[.47,.22],[.46,.19]]},{path:[[.49,.3],[.52,.28],[.56,.29],[.59,.32],[.61,.38],[.62,.44],[.6,.52],[.57,.58],[.54,.6],[.51,.58],[.48,.52],[.47,.44],[.47,.36]]},{path:[[.6,.12],[.65,.1],[.72,.11],[.8,.12],[.86,.14],[.9,.18],[.91,.24],[.88,.3],[.84,.34],[.78,.37],[.72,.38],[.66,.36],[.62,.32],[.59,.26],[.58,.2]]},{path:[[.68,.32],[.71,.3],[.74,.32],[.73,.38],[.71,.42],[.68,.4],[.67,.36]]},{path:[[.78,.34],[.8,.32],[.83,.34],[.84,.38],[.82,.42],[.79,.44],[.77,.4],[.76,.36]]},{path:[[.82,.52],[.86,.5],[.9,.52],[.92,.56],[.9,.6],[.86,.62],[.82,.6],[.8,.56]]},{path:[[.1,.9],[.3,.88],[.5,.87],[.7,.88],[.9,.9],[.92,.94],[.8,.96],[.5,.97],[.2,.96],[.08,.94]]}].forEach(r=>{t.fillStyle="#0d3320",t.beginPath();const a=r.path[0];t.moveTo(a[0]*i.width,a[1]*i.height);for(let o=1;o<r.path.length;o++){const l=r.path[o];t.lineTo(l[0]*i.width,l[1]*i.height)}t.closePath(),t.fill(),t.strokeStyle="rgba(0, 200, 120, 0.6)",t.lineWidth=2.5,t.stroke(),t.strokeStyle="rgba(0, 255, 150, 0.15)",t.lineWidth=8,t.stroke()}),[[.22,.22],[.26,.2],[.3,.26],[.28,.3],[.34,.18],[.28,.5],[.3,.56],[.26,.6],[.52,.2],[.54,.18],[.5,.22],[.56,.22],[.54,.36],[.56,.42],[.52,.48],[.7,.2],[.76,.22],[.82,.18],[.86,.22],[.72,.28],[.7,.36],[.72,.4],[.8,.36],[.82,.4],[.86,.54],[.88,.56]].forEach(([r,a])=>{const o=r*i.width,l=a*i.height,c=2+Math.random()*2,h=c*12,d=t.createRadialGradient(o,l,0,o,l,h);d.addColorStop(0,"rgba(255, 230, 150, 0.9)"),d.addColorStop(.2,"rgba(255, 200, 100, 0.5)"),d.addColorStop(.5,"rgba(255, 180, 80, 0.15)"),d.addColorStop(1,"rgba(255, 180, 80, 0)"),t.fillStyle=d,t.beginPath(),t.arc(o,l,h,0,Math.PI*2),t.fill(),t.fillStyle="rgba(255, 250, 230, 0.95)",t.beginPath(),t.arc(o,l,c,0,Math.PI*2),t.fill()});for(let r=0;r<1500;r++){const a=Math.random()*i.width,o=Math.random()*i.height,l=Math.random()*.8+.2,c=Math.random()*.25+.05;t.fillStyle=`rgba(255, 230, 180, ${c})`,t.beginPath(),t.arc(a,o,l,0,Math.PI*2),t.fill()}const s=new pp(i);return s.colorSpace=ye,s.wrapS=fs,s.wrapT=Sn,s.needsUpdate=!0,s}function Kp(){const i=new Ms(kr,64,64),t=new Mp,e="https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg",n="https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png",s=jp(),r=new _p({map:s,emissive:2241365,emissiveIntensity:.8,emissiveMap:s,roughness:.85,metalness:.05});t.load(e,c=>{c.colorSpace=ye,r.map=c,r.emissiveMap=c,r.emissive.set(16777215),r.emissiveIntensity=1,r.needsUpdate=!0,console.log("Night texture loaded successfully")},c=>{c.total>0&&console.log("Night texture loading:",Math.round(c.loaded/c.total*100)+"%")},c=>{console.log("Night texture failed, using fallback:",c)}),t.load(n,c=>{r.bumpMap=c,r.bumpScale=.015,r.needsUpdate=!0,console.log("Topology texture loaded successfully")},void 0,()=>{console.log("Topology texture failed, using flat surface")});const a=new De(i,r),o=qp(),l=new Ai;return l.add(a),l.add(o),l.userData={earth:a,atmosphere:o,EARTH_RADIUS:kr,ROTATION_SPEED:Yp},l}function Zp(i,t,e){const{earth:n,ROTATION_SPEED:s}=i.userData;n.rotation.y+=s}const Pn=600,$p=1.5,Jp=`
   attribute float aLife;
   attribute float aSpeed;
   attribute float aSize;
   attribute vec3 aVelocity;
   attribute float aDelay;
-  
+
   uniform float uTime;
-  
+
   varying float vLife;
   varying float vAlpha;
-  
+
   void main() {
     float t = mod(uTime * aSpeed + aDelay, 1.0);
     vLife = t;
-    
+
     float fadeIn = smoothstep(0.0, 0.15, t);
     float fadeOut = smoothstep(1.0, 0.7, t);
     vAlpha = fadeIn * fadeOut;
-    
-    vec3 pos = position + aVelocity * t * 2.0;
-    
+
+    vec3 pos = position + aVelocity * t * 1.5;
+
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = max(0.5, aSize * (80.0 / -mvPosition.z) * vAlpha);
+    gl_PointSize = max(0.5, aSize * (40.0 / -mvPosition.z) * vAlpha);
     gl_Position = projectionMatrix * mvPosition;
   }
 `,Qp=`
   uniform vec3 uColor;
   uniform float uTime;
-  
+
   varying float vLife;
   varying float vAlpha;
-  
+
   void main() {
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
-    
+
     float glow = 1.0 - dist * 2.0;
-    glow = pow(glow, 1.5);
-    
+    glow = pow(glow, 2.5);
+
     float trailFade = smoothstep(0.0, 0.2, vLife) * smoothstep(1.0, 0.6, vLife);
-    
+
     vec3 color = uColor * (0.8 + 0.2 * sin(uTime * 2.0 + vLife * 6.28));
-    float alpha = glow * vAlpha * trailFade * 0.4;
-    
+    float alpha = glow * vAlpha * trailFade * 0.2;
+
     gl_FragColor = vec4(color, alpha);
   }
-`;function tm(i){const t=new Float32Array(Pn*3),e=new Float32Array(Pn*3),n=new Float32Array(Pn),s=new Float32Array(Pn),r=new Float32Array(Pn),a=new Float32Array(Pn);for(let h=0;h<Pn;h++){const d=$p+.05+Math.random()*.3,f=Math.random()*Math.PI*2,m=Math.acos(2*Math.random()-1);t[h*3]=d*Math.sin(m)*Math.cos(f),t[h*3+1]=d*Math.sin(m)*Math.sin(f),t[h*3+2]=d*Math.cos(m);const g=new L(t[h*3],t[h*3+1],t[h*3+2]).normalize();e[h*3]=g.x*.06+(Math.random()-.5)*.03,e[h*3+1]=g.y*.06+(Math.random()-.5)*.03,e[h*3+2]=g.z*.06+(Math.random()-.5)*.03,n[h]=Math.random(),s[h]=.2+Math.random()*.5,r[h]=.5+Math.random()*1.5,a[h]=Math.random()}const o=new Ue;o.setAttribute("position",new he(t,3)),o.setAttribute("aVelocity",new he(e,3)),o.setAttribute("aLife",new he(n,1)),o.setAttribute("aSpeed",new he(s,1)),o.setAttribute("aSize",new he(r,1)),o.setAttribute("aDelay",new he(a,1));const l=new ue({vertexShader:Jp,fragmentShader:Qp,uniforms:{uTime:{value:0},uColor:{value:new Ut(4491519)}},transparent:!0,depthWrite:!1,blending:wi}),c=new cl(o,l);return i.add(c),{particles:c,material:l}}function em(i,t,e){i&&i.material&&i.material.uniforms&&(i.material.uniforms.uTime.value=t)}const fl={name:"CopyShader",uniforms:{tDiffuse:{value:null},opacity:{value:1}},vertexShader:`
+`;function tm(i){const t=new Float32Array(Pn*3),e=new Float32Array(Pn*3),n=new Float32Array(Pn),s=new Float32Array(Pn),r=new Float32Array(Pn),a=new Float32Array(Pn);for(let h=0;h<Pn;h++){const d=$p+.3+Math.random()*.8,f=Math.random()*Math.PI*2,m=Math.acos(2*Math.random()-1);t[h*3]=d*Math.sin(m)*Math.cos(f),t[h*3+1]=d*Math.sin(m)*Math.sin(f),t[h*3+2]=d*Math.cos(m);const g=new L(t[h*3],t[h*3+1],t[h*3+2]).normalize();e[h*3]=g.x*.04+(Math.random()-.5)*.02,e[h*3+1]=g.y*.04+(Math.random()-.5)*.02,e[h*3+2]=g.z*.04+(Math.random()-.5)*.02,n[h]=Math.random(),s[h]=.15+Math.random()*.35,r[h]=.3+Math.random()*.7,a[h]=Math.random()}const o=new Ue;o.setAttribute("position",new he(t,3)),o.setAttribute("aVelocity",new he(e,3)),o.setAttribute("aLife",new he(n,1)),o.setAttribute("aSpeed",new he(s,1)),o.setAttribute("aSize",new he(r,1)),o.setAttribute("aDelay",new he(a,1));const l=new ue({vertexShader:Jp,fragmentShader:Qp,uniforms:{uTime:{value:0},uColor:{value:new Ut(4491519)}},transparent:!0,depthWrite:!1,blending:wi}),c=new cl(o,l);return i.add(c),{particles:c,material:l}}function em(i,t,e){i&&i.material&&i.material.uniforms&&(i.material.uniforms.uTime.value=t)}const fl={name:"CopyShader",uniforms:{tDiffuse:{value:null},opacity:{value:1}},vertexShader:`
 
 		varying vec2 vUv;
 
