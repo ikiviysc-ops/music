@@ -54,7 +54,7 @@ function createAtmosphere() {
         
         // 更锐利的粒子形状
         float baseAlpha = 1.0 - smoothstep(0.3, 0.65, dist);
-        baseAlpha = baseAlpha * 0.2;
+        baseAlpha = baseAlpha * 0.0;
         float alpha = baseAlpha * edgeAlpha;
         
         vec3 color = vec3(0.3, 0.6, 1.0);
@@ -204,7 +204,7 @@ function createContinentParticles() {
         if (dist > 1.0) discard;
         // 更锐利的大陆粒子形状
         float alpha = 1.0 - smoothstep(0.3, 0.65, dist);
-        alpha = alpha * 0.18;
+        alpha = alpha * 0.0;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
