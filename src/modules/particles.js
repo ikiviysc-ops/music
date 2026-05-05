@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
-const PARTICLE_COUNT = 3000;
-const GLOBE_RADIUS = 2.0;
+const PARTICLE_COUNT = 2000;
+const GLOBE_RADIUS = 1.5;
 
 const particleVertexShader = `
   attribute float aLife;
@@ -19,14 +19,14 @@ const particleVertexShader = `
     float t = mod(uTime * aSpeed + aDelay, 1.0);
     vLife = t;
     
-    float fadeIn = smoothstep(0.0, 0.1, t);
+    float fadeIn = smoothstep(0.0, 0.15, t);
     float fadeOut = smoothstep(1.0, 0.7, t);
     vAlpha = fadeIn * fadeOut;
     
-    vec3 pos = position + aVelocity * t * 3.0;
+    vec3 pos = position + aVelocity * t * 2.0;
     
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = max(1.0, aSize * (200.0 / -mvPosition.z) * vAlpha);
+    gl_PointSize = max(0.5, aSize * (80.0 / -mvPosition.z) * vAlpha);
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
@@ -43,12 +43,12 @@ const particleFragmentShader = `
     if (dist > 0.5) discard;
     
     float glow = 1.0 - dist * 2.0;
-    glow = pow(glow, 2.0);
+    glow = pow(glow, 1.5);
     
     float trailFade = smoothstep(0.0, 0.2, vLife) * smoothstep(1.0, 0.6, vLife);
     
     vec3 color = uColor * (0.8 + 0.2 * sin(uTime * 2.0 + vLife * 6.28));
-    float alpha = glow * vAlpha * trailFade * 0.6;
+    float alpha = glow * vAlpha * trailFade * 0.4;
     
     gl_FragColor = vec4(color, alpha);
   }
@@ -63,7 +63,7 @@ export function createParticles(scene) {
   const delays = new Float32Array(PARTICLE_COUNT);
   
   for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const radius = GLOBE_RADIUS + Math.random() * 0.5;
+    const radius = GLOBE_RADIUS + 0.05 + Math.random() * 0.3;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
     
@@ -77,13 +77,13 @@ export function createParticles(scene) {
       positions[i * 3 + 2]
     ).normalize();
     
-    velocities[i * 3] = dir.x * 0.1 + (Math.random() - 0.5) * 0.05;
-    velocities[i * 3 + 1] = dir.y * 0.1 + (Math.random() - 0.5) * 0.05;
-    velocities[i * 3 + 2] = dir.z * 0.1 + (Math.random() - 0.5) * 0.05;
+    velocities[i * 3] = dir.x * 0.06 + (Math.random() - 0.5) * 0.03;
+    velocities[i * 3 + 1] = dir.y * 0.06 + (Math.random() - 0.5) * 0.03;
+    velocities[i * 3 + 2] = dir.z * 0.06 + (Math.random() - 0.5) * 0.03;
     
     lives[i] = Math.random();
-    speeds[i] = 0.3 + Math.random() * 0.7;
-    sizes[i] = 1.0 + Math.random() * 3.0;
+    speeds[i] = 0.2 + Math.random() * 0.5;
+    sizes[i] = 0.5 + Math.random() * 1.5;
     delays[i] = Math.random();
   }
   

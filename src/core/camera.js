@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 
 const CONFIG = {
-  fov: 40,
+  fov: 35,
   near: 0.1,
   far: 1000,
-  mobileFov: 45,
-  position: { x: 0, y: 0.3, z: 7 },
-  mobilePosition: { x: 0, y: 0.2, z: 8 }
+  mobileFov: 40,
+  position: { x: 0, y: 0.2, z: 5.5 },
+  mobilePosition: { x: 0, y: 0.15, z: 6.0 }
 };
 
 export function createCamera(container) {

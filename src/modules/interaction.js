@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { latLngToVector3 } from '../utils/geo.js';
 import { CITY_DATA } from '../data/cities.js';
 
-const EARTH_RADIUS = 2.0;
+const EARTH_RADIUS = 1.5;
 const FLY_DURATION = 1.2;
 const FLY_EASE = 'power3.inOut';
 const CAMERA_DISTANCE = 8;

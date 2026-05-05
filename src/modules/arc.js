@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { latLngToVector3 } from '../utils/geo.js';
 import { CITY_DATA, getCityColor } from '../data/cities.js';
 
-const EARTH_RADIUS = 2.0;
+const EARTH_RADIUS = 1.5;
 const ARC_HEIGHT_FACTOR = 0.3;
 const PARTICLES_PER_ARC = 30;
 const ARC_CONNECTIONS = [

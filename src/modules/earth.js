@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 
-const EARTH_RADIUS = 2.0;
+const EARTH_RADIUS = 1.5;
 const ROTATION_SPEED = 0.0003;
 
 function createAtmosphere() {
-  const geometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.15, 64, 64);
+  const geometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.12, 64, 64);
   const material = new THREE.ShaderMaterial({
     vertexShader: `
       varying vec3 vNormal;
@@ -42,27 +42,23 @@ function createFallbackTexture() {
   canvas.height = 1024;
   const ctx = canvas.getContext('2d');
 
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#0a1628');
-  gradient.addColorStop(0.5, '#0d1f35');
-  gradient.addColorStop(1, '#0a1628');
-  ctx.fillStyle = gradient;
+  ctx.fillStyle = '#060e1a';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const continentPaths = [
-    { name: 'North America', path: [[0.12,0.18],[0.14,0.14],[0.18,0.12],[0.24,0.11],[0.30,0.12],[0.34,0.14],[0.37,0.18],[0.38,0.24],[0.36,0.30],[0.33,0.34],[0.28,0.37],[0.24,0.38],[0.20,0.36],[0.16,0.32],[0.13,0.26]], color: '#1a4a2e' },
-    { name: 'South America', path: [[0.25,0.42],[0.28,0.40],[0.31,0.42],[0.33,0.46],[0.34,0.52],[0.33,0.58],[0.31,0.64],[0.28,0.68],[0.25,0.66],[0.23,0.60],[0.22,0.54],[0.23,0.48]], color: '#1a4a2e' },
-    { name: 'Europe', path: [[0.48,0.16],[0.50,0.14],[0.53,0.13],[0.56,0.14],[0.58,0.16],[0.57,0.20],[0.55,0.24],[0.52,0.26],[0.49,0.25],[0.47,0.22],[0.46,0.19]], color: '#1a4a2e' },
-    { name: 'Africa', path: [[0.49,0.30],[0.52,0.28],[0.56,0.29],[0.59,0.32],[0.61,0.38],[0.62,0.44],[0.60,0.52],[0.57,0.58],[0.54,0.60],[0.51,0.58],[0.48,0.52],[0.47,0.44],[0.47,0.36]], color: '#1a4a2e' },
-    { name: 'Asia', path: [[0.60,0.12],[0.65,0.10],[0.72,0.11],[0.80,0.12],[0.86,0.14],[0.90,0.18],[0.91,0.24],[0.88,0.30],[0.84,0.34],[0.78,0.37],[0.72,0.38],[0.66,0.36],[0.62,0.32],[0.59,0.26],[0.58,0.20]], color: '#1a4a2e' },
-    { name: 'India', path: [[0.68,0.32],[0.71,0.30],[0.74,0.32],[0.73,0.38],[0.71,0.42],[0.68,0.40],[0.67,0.36]], color: '#1a4a2e' },
-    { name: 'SE Asia', path: [[0.78,0.34],[0.80,0.32],[0.83,0.34],[0.84,0.38],[0.82,0.42],[0.79,0.44],[0.77,0.40],[0.76,0.36]], color: '#1a4a2e' },
-    { name: 'Australia', path: [[0.82,0.52],[0.86,0.50],[0.90,0.52],[0.92,0.56],[0.90,0.60],[0.86,0.62],[0.82,0.60],[0.80,0.56]], color: '#1a4a2e' },
-    { name: 'Antarctica', path: [[0.10,0.90],[0.30,0.88],[0.50,0.87],[0.70,0.88],[0.90,0.90],[0.92,0.94],[0.80,0.96],[0.50,0.97],[0.20,0.96],[0.08,0.94]], color: '#1a4a2e' }
+    { path: [[0.12,0.18],[0.14,0.14],[0.18,0.12],[0.24,0.11],[0.30,0.12],[0.34,0.14],[0.37,0.18],[0.38,0.24],[0.36,0.30],[0.33,0.34],[0.28,0.37],[0.24,0.38],[0.20,0.36],[0.16,0.32],[0.13,0.26]] },
+    { path: [[0.25,0.42],[0.28,0.40],[0.31,0.42],[0.33,0.46],[0.34,0.52],[0.33,0.58],[0.31,0.64],[0.28,0.68],[0.25,0.66],[0.23,0.60],[0.22,0.54],[0.23,0.48]] },
+    { path: [[0.48,0.16],[0.50,0.14],[0.53,0.13],[0.56,0.14],[0.58,0.16],[0.57,0.20],[0.55,0.24],[0.52,0.26],[0.49,0.25],[0.47,0.22],[0.46,0.19]] },
+    { path: [[0.49,0.30],[0.52,0.28],[0.56,0.29],[0.59,0.32],[0.61,0.38],[0.62,0.44],[0.60,0.52],[0.57,0.58],[0.54,0.60],[0.51,0.58],[0.48,0.52],[0.47,0.44],[0.47,0.36]] },
+    { path: [[0.60,0.12],[0.65,0.10],[0.72,0.11],[0.80,0.12],[0.86,0.14],[0.90,0.18],[0.91,0.24],[0.88,0.30],[0.84,0.34],[0.78,0.37],[0.72,0.38],[0.66,0.36],[0.62,0.32],[0.59,0.26],[0.58,0.20]] },
+    { path: [[0.68,0.32],[0.71,0.30],[0.74,0.32],[0.73,0.38],[0.71,0.42],[0.68,0.40],[0.67,0.36]] },
+    { path: [[0.78,0.34],[0.80,0.32],[0.83,0.34],[0.84,0.38],[0.82,0.42],[0.79,0.44],[0.77,0.40],[0.76,0.36]] },
+    { path: [[0.82,0.52],[0.86,0.50],[0.90,0.52],[0.92,0.56],[0.90,0.60],[0.86,0.62],[0.82,0.60],[0.80,0.56]] },
+    { path: [[0.10,0.90],[0.30,0.88],[0.50,0.87],[0.70,0.88],[0.90,0.90],[0.92,0.94],[0.80,0.96],[0.50,0.97],[0.20,0.96],[0.08,0.94]] }
   ];
 
   continentPaths.forEach(continent => {
-    ctx.fillStyle = continent.color;
+    ctx.fillStyle = '#0d3320';
     ctx.beginPath();
     const first = continent.path[0];
     ctx.moveTo(first[0] * canvas.width, first[1] * canvas.height);
@@ -73,8 +69,12 @@ function createFallbackTexture() {
     ctx.closePath();
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(40, 120, 80, 0.5)';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(0, 200, 120, 0.6)';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(0, 255, 150, 0.15)';
+    ctx.lineWidth = 8;
     ctx.stroke();
   });
 
@@ -92,13 +92,13 @@ function createFallbackTexture() {
   cityLights.forEach(([x, y]) => {
     const cx = x * canvas.width;
     const cy = y * canvas.height;
-    const size = 2 + Math.random() * 3;
-    const glowRadius = size * 10;
+    const size = 2 + Math.random() * 2;
+    const glowRadius = size * 12;
 
     const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowRadius);
-    glow.addColorStop(0, 'rgba(255, 230, 150, 0.8)');
-    glow.addColorStop(0.3, 'rgba(255, 200, 100, 0.4)');
-    glow.addColorStop(0.7, 'rgba(255, 180, 80, 0.1)');
+    glow.addColorStop(0, 'rgba(255, 230, 150, 0.9)');
+    glow.addColorStop(0.2, 'rgba(255, 200, 100, 0.5)');
+    glow.addColorStop(0.5, 'rgba(255, 180, 80, 0.15)');
     glow.addColorStop(1, 'rgba(255, 180, 80, 0)');
     ctx.fillStyle = glow;
     ctx.beginPath();
@@ -111,11 +111,11 @@ function createFallbackTexture() {
     ctx.fill();
   });
 
-  for (let i = 0; i < 1200; i++) {
+  for (let i = 0; i < 1500; i++) {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height;
-    const size = Math.random() * 1.2 + 0.3;
-    const alpha = Math.random() * 0.3 + 0.05;
+    const size = Math.random() * 0.8 + 0.2;
+    const alpha = Math.random() * 0.25 + 0.05;
     ctx.fillStyle = `rgba(255, 230, 180, ${alpha})`;
     ctx.beginPath();
     ctx.arc(x, y, size, 0, Math.PI * 2);
@@ -123,6 +123,7 @@ function createFallbackTexture() {
   }
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.ClampToEdgeWrapping;
   texture.needsUpdate = true;
@@ -140,18 +141,19 @@ export function createEarth() {
 
   const material = new THREE.MeshStandardMaterial({
     map: fallbackTexture,
-    emissive: 0x112244,
-    emissiveIntensity: 0.5,
+    emissive: 0x223355,
+    emissiveIntensity: 0.8,
     emissiveMap: fallbackTexture,
-    roughness: 0.8,
-    metalness: 0.1
+    roughness: 0.85,
+    metalness: 0.05
   });
 
   loader.load(nightUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
     material.map = texture;
     material.emissiveMap = texture;
-    material.emissiveIntensity = 0.6;
+    material.emissive.set(0xffffff);
+    material.emissiveIntensity = 1.0;
     material.needsUpdate = true;
     console.log('Night texture loaded successfully');
   }, (progress) => {
@@ -164,7 +166,7 @@ export function createEarth() {
 
   loader.load(topologyUrl, (texture) => {
     material.bumpMap = texture;
-    material.bumpScale = 0.02;
+    material.bumpScale = 0.015;
     material.needsUpdate = true;
     console.log('Topology texture loaded successfully');
   }, undefined, () => {
