@@ -94,7 +94,8 @@ class App {
           'standard': EARTH_MODES.STANDARD,
           'translucent': EARTH_MODES.TRANSLUCENT,
           'gradient': EARTH_MODES.GRADIENT,
-          'glow': EARTH_MODES.GLOW,
+          'wireframe': EARTH_MODES.WIREFRAME,
+          'points': EARTH_MODES.POINTS,
           'cityLights': EARTH_MODES.CITY_LIGHTS
         };
         

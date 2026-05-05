@@ -8,7 +8,8 @@ export const EARTH_MODES = {
   STANDARD: 'standard',           // 标准夜景模式
   TRANSLUCENT: 'translucent',     // 半透明模式
   GRADIENT: 'gradient',           // 渐变效果模式
-  GLOW: 'glow',                   // 发光模式
+  WIREFRAME: 'wireframe',         // 线框模式
+  POINTS: 'points',               // 点模式
   CITY_LIGHTS: 'cityLights'       // 城市灯光闪烁模式
 };
 
@@ -281,23 +282,24 @@ function createEarthMesh() {
           finalColor = nightColor * uEmissiveIntensity * 0.8 + glowColor * 1.5;
           finalAlpha = 0.7;
         } else if (uMode == 2) {
-          // GRADIENT - 渐变效果模式 - 只显示夜景纹理本身的原始效果
-          finalColor = nightColor * uEmissiveIntensity + glowColor;
-        } else if (uMode == 3) {
-          // GLOW - 发光模式
-          float strongFresnel = pow(1.0 - max(dot(vViewNormal, viewDir), 0.0), 2.5);
-          vec3 strongGlow = vec3(0.3, 0.5, 1.0) * strongFresnel * 4.0;
-          finalColor = nightColor * uEmissiveIntensity * 0.3 + strongGlow;
-        } else if (uMode == 4) {
-          // CITY_LIGHTS - 城市灯光闪烁模式
+          // GRADIENT - 渐变效果模式 - 夜景纹理 + 顶部更亮的渐变
+          float gradient = smoothstep(-1.0, 1.0, vWorldPosition.y);
+          vec3 gradientColor = mix(vec3(0.02, 0.03, 0.05), vec3(0.06, 0.1, 0.2), gradient);
+          finalColor = nightColor * uEmissiveIntensity * 0.6 + gradientColor + glowColor;
+        } else if (uMode == 5) {
+          // CITY_LIGHTS - 城市灯光闪烁模式 - 优化版
           float brightness = dot(nightColor, vec3(0.299, 0.587, 0.114));
-          float pulse1 = sin(uTime * 3.0 + vUv.x * 20.0 + vUv.y * 15.0);
-          float pulse2 = sin(uTime * 2.5 + vUv.x * 12.0 - vUv.y * 18.0);
-          float combinedPulse = (pulse1 + pulse2) * 0.5;
-          float pulse = 0.7 + 0.3 * combinedPulse;
-          float lightIntensity = smoothstep(0.2, 0.6, brightness);
-          vec3 lightColor = vec3(1.0, 0.95, 0.7) * lightIntensity * pulse * 3.0;
-          finalColor = nightColor * uEmissiveIntensity + lightColor + glowColor;
+          // 更强的闪烁动画
+          float pulse1 = sin(uTime * 2.0 + vUv.x * 30.0 + vUv.y * 25.0);
+          float pulse2 = sin(uTime * 1.5 + vUv.x * 20.0 - vUv.y * 30.0);
+          float pulse3 = sin(uTime * 2.5 + vUv.x * 40.0 + vUv.y * 15.0);
+          float combinedPulse = (pulse1 + pulse2 + pulse3) / 3.0;
+          float pulse = 0.5 + 0.5 * combinedPulse;
+          // 更明显的灯光效果
+          float lightIntensity = smoothstep(0.15, 0.5, brightness);
+          vec3 lightColor = vec3(1.0, 0.9, 0.6) * lightIntensity * pulse * 4.0;
+          // 基础纹理稍微变暗，突出灯光
+          finalColor = nightColor * uEmissiveIntensity * 0.7 + lightColor + glowColor;
         } else {
           finalColor = nightColor * uEmissiveIntensity + glowColor;
         }
@@ -334,12 +336,42 @@ export function createEarth() {
   const atmosphere = createAtmosphere();
   const continents = createContinentParticles();
 
+  // 创建线框模式的网格
+  const wireframeMaterial = new THREE.MeshBasicMaterial({
+    color: 0x3366ff,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.8
+  });
+  const earthWireframe = new THREE.Mesh(earth.geometry.clone(), wireframeMaterial);
+  earthWireframe.visible = false;
+
+  // 创建点模式的网格
+  const pointsMaterial = new THREE.PointsMaterial({
+    color: 0x3366ff,
+    size: 0.03,
+    transparent: true,
+    opacity: 0.9
+  });
+  const earthPoints = new THREE.Points(earth.geometry.clone(), pointsMaterial);
+  earthPoints.visible = false;
+
   const group = new THREE.Group();
   group.add(earth);
+  group.add(earthWireframe);
+  group.add(earthPoints);
   group.add(atmosphere);
   group.add(continents);
 
-  group.userData = { earth, atmosphere, continents, EARTH_RADIUS, ROTATION_SPEED };
+  group.userData = { 
+    earth, 
+    earthWireframe, 
+    earthPoints, 
+    atmosphere, 
+    continents, 
+    EARTH_RADIUS, 
+    ROTATION_SPEED 
+  };
   return group;
 }
 
@@ -355,7 +387,7 @@ export function updateEarth(earthGroup, deltaTime, elapsedTime, camera) {
 
 // 切换地球显示模式
 export function setEarthMode(earthGroup, mode) {
-  const { earth } = earthGroup.userData;
+  const { earth, earthWireframe, earthPoints, atmosphere, continents } = earthGroup.userData;
   if (!earth || !earth.material || !earth.material.uniforms) return;
   
   // 验证模式
@@ -367,18 +399,39 @@ export function setEarthMode(earthGroup, mode) {
   
   currentMode = mode;
   
-  // 更新uniform
-  const modeIndex = modeValues.indexOf(mode);
-  earth.material.uniforms.uMode.value = modeIndex;
+  // 先隐藏所有特殊模式
+  earth.visible = true;
+  earthWireframe.visible = false;
+  earthPoints.visible = false;
+  atmosphere.visible = true;
+  continents.visible = true;
   
-  // 处理透明模式
-  if (mode === EARTH_MODES.TRANSLUCENT) {
-    earth.material.transparent = true;
+  // 处理线框和点模式
+  if (mode === EARTH_MODES.WIREFRAME) {
+    earth.visible = false;
+    earthWireframe.visible = true;
+    atmosphere.visible = false;
+    continents.visible = false;
+  } else if (mode === EARTH_MODES.POINTS) {
+    earth.visible = false;
+    earthPoints.visible = true;
+    atmosphere.visible = false;
+    continents.visible = false;
   } else {
-    earth.material.transparent = false;
+    // 更新uniform
+    const modeIndex = modeValues.indexOf(mode);
+    earth.material.uniforms.uMode.value = modeIndex;
+    
+    // 处理透明模式
+    if (mode === EARTH_MODES.TRANSLUCENT) {
+      earth.material.transparent = true;
+    } else {
+      earth.material.transparent = false;
+    }
+    
+    earth.material.needsUpdate = true;
   }
   
-  earth.material.needsUpdate = true;
   console.log('Earth mode set to:', mode);
 }
 
