@@ -282,8 +282,15 @@ function createEarthMesh() {
         float finalAlpha = 1.0;
         
         if (uMode == 0) {
-          // STANDARD - 标准夜景模式 - 只显示夜景纹理本身
-          finalColor = nightColor * uEmissiveIntensity;
+          // STANDARD - 标准夜景模式 - 加深大海颜色
+          vec3 adjustedColor = nightColor;
+          float brightness = dot(nightColor, vec3(0.299, 0.587, 0.114));
+          // 判断是大海还是陆地（大海比较暗）
+          if (brightness < 0.18) {
+            // 加深大海，保持深色并稍微偏向深蓝
+            adjustedColor = nightColor * 0.6;
+          }
+          finalColor = adjustedColor * uEmissiveIntensity;
         } else if (uMode == 1) {
           // TRANSLUCENT - 半透明模式 - 直接使用夜景纹理，整体均匀半透明，alpha 完全独立
           finalColor = nightColor * uEmissiveIntensity + glowColor * 1.5;
