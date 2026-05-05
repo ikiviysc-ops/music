@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-const EARTH_RADIUS = 3.5;
+const EARTH_RADIUS = 2.0;
 const ROTATION_SPEED = 0.0006;
 
 function createAtmosphere() {

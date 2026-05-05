@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { latLngToVector3 } from '../utils/geo.js';
 import { CITY_DATA } from '../data/cities.js';
 
-const EARTH_RADIUS = 3.5;
+const EARTH_RADIUS = 2.0;
 const FLY_DURATION = 1.2;
 const FLY_EASE = 'power3.inOut';
 const CAMERA_DISTANCE = 8;
@@ -120,8 +120,8 @@ export class InteractionManager {
 
     gsap.to(this.camera.position, {
       x: 0,
-      y: 0.5,
-      z: 14,
+      y: 0.3,
+      z: 12,
       duration: FLY_DURATION,
       ease: FLY_EASE,
       onUpdate: () => {

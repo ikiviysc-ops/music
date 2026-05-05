@@ -2,7 +2,7 @@ import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRe
 import { CITY_DATA, getCityColor } from '../data/cities.js';
 import { latLngToVector3 } from '../utils/geo.js';
 
-const EARTH_RADIUS = 3.5;
+const EARTH_RADIUS = 2.0;
 const MAX_LABELS_MOBILE = 5;
 const MAX_LABELS_DESKTOP = 8;
 
