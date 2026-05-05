@@ -281,10 +281,10 @@ function createEarthMesh() {
           finalColor = nightColor * uEmissiveIntensity * 0.8 + glowColor * 1.5;
           finalAlpha = 0.7;
         } else if (uMode == 2) {
-          // GRADIENT - 渐变效果模式
-          float gradient = smoothstep(-1.0, 1.0, vWorldPosition.y);
-          vec3 gradientColor = mix(vec3(0.02, 0.03, 0.05), vec3(0.08, 0.12, 0.2), gradient);
-          finalColor = nightColor * uEmissiveIntensity * 0.5 + gradientColor + glowColor;
+          // GRADIENT - 渐变效果模式 - 上下渐变，顶部更亮
+          float gradient = smoothstep(-1.2, 1.2, vWorldPosition.y);
+          vec3 gradientColor = mix(vec3(0.01, 0.015, 0.025), vec3(0.1, 0.15, 0.3), gradient);
+          finalColor = nightColor * uEmissiveIntensity * 0.4 + gradientColor * 1.5 + glowColor;
         } else if (uMode == 3) {
           // GLOW - 发光模式
           float strongFresnel = pow(1.0 - max(dot(vViewNormal, viewDir), 0.0), 2.5);
