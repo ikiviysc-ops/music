@@ -25,9 +25,11 @@ function createAtmosphere() {
   const material = new THREE.ShaderMaterial({
     vertexShader: `
       varying vec3 vViewNormal;
+      varying vec3 vWorldPosition;
       void main() {
         vec3 normal = normalize(position);
         vViewNormal = normalize(normalMatrix * normal);
+        vWorldPosition = position;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
         gl_PointSize = 4.0;
         gl_Position = projectionMatrix * mvPosition;
@@ -35,6 +37,7 @@ function createAtmosphere() {
     `,
     fragmentShader: `
       varying vec3 vViewNormal;
+      varying vec3 vWorldPosition;
       void main() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
@@ -52,7 +55,11 @@ function createAtmosphere() {
         float edgeAlpha = 1.0 - smoothstep(0.35, 0.75, dotProduct);
         edgeAlpha = clamp(edgeAlpha, 0.0, 1.0);
         
-        float alpha = circleAlpha * edgeAlpha * 0.15;
+        // 从地球中间往下渐隐
+        float verticalAlpha = smoothstep(-0.2, 0.2, vWorldPosition.y);
+        verticalAlpha = clamp(verticalAlpha, 0.0, 1.0);
+        
+        float alpha = circleAlpha * edgeAlpha * verticalAlpha * 0.15;
         
         vec3 color = vec3(0.3, 0.6, 1.0);
         gl_FragColor = vec4(color, alpha);
