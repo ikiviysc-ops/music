@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 const PARTICLE_COUNT = 3000;
+const GLOBE_RADIUS = 2.0;
 
 const particleVertexShader = `
   attribute float aLife;
@@ -10,7 +11,6 @@ const particleVertexShader = `
   attribute float aDelay;
   
   uniform float uTime;
-  uniform float uDeltaTime;
   
   varying float vLife;
   varying float vAlpha;
@@ -63,7 +63,7 @@ export function createParticles(scene) {
   const delays = new Float32Array(PARTICLE_COUNT);
   
   for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const radius = 2.0 + Math.random() * 0.5;
+    const radius = GLOBE_RADIUS + Math.random() * 0.5;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
     
@@ -100,7 +100,6 @@ export function createParticles(scene) {
     fragmentShader: particleFragmentShader,
     uniforms: {
       uTime: { value: 0 },
-      uDeltaTime: { value: 0 },
       uColor: { value: new THREE.Color(0x4488ff) }
     },
     transparent: true,
@@ -117,6 +116,5 @@ export function createParticles(scene) {
 export function updateParticles(particleData, elapsed, delta) {
   if (particleData && particleData.material && particleData.material.uniforms) {
     particleData.material.uniforms.uTime.value = elapsed;
-    particleData.material.uniforms.uDeltaTime.value = delta;
   }
 }

@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "gsap": "^3.12.5",
-    "three": "^0.160.0",
+    "three": "^0.170.0",
     "three-globe": "^2.45.2"
   },
   "devDependencies": {

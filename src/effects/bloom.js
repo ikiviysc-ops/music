@@ -3,6 +3,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 
 const BLOOM_CONFIG = {
@@ -39,34 +40,6 @@ const VIGNETTE_SHADER = {
   `
 };
 
-const TONEMAP_SHADER = {
-  uniforms: {
-    tDiffuse: { value: null },
-    uExposure: { value: 1.2 },
-    uGamma: { value: 0.9 }
-  },
-  vertexShader: `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-  fragmentShader: `
-    uniform sampler2D tDiffuse;
-    uniform float uExposure;
-    uniform float uGamma;
-    varying vec2 vUv;
-    void main() {
-      vec4 texel = texture2D(tDiffuse, vUv);
-      vec3 color = texel.rgb * uExposure;
-      color = color / (color + vec3(1.0));
-      color = pow(color, vec3(1.0 / uGamma));
-      gl_FragColor = vec4(color, texel.a);
-    }
-  `
-};
-
 export function createComposer(renderer, scene, camera) {
   const size = renderer.getSize(new THREE.Vector2());
   const pixelRatio = renderer.getPixelRatio();
@@ -91,11 +64,11 @@ export function createComposer(renderer, scene, camera) {
   );
   composer.addPass(fxaaPass);
 
-  const tonemapPass = new ShaderPass(TONEMAP_SHADER);
-  composer.addPass(tonemapPass);
-
   const vignettePass = new ShaderPass(VIGNETTE_SHADER);
   composer.addPass(vignettePass);
+
+  const outputPass = new OutputPass();
+  composer.addPass(outputPass);
 
   return composer;
 }

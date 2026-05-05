@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#050510">
+  <title>全球正在一起听</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #050510;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    .ui-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .interactive {
+      pointer-events: auto;
+    }
+
+    /* 顶部区域 */
+    .header-section {
+      padding: 16px 20px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .title-block {
+      flex: 1;
+    }
+
+    .main-title {
+      font-size: 38px;
+      line-height: 1.05;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+
+    .wave-icon {
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      padding-top: 6px;
+    }
+
+    .search-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 21px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .search-icon {
+      width: 28px;
+      height: 28px;
+      color: #fff;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 24px;
+      border: 2px solid #7C3AED;
+      background: linear-gradient(135deg, #7C3AED, #00D1FF);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* 地球空间 - 占据中间主要区域 */
+    .earth-space {
+      flex: 1;
+      position: relative;
+    }
+
+    /* 右侧控制按钮 */
+    .side-controls {
+      position: absolute;
+      right: 14px;
+      bottom: 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 20;
+    }
+
+    .control-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 23px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.08);
+    }
+
+    .control-btn svg {
+      width: 24px;
+      height: 24px;
+      color: #fff;
+    }
+
+    /* 左下播放指示器 */
+    .play-indicator {
+      position: absolute;
+      left: 14px;
+      bottom: 160px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 6px 12px;
+    }
+
+    .play-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 22px;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .play-btn svg {
+      width: 20px;
+      height: 20px;
+      color: #fff;
+    }
+
+    .play-texts {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .play-text {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .play-time {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    /* 底部播放器 */
+    .bottom-player {
+      position: fixed;
+      bottom: 66px;
+      left: 0;
+      right: 0;
+      padding: 0 12px;
+      z-index: 25;
+      pointer-events: auto;
+    }
+
+    .player-card {
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .player-cover {
+      width: 46px;
+      height: 46px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #7C3AED, #FF6B9D);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .player-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .player-song-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .player-artist {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .player-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 16px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .player-btn svg {
+      width: 20px;
+      height: 20px;
+      color: #fff;
+    }
+
+    .player-btn-play {
+      width: 50px;
+      height: 50px;
+      border-radius: 25px;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .player-btn-play svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    /* 底部导航栏 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(10, 10, 20, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding-bottom: max(4px, env(safe-area-inset-bottom));
+      z-index: 30;
+      pointer-events: auto;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      padding: 6px 14px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item svg {
+      width: 26px;
+      height: 26px;
+      color: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .nav-item span {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .nav-item.active svg,
+    .nav-item.active span {
+      color: #7C3AED;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 375px) {
+      .main-title {
+        font-size: 34px;
+      }
+      .header-section {
+        padding: 12px 14px 0;
+      }
+    }
+
+    @media (min-width: 414px) {
+      .main-title {
+        font-size: 42px;
+      }
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-DQgbSLJT.js"></script>
+</head>
+<body>
+  <div id="canvas-container"></div>
+  
+  <div class="ui-overlay">
+    <div class="header-section interactive">
+      <div class="title-block">
+        <h1 class="main-title">
+          全球正在<br>一起听
+          <span class="wave-icon">
+            <svg width="48px" height="26px" viewBox="0 0 52 28" fill="none">
+              <path d="M4 20C4 20 8 14 10 12C14 8 20 8 22 12C24 16 26 20 26 20C26 20 28 14 30 12C34 8 40 8 44 12C48 16 48 20 48 20" stroke="#7C3AED" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 14C2 14 6 10 8 10C12 10 16 14 16 14C16 14 20 10 24 10C28 10 32 14 32 14C32 14 36 10 40 10C44 10 50 14 50 14" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+            </svg>
+          </span>
+        </h1>
+        <p class="subtitle">此刻，世界各地都在听相同的旋律</p>
+      </div>
+      <div class="header-right">
+        <button class="search-btn">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+        <div class="avatar">
+          <img class="avatar-img" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop" alt="avatar">
+        </div>
+      </div>
+    </div>
+    
+    <div class="earth-space">
+      <div class="side-controls interactive">
+        <button class="control-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10M12 2a15.3 15.3 0 0 0-4 10 15.3 15.3 0 0 0 4 10M2 12h20"/>
+          </svg>
+        </button>
+        <button class="control-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <line x1="12" y1="2" x2="12" y2="22"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="play-indicator interactive">
+        <button class="play-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+        </button>
+        <div class="play-texts">
+          <span class="play-text">实时更新</span>
+          <span class="play-time" id="update-time">12:34:56</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bottom-player interactive">
+    <div class="player-card">
+      <div class="player-cover">
+        <img class="song-cover-img" src="https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=200&auto=format&fit=crop" alt="Mystery of Love">
+      </div>
+      <div class="player-info">
+        <div class="player-song-name">Mystery of Love</div>
+        <div class="player-artist">Sufjan Stevens</div>
+      </div>
+      <div class="player-controls">
+        <button class="player-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="19 20 9 12 19 4 19 20"/>
+            <line x1="5" y1="19" x2="5" y2="5"/>
+          </svg>
+        </button>
+        <button class="player-btn player-btn-play">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <rect x="6" y="4" width="4" height="16"/>
+            <rect x="14" y="4" width="4" height="16"/>
+          </svg>
+        </button>
+        <button class="player-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="5 4 15 12 5 20 5 4"/>
+            <line x1="19" y1="5" x2="19" y2="19"/>
+          </svg>
+        </button>
+        <button class="player-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="10" width="18" height="10" rx="2"/>
+            <circle cx="8" cy="15" r="2"/>
+            <path d="M12 3v7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bottom-nav interactive">
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>首页</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      <span>发现</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51"/>
+      </svg>
+      <span>电台</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      <span>收藏</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>我的</span>
+    </div>
+  </div>
+
+</body>
+</html>

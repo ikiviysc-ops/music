@@ -3,9 +3,7 @@ import * as THREE from 'three';
 const CONFIG = {
   antialias: true,
   mobilePixelRatio: 1.5,
-  desktopPixelRatio: 2,
-  toneMapping: THREE.ACESFilmicToneMapping,
-  toneMappingExposure: 1.0
+  desktopPixelRatio: 2
 };
 
 export function createRenderer(container) {
@@ -22,8 +20,7 @@ export function createRenderer(container) {
 
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setPixelRatio(pixelRatio);
-  renderer.toneMapping = CONFIG.toneMapping;
-  renderer.toneMappingExposure = CONFIG.toneMappingExposure;
+  renderer.toneMapping = THREE.NoToneMapping;
   renderer.shadowMap.enabled = false;
 
   container.appendChild(renderer.domElement);

@@ -15,9 +15,10 @@ class App {
     this.renderer = null;
     this.composer = null;
     this.controls = null;
-    this.globe = null;
+    this.earthGroup = null;
     this.particleData = null;
     this.clock = new THREE.Clock();
+    this.useComposer = true;
   }
 
   init() {
@@ -27,10 +28,26 @@ class App {
       return;
     }
 
+    const w = this.container.clientWidth;
+    const h = this.container.clientHeight;
+    console.log('Container size:', w, 'x', h);
+    if (w === 0 || h === 0) {
+      console.error('Container has zero dimensions!');
+      return;
+    }
+
     this.scene = createScene();
     this.camera = createCamera(this.container);
     this.renderer = createRenderer(this.container);
-    this.composer = createComposer(this.renderer, this.scene, this.camera);
+
+    try {
+      this.composer = createComposer(this.renderer, this.scene, this.camera);
+      this.useComposer = true;
+    } catch (e) {
+      console.error('EffectComposer failed, falling back to direct render:', e);
+      this.useComposer = false;
+    }
+
     this.controls = createControls(this.camera, this.renderer);
 
     this.addLights();
@@ -38,21 +55,29 @@ class App {
     this.addEarth();
     this.addParticles();
 
+    console.log('Scene children:', this.scene.children.length);
+    console.log('Camera position:', this.camera.position);
+    console.log('Earth group:', this.earthGroup);
+
     window.addEventListener('resize', this.onResize.bind(this));
     this.animate();
   }
 
   addLights() {
-    const ambientLight = new THREE.AmbientLight(0x334466, 0.8);
+    const ambientLight = new THREE.AmbientLight(0x445566, 1.2);
     this.scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
     directionalLight.position.set(5, 3, 5);
     this.scene.add(directionalLight);
 
-    const pointLight = new THREE.PointLight(0x4488ff, 0.5, 50);
+    const pointLight = new THREE.PointLight(0x4488ff, 0.8, 50);
     pointLight.position.set(-5, 2, -5);
     this.scene.add(pointLight);
+
+    const backLight = new THREE.DirectionalLight(0x223344, 0.5);
+    backLight.position.set(-3, -2, -5);
+    this.scene.add(backLight);
   }
 
   addStars() {
@@ -61,7 +86,7 @@ class App {
     const positions = new Float32Array(starCount * 3);
 
     for (let i = 0; i < starCount; i++) {
-      const radius = 40 + Math.random() * 40;
+      const radius = 30 + Math.random() * 40;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
 
@@ -86,8 +111,8 @@ class App {
   }
 
   addEarth() {
-    this.globe = createEarth();
-    this.scene.add(this.globe);
+    this.earthGroup = createEarth();
+    this.scene.add(this.earthGroup);
   }
 
   addParticles() {
@@ -97,7 +122,9 @@ class App {
   onResize() {
     updateCameraAspect(this.camera, this.container);
     updateRendererSize(this.renderer, this.container);
-    updateComposerSize(this.composer, this.container);
+    if (this.useComposer && this.composer) {
+      updateComposerSize(this.composer, this.container);
+    }
   }
 
   animate() {
@@ -106,8 +133,8 @@ class App {
     const delta = this.clock.getDelta();
     const elapsed = this.clock.getElapsedTime();
 
-    if (this.globe) {
-      updateEarth(this.globe, delta, elapsed);
+    if (this.earthGroup) {
+      updateEarth(this.earthGroup, delta, elapsed);
     }
 
     if (this.particleData) {
@@ -115,7 +142,12 @@ class App {
     }
 
     this.controls.update();
-    this.composer.render();
+
+    if (this.useComposer && this.composer) {
+      this.composer.render();
+    } else {
+      this.renderer.render(this.scene, this.camera);
+    }
   }
 }
 

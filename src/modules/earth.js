@@ -1,128 +1,188 @@
-import ThreeGlobe from 'three-globe';
 import * as THREE from 'three';
 
+const EARTH_RADIUS = 2.0;
 const ROTATION_SPEED = 0.0003;
-const GLOBE_RADIUS = 100;
 
-const ARC_CONNECTIONS = [
-  [0, 10], [0, 6], [1, 10], [2, 0], [3, 2],
-  [4, 7], [5, 16], [6, 7], [7, 8], [8, 9],
-  [10, 11], [10, 12], [11, 12], [13, 11],
-  [14, 5], [15, 14], [16, 4], [17, 5]
-];
-
-const CITY_DATA = [
-  { city: '东京', lat: 35.6, lng: 139.6, listeners: 120000, region: 'asia' },
-  { city: '首尔', lat: 37.5, lng: 127.0, listeners: 95000, region: 'asia' },
-  { city: '上海', lat: 31.2, lng: 121.5, listeners: 110000, region: 'asia' },
-  { city: '北京', lat: 39.9, lng: 116.4, listeners: 105000, region: 'asia' },
-  { city: '新加坡', lat: 1.3, lng: 103.8, listeners: 65000, region: 'asia' },
-  { city: '孟买', lat: 19.0, lng: 72.8, listeners: 78000, region: 'asia' },
-  { city: '伦敦', lat: 51.5, lng: -0.1, listeners: 98000, region: 'europe' },
-  { city: '巴黎', lat: 48.8, lng: 2.3, listeners: 87000, region: 'europe' },
-  { city: '柏林', lat: 52.5, lng: 13.4, listeners: 72000, region: 'europe' },
-  { city: '莫斯科', lat: 55.7, lng: 37.6, listeners: 68000, region: 'europe' },
-  { city: '纽约', lat: 40.7, lng: -74.0, listeners: 130000, region: 'americas' },
-  { city: '洛杉矶', lat: 34.0, lng: -118.2, listeners: 115000, region: 'americas' },
-  { city: '圣保罗', lat: -23.5, lng: -46.6, listeners: 89000, region: 'americas' },
-  { city: '墨西哥城', lat: 19.4, lng: -99.1, listeners: 62000, region: 'americas' },
-  { city: '开普敦', lat: -33.9, lng: 18.4, listeners: 45000, region: 'africa' },
-  { city: '拉各斯', lat: 6.5, lng: 3.4, listeners: 52000, region: 'africa' },
-  { city: '悉尼', lat: -33.8, lng: 151.2, listeners: 71000, region: 'oceania' },
-  { city: '迪拜', lat: 25.2, lng: 55.3, listeners: 58000, region: 'asia' }
-];
-
-const REGION_COLORS = {
-  asia: '#7C3AED',
-  europe: '#00D1FF',
-  americas: '#FF6B9D',
-  africa: '#FF9F43',
-  oceania: '#00FFA3'
-};
-
-function getCityColor(region) {
-  return REGION_COLORS[region] || REGION_COLORS.asia;
+function createAtmosphere() {
+  const geometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.15, 64, 64);
+  const material = new THREE.ShaderMaterial({
+    vertexShader: `
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+      void main() {
+        vNormal = normalize(normalMatrix * normal);
+        vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+      void main() {
+        vec3 viewDirection = normalize(-vPosition);
+        float fresnel = pow(1.0 - dot(viewDirection, vNormal), 3.0);
+        vec3 innerColor = vec3(0.1, 0.4, 0.8);
+        vec3 outerColor = vec3(0.0, 0.6, 1.0);
+        vec3 atmosphereColor = mix(innerColor, outerColor, fresnel);
+        float intensity = fresnel * 1.2;
+        gl_FragColor = vec4(atmosphereColor * intensity, intensity * 0.7);
+      }
+    `,
+    side: THREE.BackSide,
+    blending: THREE.AdditiveBlending,
+    transparent: true,
+    depthWrite: false
+  });
+  return new THREE.Mesh(geometry, material);
 }
 
-function buildArcData() {
-  return ARC_CONNECTIONS.map(([fromIdx, toIdx]) => {
-    const from = CITY_DATA[fromIdx];
-    const to = CITY_DATA[toIdx];
-    if (!from || !to) return null;
-    return {
-      startLat: from.lat,
-      startLng: from.lng,
-      endLat: to.lat,
-      endLng: to.lng,
-      color: [getCityColor(from.region), getCityColor(to.region)]
-    };
-  }).filter(Boolean);
+function createFallbackTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 2048;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d');
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, '#0a1628');
+  gradient.addColorStop(0.5, '#0d1f35');
+  gradient.addColorStop(1, '#0a1628');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const continentPaths = [
+    { name: 'North America', path: [[0.12,0.18],[0.14,0.14],[0.18,0.12],[0.24,0.11],[0.30,0.12],[0.34,0.14],[0.37,0.18],[0.38,0.24],[0.36,0.30],[0.33,0.34],[0.28,0.37],[0.24,0.38],[0.20,0.36],[0.16,0.32],[0.13,0.26]], color: '#1a4a2e' },
+    { name: 'South America', path: [[0.25,0.42],[0.28,0.40],[0.31,0.42],[0.33,0.46],[0.34,0.52],[0.33,0.58],[0.31,0.64],[0.28,0.68],[0.25,0.66],[0.23,0.60],[0.22,0.54],[0.23,0.48]], color: '#1a4a2e' },
+    { name: 'Europe', path: [[0.48,0.16],[0.50,0.14],[0.53,0.13],[0.56,0.14],[0.58,0.16],[0.57,0.20],[0.55,0.24],[0.52,0.26],[0.49,0.25],[0.47,0.22],[0.46,0.19]], color: '#1a4a2e' },
+    { name: 'Africa', path: [[0.49,0.30],[0.52,0.28],[0.56,0.29],[0.59,0.32],[0.61,0.38],[0.62,0.44],[0.60,0.52],[0.57,0.58],[0.54,0.60],[0.51,0.58],[0.48,0.52],[0.47,0.44],[0.47,0.36]], color: '#1a4a2e' },
+    { name: 'Asia', path: [[0.60,0.12],[0.65,0.10],[0.72,0.11],[0.80,0.12],[0.86,0.14],[0.90,0.18],[0.91,0.24],[0.88,0.30],[0.84,0.34],[0.78,0.37],[0.72,0.38],[0.66,0.36],[0.62,0.32],[0.59,0.26],[0.58,0.20]], color: '#1a4a2e' },
+    { name: 'India', path: [[0.68,0.32],[0.71,0.30],[0.74,0.32],[0.73,0.38],[0.71,0.42],[0.68,0.40],[0.67,0.36]], color: '#1a4a2e' },
+    { name: 'SE Asia', path: [[0.78,0.34],[0.80,0.32],[0.83,0.34],[0.84,0.38],[0.82,0.42],[0.79,0.44],[0.77,0.40],[0.76,0.36]], color: '#1a4a2e' },
+    { name: 'Australia', path: [[0.82,0.52],[0.86,0.50],[0.90,0.52],[0.92,0.56],[0.90,0.60],[0.86,0.62],[0.82,0.60],[0.80,0.56]], color: '#1a4a2e' },
+    { name: 'Antarctica', path: [[0.10,0.90],[0.30,0.88],[0.50,0.87],[0.70,0.88],[0.90,0.90],[0.92,0.94],[0.80,0.96],[0.50,0.97],[0.20,0.96],[0.08,0.94]], color: '#1a4a2e' }
+  ];
+
+  continentPaths.forEach(continent => {
+    ctx.fillStyle = continent.color;
+    ctx.beginPath();
+    const first = continent.path[0];
+    ctx.moveTo(first[0] * canvas.width, first[1] * canvas.height);
+    for (let i = 1; i < continent.path.length; i++) {
+      const p = continent.path[i];
+      ctx.lineTo(p[0] * canvas.width, p[1] * canvas.height);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(40, 120, 80, 0.5)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
+  const cityLights = [
+    [0.22,0.22],[0.26,0.20],[0.30,0.26],[0.28,0.30],[0.34,0.18],
+    [0.28,0.50],[0.30,0.56],[0.26,0.60],
+    [0.52,0.20],[0.54,0.18],[0.50,0.22],[0.56,0.22],
+    [0.54,0.36],[0.56,0.42],[0.52,0.48],
+    [0.70,0.20],[0.76,0.22],[0.82,0.18],[0.86,0.22],[0.72,0.28],
+    [0.70,0.36],[0.72,0.40],
+    [0.80,0.36],[0.82,0.40],
+    [0.86,0.54],[0.88,0.56]
+  ];
+
+  cityLights.forEach(([x, y]) => {
+    const cx = x * canvas.width;
+    const cy = y * canvas.height;
+    const size = 2 + Math.random() * 3;
+    const glowRadius = size * 10;
+
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowRadius);
+    glow.addColorStop(0, 'rgba(255, 230, 150, 0.8)');
+    glow.addColorStop(0.3, 'rgba(255, 200, 100, 0.4)');
+    glow.addColorStop(0.7, 'rgba(255, 180, 80, 0.1)');
+    glow.addColorStop(1, 'rgba(255, 180, 80, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, glowRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255, 250, 230, 0.95)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  for (let i = 0; i < 1200; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const size = Math.random() * 1.2 + 0.3;
+    const alpha = Math.random() * 0.3 + 0.05;
+    ctx.fillStyle = `rgba(255, 230, 180, ${alpha})`;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.needsUpdate = true;
+  return texture;
 }
 
 export function createEarth() {
-  const globe = new ThreeGlobe({
-    waitForGlobeReady: true,
-    animateIn: true
-  })
-    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-    .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-    .showAtmosphere(true)
-    .atmosphereColor('#1a6bff')
-    .atmosphereAltitude(0.18)
-    .showGraticules(false)
-    .pointsData(CITY_DATA)
-    .pointLat(d => d.lat)
-    .pointLng(d => d.lng)
-    .pointAltitude(d => Math.log(d.listeners + 1) * 0.003)
-    .pointRadius(d => Math.log(d.listeners + 1) * 0.15)
-    .pointColor(d => getCityColor(d.region))
-    .pointsMerge(false)
-    .arcsData(buildArcData())
-    .arcStartLat(d => d.startLat)
-    .arcStartLng(d => d.startLng)
-    .arcEndLat(d => d.endLat)
-    .arcEndLng(d => d.endLng)
-    .arcColor(d => d.color)
-    .arcStroke(1.2)
-    .arcCurveResolution(64)
-    .arcCircularResolution(6)
-    .arcDashLength(0.4)
-    .arcDashGap(0.2)
-    .arcDashAnimateTime(2000 + Math.random() * 2000)
-    .arcAltitude(0.15)
-    .arcAltitudeAutoScale(0.3)
-    .ringsData(CITY_DATA.slice(0, 8))
-    .ringLat(d => d.lat)
-    .ringLng(d => d.lng)
-    .ringAltitude(0.01)
-    .ringColor(d => t => `rgba(${hexToRgb(getCityColor(d.region))}, ${1 - t})`)
-    .ringMaxRadius(d => Math.log(d.listeners + 1) * 0.3)
-    .ringPropagationSpeed(2)
-    .ringRepeatPeriod(1500)
-    .labelsData(CITY_DATA.slice(0, 8))
-    .labelLat(d => d.lat)
-    .labelLng(d => d.lng)
-    .labelText(d => d.city)
-    .labelSize(d => Math.log(d.listeners + 1) * 0.3)
-    .labelColor(d => getCityColor(d.region))
-    .labelAltitude(0.01)
-    .labelDotRadius(0.3)
-    .labelIncludeDot(true)
-    .labelDotOrientation('right');
+  const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 64, 64);
 
-  globe.rotation.y = -Math.PI / 2;
-  globe.userData = { ROTATION_SPEED, GLOBE_RADIUS };
+  const loader = new THREE.TextureLoader();
+  const nightUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg';
+  const topologyUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png';
 
-  return globe;
+  const fallbackTexture = createFallbackTexture();
+
+  const material = new THREE.MeshStandardMaterial({
+    map: fallbackTexture,
+    emissive: 0x112244,
+    emissiveIntensity: 0.5,
+    emissiveMap: fallbackTexture,
+    roughness: 0.8,
+    metalness: 0.1
+  });
+
+  loader.load(nightUrl, (texture) => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    material.map = texture;
+    material.emissiveMap = texture;
+    material.emissiveIntensity = 0.6;
+    material.needsUpdate = true;
+    console.log('Night texture loaded successfully');
+  }, (progress) => {
+    if (progress.total > 0) {
+      console.log('Night texture loading:', Math.round(progress.loaded / progress.total * 100) + '%');
+    }
+  }, (err) => {
+    console.log('Night texture failed, using fallback:', err);
+  });
+
+  loader.load(topologyUrl, (texture) => {
+    material.bumpMap = texture;
+    material.bumpScale = 0.02;
+    material.needsUpdate = true;
+    console.log('Topology texture loaded successfully');
+  }, undefined, () => {
+    console.log('Topology texture failed, using flat surface');
+  });
+
+  const earth = new THREE.Mesh(geometry, material);
+  const atmosphere = createAtmosphere();
+
+  const group = new THREE.Group();
+  group.add(earth);
+  group.add(atmosphere);
+
+  group.userData = { earth, atmosphere, EARTH_RADIUS, ROTATION_SPEED };
+  return group;
 }
 
-function hexToRgb(hex) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `${r},${g},${b}`;
-}
-
-export function updateEarth(globe, deltaTime, elapsedTime) {
-  globe.rotation.y += globe.userData.ROTATION_SPEED;
+export function updateEarth(earthGroup, deltaTime, elapsedTime) {
+  const { earth, ROTATION_SPEED: speed } = earthGroup.userData;
+  earth.rotation.y += speed;
 }
