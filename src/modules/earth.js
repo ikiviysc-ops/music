@@ -15,7 +15,67 @@ export const EARTH_MODES = {
 
 let currentMode = EARTH_MODES.CITY_LIGHTS;
 
+// ========== 大气层（固定半径，密集粒子） ==========
+function createAtmosphere() {
+  const count = 20000;
+  const radius = EARTH_RADIUS * 1.1;
 
+  const positions = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+
+    positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+    positions[i * 3 + 2] = radius * Math.cos(phi);
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  const material = new THREE.ShaderMaterial({
+    vertexShader: `
+      varying vec3 vViewNormal;
+      void main() {
+        vec3 normal = normalize(position);
+        vViewNormal = normalize(normalMatrix * normal);
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = 4.0;
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vViewNormal;
+      void main() {
+        vec2 coord = gl_PointCoord - vec2(0.5);
+        float dist = length(coord) * 2.0;
+        if (dist > 1.0) discard;
+        
+        float circleAlpha = 1.0 - smoothstep(0.5, 0.65, dist);
+        
+        vec3 viewNormal = normalize(vViewNormal);
+        vec3 viewDir = vec3(0.0, 0.0, 1.0);
+        float dotProduct = dot(viewDir, viewNormal);
+        
+        float edgeAlpha = 1.0 - smoothstep(0.35, 0.75, dotProduct);
+        edgeAlpha = clamp(edgeAlpha, 0.0, 1.0);
+        
+        float alpha = circleAlpha * edgeAlpha * 0.15;
+        
+        vec3 color = vec3(0.3, 0.6, 1.0);
+        gl_FragColor = vec4(color, alpha);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+
+  const atmosphere = new THREE.Points(geometry, material);
+
+  return atmosphere;
+}
 
 // ========== 大陆轮廓粒子（更稀疏，间距更大，分布在大陆上） ==========
 function createContinentParticles() {
