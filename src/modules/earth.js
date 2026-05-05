@@ -30,7 +30,7 @@ function createAtmosphere() {
         vPosition = position;
         vNormal = normalize(position);
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 2.5;
+        gl_PointSize = 4.0;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -192,7 +192,7 @@ function createContinentParticles() {
       void main() {
         vColor = aColor;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 2.5;
+        gl_PointSize = 4.0;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
