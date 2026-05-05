@@ -219,7 +219,8 @@ function createEarthMesh() {
     uniforms: {
       uNightTexture: { value: null },
       uTopologyTexture: { value: null },
-      uEmissiveIntensity: { value: 3.5 }
+      uEmissiveIntensity: { value: 3.5 },
+      uTime: { value: 0.0 }
     },
     vertexShader: `
       varying vec2 vUv;
@@ -234,6 +235,7 @@ function createEarthMesh() {
       uniform sampler2D uNightTexture;
       uniform sampler2D uTopologyTexture;
       uniform float uEmissiveIntensity;
+      uniform float uTime;
       varying vec2 vUv;
       varying vec3 vViewNormal;
       
@@ -247,13 +249,26 @@ function createEarthMesh() {
           nightColor = texture2D(uNightTexture, vUv).rgb;
         }
         
+        // 城市灯光亮度检测
+        float brightness = dot(nightColor, vec3(0.299, 0.587, 0.114));
+        
+        // 强烈脉动效果 - 更明显
+        float pulse1 = sin(uTime * 3.0 + vUv.x * 20.0 + vUv.y * 15.0);
+        float pulse2 = sin(uTime * 2.5 + vUv.x * 12.0 - vUv.y * 18.0);
+        float combinedPulse = (pulse1 + pulse2) * 0.5;
+        float pulse = 0.7 + 0.3 * combinedPulse;
+        
+        // 城市灯光 - 更亮更明显
+        float lightIntensity = smoothstep(0.2, 0.6, brightness);
+        vec3 lightColor = vec3(1.0, 0.95, 0.7) * lightIntensity * pulse * 3.0;
+        
         // Fresnel 边缘发光
         vec3 viewDir = vec3(0.0, 0.0, 1.0);
         float fresnel = pow(1.0 - max(dot(vViewNormal, viewDir), 0.0), 4.0);
         vec3 glowColor = vec3(0.2, 0.4, 0.8) * fresnel * 2.0;
         
         // 最终颜色
-        vec3 finalColor = nightColor * uEmissiveIntensity + glowColor;
+        vec3 finalColor = nightColor * uEmissiveIntensity + lightColor + glowColor;
         
         gl_FragColor = vec4(finalColor, 1.0);
       }
@@ -297,6 +312,11 @@ export function createEarth() {
 }
 
 export function updateEarth(earthGroup, deltaTime, elapsedTime, camera) {
-  const { ROTATION_SPEED: speed } = earthGroup.userData;
+  const { earth, ROTATION_SPEED: speed } = earthGroup.userData;
   earthGroup.rotation.y += speed;
+  
+  // 更新城市灯光时间
+  if (earth && earth.material && earth.material.uniforms && earth.material.uniforms.uTime) {
+    earth.material.uniforms.uTime.value = elapsedTime;
+  }
 }
