@@ -267,8 +267,8 @@ export function createEarth() {
 }
 
 export function updateEarth(earthGroup, deltaTime, elapsedTime, camera) {
-  const { earth, atmosphere, ROTATION_SPEED: speed } = earthGroup.userData;
-  earth.rotation.y += speed;
+  const { atmosphere, ROTATION_SPEED: speed } = earthGroup.userData;
+  earthGroup.rotation.y += speed;
   
   // 更新大气粒子 shader 的相机位置
   if (atmosphere && atmosphere.userData && atmosphere.userData.material) {
