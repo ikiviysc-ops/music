@@ -237,6 +237,7 @@ function createEarthMesh() {
       uTime: { value: 0.0 },
       uMode: { value: currentMode }
     },
+    lights: false, // 确保不受场景灯光影响
     vertexShader: `
       varying vec2 vUv;
       varying vec3 vViewNormal;
@@ -292,7 +293,7 @@ function createEarthMesh() {
           finalAlpha = 0.6;
         } else if (uMode == 2) {
           // DAYTIME - 白天模式 - 只显示白天纹理，适当降低整体亮度避免极地区域过曝
-          finalColor = dayColor * 0.9;
+          finalColor = dayColor * 0.75;
         } else if (uMode == 5) {
           // CITY_LIGHTS - 城市灯光闪烁模式 - 优化版
           float brightness = dot(nightColor, vec3(0.299, 0.587, 0.114));
