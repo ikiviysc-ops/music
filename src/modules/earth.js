@@ -286,9 +286,9 @@ function createEarthMesh() {
           vec3 adjustedColor = nightColor;
           float brightness = dot(nightColor, vec3(0.299, 0.587, 0.114));
           // 判断是大海还是陆地（大海比较暗）
-          if (brightness < 0.18) {
-            // 加深大海，保持深色并稍微偏向深蓝
-            adjustedColor = nightColor * 0.6;
+          if (brightness < 0.22) {
+            // 大幅加深大海，让大海更暗
+            adjustedColor = nightColor * 0.35;
           }
           finalColor = adjustedColor * uEmissiveIntensity;
         } else if (uMode == 1) {
