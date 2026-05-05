@@ -7,7 +7,7 @@ const ROTATION_SPEED = 0.0003;
 export const EARTH_MODES = {
   STANDARD: 'standard',           // 标准夜景模式
   TRANSLUCENT: 'translucent',     // 半透明模式
-  GRADIENT: 'gradient',           // 渐变效果模式
+  DAYTIME: 'daytime',             // 白天模式
   WIREFRAME: 'wireframe',         // 线框模式
   POINTS: 'points',               // 点模式
   CITY_LIGHTS: 'cityLights'       // 城市灯光闪烁模式
@@ -225,11 +225,13 @@ function createEarthMesh() {
 
   const loader = new THREE.TextureLoader();
   const nightUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg';
+  const dayUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-blue-marble.jpg';
   const topologyUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png';
 
   const material = new THREE.ShaderMaterial({
     uniforms: {
       uNightTexture: { value: null },
+      uDayTexture: { value: null },
       uTopologyTexture: { value: null },
       uEmissiveIntensity: { value: 3.5 },
       uTime: { value: 0.0 },
@@ -248,6 +250,7 @@ function createEarthMesh() {
     `,
     fragmentShader: `
       uniform sampler2D uNightTexture;
+      uniform sampler2D uDayTexture;
       uniform sampler2D uTopologyTexture;
       uniform float uEmissiveIntensity;
       uniform float uTime;
@@ -266,6 +269,12 @@ function createEarthMesh() {
           nightColor = texture2D(uNightTexture, vUv).rgb;
         }
         
+        // 白天纹理
+        vec3 dayColor = baseColor;
+        if (textureSize(uDayTexture, 0).x > 1) {
+          dayColor = texture2D(uDayTexture, vUv).rgb;
+        }
+        
         // Fresnel 边缘发光
         vec3 viewDir = vec3(0.0, 0.0, 1.0);
         float fresnel = pow(1.0 - max(dot(vViewNormal, viewDir), 0.0), 6.0);
@@ -282,10 +291,8 @@ function createEarthMesh() {
           finalColor = nightColor * uEmissiveIntensity + glowColor * 1.5;
           finalAlpha = 0.6;
         } else if (uMode == 2) {
-          // GRADIENT - 渐变效果模式 - 夜景纹理 + 顶部更亮的渐变
-          float gradient = smoothstep(-1.0, 1.0, vWorldPosition.y);
-          vec3 gradientColor = mix(vec3(0.02, 0.03, 0.05), vec3(0.06, 0.1, 0.2), gradient);
-          finalColor = nightColor * uEmissiveIntensity * 0.6 + gradientColor + glowColor;
+          // DAYTIME - 白天模式 - 只显示白天纹理
+          finalColor = dayColor * 1.2;
         } else if (uMode == 5) {
           // CITY_LIGHTS - 城市灯光闪烁模式 - 优化版
           float brightness = dot(nightColor, vec3(0.299, 0.587, 0.114));
@@ -315,6 +322,15 @@ function createEarthMesh() {
     console.log('Night texture loaded successfully');
   }, undefined, (err) => {
     console.log('Night texture failed:', err);
+  });
+
+  loader.load(dayUrl, (texture) => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    material.uniforms.uDayTexture.value = texture;
+    material.needsUpdate = true;
+    console.log('Day texture loaded successfully');
+  }, undefined, (err) => {
+    console.log('Day texture failed:', err);
   });
 
   loader.load(topologyUrl, (texture) => {

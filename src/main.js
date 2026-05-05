@@ -93,7 +93,7 @@ class App {
         const modeMap = {
           'standard': EARTH_MODES.STANDARD,
           'translucent': EARTH_MODES.TRANSLUCENT,
-          'gradient': EARTH_MODES.GRADIENT,
+          'daytime': EARTH_MODES.DAYTIME,
           'wireframe': EARTH_MODES.WIREFRAME,
           'points': EARTH_MODES.POINTS,
           'cityLights': EARTH_MODES.CITY_LIGHTS
