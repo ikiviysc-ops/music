@@ -278,10 +278,9 @@ function createEarthMesh() {
           // STANDARD - 标准夜景模式 - 只显示夜景纹理本身
           finalColor = nightColor * uEmissiveIntensity;
         } else if (uMode == 1) {
-          // TRANSLUCENT - 半透明模式 - 保留纹理但整体均匀半透明
-          vec3 adjustedColor = nightColor * 0.6 + baseColor * 0.4; // 柔化纹理差异
-          finalColor = adjustedColor * uEmissiveIntensity + glowColor * 2.0;
-          finalAlpha = 0.5;
+          // TRANSLUCENT - 半透明模式 - 直接使用夜景纹理，整体均匀半透明
+          finalColor = nightColor * uEmissiveIntensity * 0.8 + glowColor * 1.5;
+          finalAlpha = 0.65;
         } else if (uMode == 2) {
           // GRADIENT - 渐变效果模式 - 夜景纹理 + 顶部更亮的渐变
           float gradient = smoothstep(-1.0, 1.0, vWorldPosition.y);
