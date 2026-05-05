@@ -5,8 +5,8 @@ const CONFIG = {
   near: 0.1,
   far: 1000,
   mobileFov: 40,
-  position: { x: 0, y: 0.2, z: 5.5 },
-  mobilePosition: { x: 0, y: 0.15, z: 6.0 }
+  position: { x: 0, y: 0.2, z: 8.0 },
+  mobilePosition: { x: 0, y: 0.15, z: 9.0 }
 };
 
 export function createCamera(container) {
