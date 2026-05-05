@@ -296,7 +296,7 @@ function createEarthMesh() {
           float brightness = dot(dayColor, vec3(0.299, 0.587, 0.114));
           float overexposureFactor = smoothstep(0.5, 0.8, brightness);
           vec3 suppressedColor = mix(dayColor, dayColor * 0.6, overexposureFactor);
-          finalColor = suppressedColor;
+          finalColor = suppressedColor * 1.15;
         } else if (uMode == 5) {
           // CITY_LIGHTS - 城市灯光闪烁模式 - 优化版
           float brightness = dot(nightColor, vec3(0.299, 0.587, 0.114));
