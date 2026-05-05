@@ -80,56 +80,69 @@ function createAtmosphere() {
 // ========== 大陆轮廓粒子（更稀疏，间距更大，分布在大陆上） ==========
 function createContinentParticles() {
   const cityClusters = [
-    // 北美洲
-    { lat: 40.7, lng: -74.0, spread: 10, count: 50 },
-    { lat: 34.0, lng: -118.2, spread: 10, count: 35 },
-    { lat: 29.7, lng: -95.3, spread: 10, count: 25 },
-    { lat: 45.0, lng: -90.0, spread: 14, count: 40 },
-    { lat: 35.0, lng: -100.0, spread: 17, count: 30 },
-    { lat: 43.6, lng: -79.3, spread: 10, count: 20 },
-    { lat: 49.2, lng: -123.1, spread: 8, count: 12 },
+    // 北美洲 - 只在大陆核心区域
+    { lat: 40.7, lng: -74.0, spread: 7, count: 45 },
+    { lat: 34.0, lng: -118.2, spread: 7, count: 32 },
+    { lat: 29.7, lng: -95.3, spread: 7, count: 22 },
+    { lat: 41.8, lng: -87.6, spread: 7, count: 28 },
+    { lat: 32.7, lng: -96.7, spread: 6, count: 18 },
+    { lat: 33.4, lng: -112.0, spread: 6, count: 16 },
+    { lat: 39.7, lng: -105.0, spread: 6, count: 14 },
+    { lat: 43.6, lng: -79.3, spread: 6, count: 16 },
+    { lat: 19.4, lng: -99.1, spread: 6, count: 22 },
 
     // 南美洲
-    { lat: -23.5, lng: -46.6, spread: 10, count: 35 },
-    { lat: -34.6, lng: -58.3, spread: 9, count: 22 },
-    { lat: -15.0, lng: -60.0, spread: 20, count: 35 },
+    { lat: -23.5, lng: -46.6, spread: 7, count: 32 },
+    { lat: -34.6, lng: -58.3, spread: 6, count: 20 },
+    { lat: -25.2, lng: -57.5, spread: 7, count: 18 },
+    { lat: -7.1, lng: -34.8, spread: 6, count: 14 },
+    { lat: -12.0, lng: -77.0, spread: 6, count: 16 },
 
     // 欧洲
-    { lat: 51.5, lng: -0.1, spread: 12, count: 50 },
-    { lat: 48.8, lng: 2.3, spread: 11, count: 42 },
-    { lat: 52.5, lng: 13.4, spread: 12, count: 45 },
-    { lat: 41.9, lng: 12.5, spread: 11, count: 30 },
-    { lat: 40.4, lng: -3.7, spread: 12, count: 35 },
-    { lat: 50.0, lng: 15.0, spread: 20, count: 58 },
-    { lat: 55.7, lng: 37.6, spread: 12, count: 35 },
+    { lat: 51.5, lng: -0.1, spread: 8, count: 42 },
+    { lat: 48.8, lng: 2.3, spread: 8, count: 38 },
+    { lat: 52.5, lng: 13.4, spread: 8, count: 40 },
+    { lat: 41.9, lng: 12.5, spread: 7, count: 28 },
+    { lat: 40.4, lng: -3.7, spread: 7, count: 30 },
+    { lat: 48.2, lng: 16.3, spread: 6, count: 24 },
+    { lat: 55.7, lng: 37.6, spread: 10, count: 42 },
+    { lat: 59.9, lng: 30.3, spread: 5, count: 12 },
+
+    // 中东
+    { lat: 31.2, lng: 29.9, spread: 5, count: 12 },
+    { lat: 25.2, lng: 55.2, spread: 5, count: 14 },
+    { lat: 35.6, lng: 51.3, spread: 5, count: 10 },
 
     // 印度
-    { lat: 19.0, lng: 72.8, spread: 10, count: 25 },
-    { lat: 28.6, lng: 77.2, spread: 10, count: 22 },
-    { lat: 22.0, lng: 78.0, spread: 17, count: 32 },
+    { lat: 19.0, lng: 72.8, spread: 7, count: 24 },
+    { lat: 28.6, lng: 77.2, spread: 7, count: 20 },
+    { lat: 22.5, lng: 88.3, spread: 6, count: 18 },
+    { lat: 17.3, lng: 78.4, spread: 5, count: 14 },
 
-    // 中国/东亚
-    { lat: 39.9, lng: 116.4, spread: 12, count: 65 },
-    { lat: 31.2, lng: 121.4, spread: 11, count: 58 },
-    { lat: 23.1, lng: 113.2, spread: 11, count: 45 },
-    { lat: 35.0, lng: 110.0, spread: 22, count: 72 },
+    // 中国/东亚 - 核心区域
+    { lat: 39.9, lng: 116.4, spread: 10, count: 60 },
+    { lat: 31.2, lng: 121.4, spread: 8, count: 52 },
+    { lat: 23.1, lng: 113.2, spread: 7, count: 40 },
+    { lat: 30.5, lng: 104.0, spread: 7, count: 32 },
+    { lat: 39.1, lng: 117.1, spread: 6, count: 28 },
+    { lat: 22.5, lng: 114.0, spread: 5, count: 20 },
 
     // 日本
-    { lat: 35.6, lng: 139.6, spread: 10, count: 38 },
-    { lat: 34.6, lng: 135.5, spread: 9, count: 26 },
+    { lat: 35.6, lng: 139.6, spread: 7, count: 32 },
+    { lat: 34.6, lng: 135.5, spread: 6, count: 22 },
 
-    // 东南亚
-    { lat: 1.3, lng: 103.8, spread: 9, count: 18 },
-    { lat: 3.1, lng: 101.6, spread: 9, count: 18 },
-    { lat: 13.7, lng: 100.5, spread: 9, count: 18 },
-    { lat: 14.5, lng: 121.0, spread: 9, count: 18 },
+    // 东南亚 - 只保留主要城市
+    { lat: 1.3, lng: 103.8, spread: 4, count: 12 },
+    { lat: 13.7, lng: 100.5, spread: 4, count: 10 },
+    { lat: 3.1, lng: 101.6, spread: 4, count: 8 },
 
     // 非洲北部
-    { lat: 30.0, lng: 31.2, spread: 10, count: 22 },
+    { lat: 30.0, lng: 31.2, spread: 6, count: 18 },
+    { lat: -26.2, lng: 27.9, spread: 4, count: 10 },
 
     // 澳洲
-    { lat: -33.8, lng: 151.2, spread: 10, count: 22 },
-    { lat: -37.8, lng: 144.9, spread: 9, count: 18 },
+    { lat: -33.8, lng: 151.2, spread: 7, count: 18 },
+    { lat: -37.8, lng: 144.9, spread: 6, count: 16 },
   ];
 
   let totalCount = 0;
