@@ -417,15 +417,6 @@ export function setEarthMode(earthGroup, mode) {
     earthPoints.visible = true;
     atmosphere.visible = false;
     continents.visible = false;
-  } else if (mode === EARTH_MODES.STANDARD) {
-    // 标准夜景模式 - 隐藏大气层和大陆粒子，只显示地球本体
-    atmosphere.visible = false;
-    continents.visible = false;
-    // 更新uniform
-    const modeIndex = modeValues.indexOf(mode);
-    earth.material.uniforms.uMode.value = modeIndex;
-    earth.material.transparent = false;
-    earth.material.needsUpdate = true;
   } else {
     // 更新uniform
     const modeIndex = modeValues.indexOf(mode);
