@@ -268,8 +268,8 @@ function createEarthMesh() {
         
         // Fresnel 边缘发光
         vec3 viewDir = vec3(0.0, 0.0, 1.0);
-        float fresnel = pow(1.0 - max(dot(vViewNormal, viewDir), 0.0), 8.0);
-        vec3 glowColor = vec3(0.2, 0.4, 0.8) * fresnel * 2.0;
+        float fresnel = pow(1.0 - max(dot(vViewNormal, viewDir), 0.0), 6.0);
+        vec3 glowColor = vec3(0.1, 0.3, 1.0) * fresnel * 3.0;
         
         vec3 finalColor;
         float finalAlpha = 1.0;
