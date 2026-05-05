@@ -414,6 +414,15 @@ export function setEarthMode(earthGroup, mode) {
     earthPoints.visible = true;
     atmosphere.visible = false;
     continents.visible = false;
+  } else if (mode === EARTH_MODES.TRANSLUCENT) {
+    // 半透明模式 - 只显示地球本体，隐藏粒子层
+    atmosphere.visible = false;
+    continents.visible = false;
+    // 更新uniform
+    const modeIndex = modeValues.indexOf(mode);
+    earth.material.uniforms.uMode.value = modeIndex;
+    earth.material.transparent = true;
+    earth.material.needsUpdate = true;
   } else {
     // 更新uniform
     const modeIndex = modeValues.indexOf(mode);
