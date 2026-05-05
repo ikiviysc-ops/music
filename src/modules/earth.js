@@ -3,10 +3,11 @@ import * as THREE from 'three';
 const EARTH_RADIUS = 1.5;
 const ROTATION_SPEED = 0.0003;
 
+// ========== 大气层粒子 ==========
 function createAtmosphereParticles() {
-  const count = 400;
-  const innerRadius = EARTH_RADIUS * 1.08;
-  const outerRadius = EARTH_RADIUS * 1.18;
+  const count = 2000;
+  const innerRadius = EARTH_RADIUS * 1.06;
+  const outerRadius = EARTH_RADIUS * 1.22;
 
   const positions = new Float32Array(count * 3);
   const sizes = new Float32Array(count);
@@ -21,8 +22,8 @@ function createAtmosphereParticles() {
     positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
     positions[i * 3 + 2] = radius * Math.cos(phi);
 
-    sizes[i] = 0.4 + Math.random() * 1.2;
-    alphas[i] = 0.15 + Math.random() * 0.35;
+    sizes[i] = 0.8 + Math.random() * 2.5;
+    alphas[i] = 0.3 + Math.random() * 0.5;
   }
 
   const geometry = new THREE.BufferGeometry();
@@ -38,7 +39,7 @@ function createAtmosphereParticles() {
       void main() {
         vAlpha = aAlpha;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = max(0.3, aSize * (50.0 / -mvPosition.z));
+        gl_PointSize = max(0.5, aSize * (60.0 / -mvPosition.z));
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -48,9 +49,9 @@ function createAtmosphereParticles() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
         float glow = 1.0 - dist * 2.0;
-        glow = pow(glow, 2.0);
-        vec3 color = vec3(0.2, 0.5, 0.9);
-        float alpha = glow * vAlpha * 0.25;
+        glow = pow(glow, 1.5);
+        vec3 color = vec3(0.3, 0.6, 1.0);
+        float alpha = glow * vAlpha * 0.6;
         gl_FragColor = vec4(color, alpha);
       }
     `,
@@ -62,116 +63,125 @@ function createAtmosphereParticles() {
   return new THREE.Points(geometry, material);
 }
 
-function createFallbackTexture() {
-  const canvas = document.createElement('canvas');
-  canvas.width = 2048;
-  canvas.height = 1024;
-  const ctx = canvas.getContext('2d');
-
-  ctx.fillStyle = '#060e1a';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const continentPaths = [
-    { path: [[0.12,0.18],[0.14,0.14],[0.18,0.12],[0.24,0.11],[0.30,0.12],[0.34,0.14],[0.37,0.18],[0.38,0.24],[0.36,0.30],[0.33,0.34],[0.28,0.37],[0.24,0.38],[0.20,0.36],[0.16,0.32],[0.13,0.26]] },
-    { path: [[0.25,0.42],[0.28,0.40],[0.31,0.42],[0.33,0.46],[0.34,0.52],[0.33,0.58],[0.31,0.64],[0.28,0.68],[0.25,0.66],[0.23,0.60],[0.22,0.54],[0.23,0.48]] },
-    { path: [[0.48,0.16],[0.50,0.14],[0.53,0.13],[0.56,0.14],[0.58,0.16],[0.57,0.20],[0.55,0.24],[0.52,0.26],[0.49,0.25],[0.47,0.22],[0.46,0.19]] },
-    { path: [[0.49,0.30],[0.52,0.28],[0.56,0.29],[0.59,0.32],[0.61,0.38],[0.62,0.44],[0.60,0.52],[0.57,0.58],[0.54,0.60],[0.51,0.58],[0.48,0.52],[0.47,0.44],[0.47,0.36]] },
-    { path: [[0.60,0.12],[0.65,0.10],[0.72,0.11],[0.80,0.12],[0.86,0.14],[0.90,0.18],[0.91,0.24],[0.88,0.30],[0.84,0.34],[0.78,0.37],[0.72,0.38],[0.66,0.36],[0.62,0.32],[0.59,0.26],[0.58,0.20]] },
-    { path: [[0.68,0.32],[0.71,0.30],[0.74,0.32],[0.73,0.38],[0.71,0.42],[0.68,0.40],[0.67,0.36]] },
-    { path: [[0.78,0.34],[0.80,0.32],[0.83,0.34],[0.84,0.38],[0.82,0.42],[0.79,0.44],[0.77,0.40],[0.76,0.36]] },
-    { path: [[0.82,0.52],[0.86,0.50],[0.90,0.52],[0.92,0.56],[0.90,0.60],[0.86,0.62],[0.82,0.60],[0.80,0.56]] },
-    { path: [[0.10,0.90],[0.30,0.88],[0.50,0.87],[0.70,0.88],[0.90,0.90],[0.92,0.94],[0.80,0.96],[0.50,0.97],[0.20,0.96],[0.08,0.94]] }
+// ========== 大陆板块粒子 ==========
+function createContinentParticles() {
+  const continentData = [
+    // 北美洲
+    { lat: 45, lng: -100, spread: 25, count: 300 },
+    { lat: 35, lng: -110, spread: 20, count: 200 },
+    { lat: 55, lng: -95, spread: 15, count: 150 },
+    // 南美洲
+    { lat: -15, lng: -60, spread: 20, count: 250 },
+    { lat: -25, lng: -55, spread: 15, count: 180 },
+    // 欧洲
+    { lat: 50, lng: 15, spread: 12, count: 200 },
+    { lat: 45, lng: 5, spread: 10, count: 150 },
+    // 非洲
+    { lat: 5, lng: 20, spread: 22, count: 300 },
+    { lat: -20, lng: 25, spread: 15, count: 200 },
+    // 亚洲
+    { lat: 35, lng: 100, spread: 28, count: 400 },
+    { lat: 50, lng: 80, spread: 20, count: 250 },
+    { lat: 25, lng: 110, spread: 15, count: 200 },
+    // 印度
+    { lat: 22, lng: 78, spread: 8, count: 120 },
+    // 东南亚
+    { lat: 5, lng: 115, spread: 10, count: 150 },
+    // 澳洲
+    { lat: -25, lng: 135, spread: 12, count: 180 },
+    // 日本
+    { lat: 36, lng: 138, spread: 5, count: 80 },
   ];
 
-  continentPaths.forEach(continent => {
-    ctx.fillStyle = '#0d3320';
-    ctx.beginPath();
-    const first = continent.path[0];
-    ctx.moveTo(first[0] * canvas.width, first[1] * canvas.height);
-    for (let i = 1; i < continent.path.length; i++) {
-      const p = continent.path[i];
-      ctx.lineTo(p[0] * canvas.width, p[1] * canvas.height);
+  let totalCount = 0;
+  continentData.forEach(c => totalCount += c.count);
+
+  const positions = new Float32Array(totalCount * 3);
+  const sizes = new Float32Array(totalCount);
+  const colors = new Float32Array(totalCount * 3);
+
+  let idx = 0;
+  continentData.forEach(cluster => {
+    for (let i = 0; i < cluster.count; i++) {
+      const lat = cluster.lat + (Math.random() - 0.5) * cluster.spread;
+      const lng = cluster.lng + (Math.random() - 0.5) * cluster.spread;
+      const r = EARTH_RADIUS + 0.02 + Math.random() * 0.04;
+
+      const phi = (90 - lat) * (Math.PI / 180);
+      const theta = (lng + 180) * (Math.PI / 180);
+
+      positions[idx * 3] = r * Math.sin(phi) * Math.cos(theta);
+      positions[idx * 3 + 1] = r * Math.cos(phi);
+      positions[idx * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+
+      sizes[idx] = 0.3 + Math.random() * 0.8;
+
+      // 暖色调：黄、橙、白
+      const t = Math.random();
+      if (t < 0.3) {
+        colors[idx * 3] = 1.0; colors[idx * 3 + 1] = 0.9; colors[idx * 3 + 2] = 0.6;
+      } else if (t < 0.6) {
+        colors[idx * 3] = 1.0; colors[idx * 3 + 1] = 0.7; colors[idx * 3 + 2] = 0.3;
+      } else if (t < 0.85) {
+        colors[idx * 3] = 1.0; colors[idx * 3 + 1] = 0.5; colors[idx * 3 + 2] = 0.2;
+      } else {
+        colors[idx * 3] = 0.9; colors[idx * 3 + 1] = 0.95; colors[idx * 3 + 2] = 1.0;
+      }
+
+      idx++;
     }
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.strokeStyle = 'rgba(0, 200, 120, 0.6)';
-    ctx.lineWidth = 2.5;
-    ctx.stroke();
-
-    ctx.strokeStyle = 'rgba(0, 255, 150, 0.15)';
-    ctx.lineWidth = 8;
-    ctx.stroke();
   });
 
-  const cityLights = [
-    [0.22,0.22],[0.26,0.20],[0.30,0.26],[0.28,0.30],[0.34,0.18],
-    [0.28,0.50],[0.30,0.56],[0.26,0.60],
-    [0.52,0.20],[0.54,0.18],[0.50,0.22],[0.56,0.22],
-    [0.54,0.36],[0.56,0.42],[0.52,0.48],
-    [0.70,0.20],[0.76,0.22],[0.82,0.18],[0.86,0.22],[0.72,0.28],
-    [0.70,0.36],[0.72,0.40],
-    [0.80,0.36],[0.82,0.40],
-    [0.86,0.54],[0.88,0.56]
-  ];
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+  geometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
 
-  cityLights.forEach(([x, y]) => {
-    const cx = x * canvas.width;
-    const cy = y * canvas.height;
-    const size = 2 + Math.random() * 2;
-    const glowRadius = size * 12;
-
-    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowRadius);
-    glow.addColorStop(0, 'rgba(255, 230, 150, 0.9)');
-    glow.addColorStop(0.2, 'rgba(255, 200, 100, 0.5)');
-    glow.addColorStop(0.5, 'rgba(255, 180, 80, 0.15)');
-    glow.addColorStop(1, 'rgba(255, 180, 80, 0)');
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(cx, cy, glowRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = 'rgba(255, 250, 230, 0.95)';
-    ctx.beginPath();
-    ctx.arc(cx, cy, size, 0, Math.PI * 2);
-    ctx.fill();
+  const material = new THREE.ShaderMaterial({
+    vertexShader: `
+      attribute float aSize;
+      attribute vec3 aColor;
+      varying vec3 vColor;
+      void main() {
+        vColor = aColor;
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = max(0.3, aSize * (80.0 / -mvPosition.z));
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vColor;
+      void main() {
+        float dist = length(gl_PointCoord - vec2(0.5));
+        if (dist > 0.5) discard;
+        float glow = 1.0 - dist * 2.0;
+        glow = pow(glow, 1.8);
+        float alpha = glow * 0.7;
+        gl_FragColor = vec4(vColor, alpha);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
   });
 
-  for (let i = 0; i < 1500; i++) {
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height;
-    const size = Math.random() * 0.8 + 0.2;
-    const alpha = Math.random() * 0.25 + 0.05;
-    ctx.fillStyle = `rgba(255, 230, 180, ${alpha})`;
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.ClampToEdgeWrapping;
-  texture.needsUpdate = true;
-  return texture;
+  return new THREE.Points(geometry, material);
 }
 
-export function createEarth() {
+// ========== 地球本体 ==========
+function createEarthMesh() {
   const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 64, 64);
 
   const loader = new THREE.TextureLoader();
   const nightUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg';
   const topologyUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png';
 
-  const fallbackTexture = createFallbackTexture();
-
   const material = new THREE.MeshStandardMaterial({
-    map: fallbackTexture,
-    emissive: 0x112233,
-    emissiveIntensity: 0.3,
-    emissiveMap: fallbackTexture,
-    roughness: 0.85,
-    metalness: 0.05
+    color: 0x0a1525,
+    emissive: 0x0a1525,
+    emissiveIntensity: 0.15,
+    roughness: 0.9,
+    metalness: 0.0
   });
 
   loader.load(nightUrl, (texture) => {
@@ -179,34 +189,36 @@ export function createEarth() {
     material.map = texture;
     material.emissiveMap = texture;
     material.emissive.set(0xffffff);
-    material.emissiveIntensity = 0.5;
+    material.emissiveIntensity = 0.4;
     material.needsUpdate = true;
     console.log('Night texture loaded successfully');
-  }, (progress) => {
-    if (progress.total > 0) {
-      console.log('Night texture loading:', Math.round(progress.loaded / progress.total * 100) + '%');
-    }
-  }, (err) => {
-    console.log('Night texture failed, using fallback:', err);
+  }, undefined, (err) => {
+    console.log('Night texture failed:', err);
   });
 
   loader.load(topologyUrl, (texture) => {
     material.bumpMap = texture;
-    material.bumpScale = 0.015;
+    material.bumpScale = 0.01;
     material.needsUpdate = true;
     console.log('Topology texture loaded successfully');
   }, undefined, () => {
-    console.log('Topology texture failed, using flat surface');
+    console.log('Topology texture failed');
   });
 
-  const earth = new THREE.Mesh(geometry, material);
+  return new THREE.Mesh(geometry, material);
+}
+
+export function createEarth() {
+  const earth = createEarthMesh();
   const atmosphere = createAtmosphereParticles();
+  const continents = createContinentParticles();
 
   const group = new THREE.Group();
   group.add(earth);
   group.add(atmosphere);
+  group.add(continents);
 
-  group.userData = { earth, atmosphere, EARTH_RADIUS, ROTATION_SPEED };
+  group.userData = { earth, atmosphere, continents, EARTH_RADIUS, ROTATION_SPEED };
   return group;
 }
 
