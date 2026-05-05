@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { latLngToVector3 } from '../utils/geo.js';
 import { CITY_DATA } from '../data/cities.js';
 
-const EARTH_RADIUS = 5;
+const EARTH_RADIUS = 4.5;
 const FLY_DURATION = 1.2;
 const FLY_EASE = 'power3.inOut';
 const CAMERA_DISTANCE = 8;
@@ -102,7 +102,7 @@ export class InteractionManager {
       duration: FLY_DURATION,
       ease: FLY_EASE,
       onUpdate: () => {
-        this.camera.lookAt(0, 0, 0);
+        this.camera.lookAt(0, 0.2, 0);
       },
       onComplete: () => {
         this.isFlying = false;
@@ -120,12 +120,12 @@ export class InteractionManager {
 
     gsap.to(this.camera.position, {
       x: 0,
-      y: 2,
-      z: 15,
+      y: 1.2,
+      z: 10,
       duration: FLY_DURATION,
       ease: FLY_EASE,
       onUpdate: () => {
-        this.camera.lookAt(0, 0, 0);
+        this.camera.lookAt(0, 0.2, 0);
       },
       onComplete: () => {
         this.isFlying = false;
