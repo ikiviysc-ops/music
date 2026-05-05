@@ -24,40 +24,20 @@ function createAtmosphere() {
 
   const material = new THREE.ShaderMaterial({
     vertexShader: `
-      varying vec3 vPosition;
       void main() {
-        vPosition = position;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
         gl_PointSize = 4.0;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
     fragmentShader: `
-      varying vec3 vPosition;
       void main() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
         
-        // 在视图空间计算 - 更简单可靠
-        vec3 viewPos = vec3(modelViewMatrix * vec4(vPosition, 1.0));
-        vec3 viewDir = normalize(-viewPos);
-        vec3 normal = normalize(vPosition);
-        
-        // 把法线也转换到视图空间
-        vec3 viewNormal = normalize(normalMatrix * normal);
-        
-        // 计算点积，看粒子是否正对相机
-        float dotProduct = dot(viewDir, viewNormal);
-        
-        // 只有真正的边缘才显示 - 大部分区域隐藏
-        float edgeAlpha = 1.0 - smoothstep(0.2, 0.6, dotProduct);
-        edgeAlpha = clamp(edgeAlpha, 0.0, 1.0);
-        
-        // 更锐利的粒子形状
-        float baseAlpha = 1.0 - smoothstep(0.3, 0.65, dist);
-        baseAlpha = baseAlpha * 0.1;
-        float alpha = baseAlpha * edgeAlpha;
+        // 最简单的粒子显示 - 确保能看到
+        float alpha = smoothstep(1.0, 0.3, dist) * 0.1;
         
         vec3 color = vec3(0.3, 0.6, 1.0);
         gl_FragColor = vec4(color, alpha);
