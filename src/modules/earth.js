@@ -357,11 +357,12 @@ export function createEarth() {
   // 创建云图
   const loader = new THREE.TextureLoader();
   const cloudsUrl = 'https://unpkg.com/three-globe@2.31.0/example/clouds/clouds.png';
-  const cloudsGeometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.05, 64, 64);
+  const cloudsGeometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.15, 64, 64);
   const cloudsMaterial = new THREE.MeshBasicMaterial({
     transparent: true,
-    opacity: 0.8,
-    depthWrite: false
+    opacity: 0.9,
+    depthWrite: false,
+    color: 0xffffff
   });
   const clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
   clouds.visible = false;
