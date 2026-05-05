@@ -24,20 +24,34 @@ function createAtmosphere() {
 
   const material = new THREE.ShaderMaterial({
     vertexShader: `
+      varying vec3 vNormal;
       void main() {
+        vNormal = normalize(position);
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
         gl_PointSize = 4.0;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
     fragmentShader: `
+      varying vec3 vNormal;
       void main() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
         
-        // 最简单的粒子显示 - 确保能看到
-        float alpha = smoothstep(1.0, 0.3, dist) * 0.1;
+        // 超清锐利的粒子形状
+        float circleAlpha = 1.0 - smoothstep(0.5, 0.65, dist);
+        
+        // 计算视图空间 - 正确处理中心隐藏
+        vec3 viewNormal = normalize(normalMatrix * vNormal);
+        vec3 viewDir = vec3(0.0, 0.0, 1.0);
+        float dotProduct = dot(viewDir, viewNormal);
+        
+        // 只显示边缘 - 正对相机的隐藏
+        float edgeAlpha = 1.0 - smoothstep(0.2, 0.6, dotProduct);
+        edgeAlpha = clamp(edgeAlpha, 0.0, 1.0);
+        
+        float alpha = circleAlpha * edgeAlpha * 0.15;
         
         vec3 color = vec3(0.3, 0.6, 1.0);
         gl_FragColor = vec4(color, alpha);
@@ -176,9 +190,9 @@ function createContinentParticles() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        // 更锐利的大陆粒子形状
-        float alpha = 1.0 - smoothstep(0.3, 0.65, dist);
-        alpha = alpha * 0.1;
+        // 超清锐利的大陆粒子形状
+        float alpha = 1.0 - smoothstep(0.5, 0.65, dist);
+        alpha = alpha * 0.15;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
