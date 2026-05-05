@@ -27,7 +27,7 @@ function createSpaceParticles() {
     vertexShader: `
       void main() {
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 2.0;
+        gl_PointSize = 1.5;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -36,7 +36,7 @@ function createSpaceParticles() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        float alpha = step(dist, 0.7) * 0.15;
+        float alpha = step(dist, 0.6) * 0.12;
         vec3 color = vec3(0.2, 0.45, 0.8);
         gl_FragColor = vec4(color, alpha);
       }
@@ -72,7 +72,7 @@ function createAtmosphere() {
     vertexShader: `
       void main() {
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 2.0;
+        gl_PointSize = 1.5;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -81,7 +81,7 @@ function createAtmosphere() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        float alpha = step(dist, 0.7) * 0.15;
+        float alpha = step(dist, 0.6) * 0.12;
         vec3 color = vec3(0.2, 0.45, 0.8);
         gl_FragColor = vec4(color, alpha);
       }
@@ -98,55 +98,55 @@ function createAtmosphere() {
 function createContinentParticles() {
   const cityClusters = [
     // 北美洲
-    { lat: 40.7, lng: -74.0, spread: 8, count: 60 },
-    { lat: 34.0, lng: -118.2, spread: 8, count: 40 },
-    { lat: 29.7, lng: -95.3, spread: 8, count: 30 },
-    { lat: 45.0, lng: -90.0, spread: 12, count: 50 },
-    { lat: 35.0, lng: -100.0, spread: 15, count: 40 },
-    { lat: 43.6, lng: -79.3, spread: 8, count: 25 },
-    { lat: 49.2, lng: -123.1, spread: 6, count: 15 },
+    { lat: 40.7, lng: -74.0, spread: 10, count: 50 },
+    { lat: 34.0, lng: -118.2, spread: 10, count: 35 },
+    { lat: 29.7, lng: -95.3, spread: 10, count: 25 },
+    { lat: 45.0, lng: -90.0, spread: 14, count: 40 },
+    { lat: 35.0, lng: -100.0, spread: 17, count: 30 },
+    { lat: 43.6, lng: -79.3, spread: 10, count: 20 },
+    { lat: 49.2, lng: -123.1, spread: 8, count: 12 },
 
     // 南美洲
-    { lat: -23.5, lng: -46.6, spread: 8, count: 40 },
-    { lat: -34.6, lng: -58.3, spread: 7, count: 25 },
-    { lat: -15.0, lng: -60.0, spread: 18, count: 45 },
+    { lat: -23.5, lng: -46.6, spread: 10, count: 35 },
+    { lat: -34.6, lng: -58.3, spread: 9, count: 22 },
+    { lat: -15.0, lng: -60.0, spread: 20, count: 35 },
 
     // 欧洲
-    { lat: 51.5, lng: -0.1, spread: 10, count: 60 },
-    { lat: 48.8, lng: 2.3, spread: 9, count: 50 },
-    { lat: 52.5, lng: 13.4, spread: 10, count: 55 },
-    { lat: 41.9, lng: 12.5, spread: 9, count: 35 },
-    { lat: 40.4, lng: -3.7, spread: 10, count: 40 },
-    { lat: 50.0, lng: 15.0, spread: 18, count: 70 },
-    { lat: 55.7, lng: 37.6, spread: 10, count: 40 },
+    { lat: 51.5, lng: -0.1, spread: 12, count: 50 },
+    { lat: 48.8, lng: 2.3, spread: 11, count: 42 },
+    { lat: 52.5, lng: 13.4, spread: 12, count: 45 },
+    { lat: 41.9, lng: 12.5, spread: 11, count: 30 },
+    { lat: 40.4, lng: -3.7, spread: 12, count: 35 },
+    { lat: 50.0, lng: 15.0, spread: 20, count: 58 },
+    { lat: 55.7, lng: 37.6, spread: 12, count: 35 },
 
     // 印度
-    { lat: 19.0, lng: 72.8, spread: 8, count: 30 },
-    { lat: 28.6, lng: 77.2, spread: 8, count: 25 },
-    { lat: 22.0, lng: 78.0, spread: 15, count: 40 },
+    { lat: 19.0, lng: 72.8, spread: 10, count: 25 },
+    { lat: 28.6, lng: 77.2, spread: 10, count: 22 },
+    { lat: 22.0, lng: 78.0, spread: 17, count: 32 },
 
     // 中国/东亚
-    { lat: 39.9, lng: 116.4, spread: 10, count: 80 },
-    { lat: 31.2, lng: 121.4, spread: 9, count: 70 },
-    { lat: 23.1, lng: 113.2, spread: 9, count: 55 },
-    { lat: 35.0, lng: 110.0, spread: 20, count: 90 },
+    { lat: 39.9, lng: 116.4, spread: 12, count: 65 },
+    { lat: 31.2, lng: 121.4, spread: 11, count: 58 },
+    { lat: 23.1, lng: 113.2, spread: 11, count: 45 },
+    { lat: 35.0, lng: 110.0, spread: 22, count: 72 },
 
     // 日本
-    { lat: 35.6, lng: 139.6, spread: 8, count: 45 },
-    { lat: 34.6, lng: 135.5, spread: 7, count: 30 },
+    { lat: 35.6, lng: 139.6, spread: 10, count: 38 },
+    { lat: 34.6, lng: 135.5, spread: 9, count: 26 },
 
     // 东南亚
-    { lat: 1.3, lng: 103.8, spread: 7, count: 20 },
-    { lat: 3.1, lng: 101.6, spread: 7, count: 20 },
-    { lat: 13.7, lng: 100.5, spread: 7, count: 20 },
-    { lat: 14.5, lng: 121.0, spread: 7, count: 20 },
+    { lat: 1.3, lng: 103.8, spread: 9, count: 18 },
+    { lat: 3.1, lng: 101.6, spread: 9, count: 18 },
+    { lat: 13.7, lng: 100.5, spread: 9, count: 18 },
+    { lat: 14.5, lng: 121.0, spread: 9, count: 18 },
 
     // 非洲北部
-    { lat: 30.0, lng: 31.2, spread: 8, count: 25 },
+    { lat: 30.0, lng: 31.2, spread: 10, count: 22 },
 
     // 澳洲
-    { lat: -33.8, lng: 151.2, spread: 8, count: 25 },
-    { lat: -37.8, lng: 144.9, spread: 7, count: 20 },
+    { lat: -33.8, lng: 151.2, spread: 10, count: 22 },
+    { lat: -37.8, lng: 144.9, spread: 9, count: 18 },
   ];
 
   let totalCount = 0;
@@ -193,7 +193,7 @@ function createContinentParticles() {
       void main() {
         vColor = aColor;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 2.0;
+        gl_PointSize = 1.5;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -203,7 +203,7 @@ function createContinentParticles() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        float alpha = step(dist, 0.7) * 0.2;
+        float alpha = step(dist, 0.6) * 0.18;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
