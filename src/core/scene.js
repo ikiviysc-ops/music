@@ -2,8 +2,8 @@ import * as THREE from 'three';
 
 const CONFIG = {
   bgColor: 0x050510,
-  fogNear: 10,
-  fogFar: 50
+  fogNear: 30,
+  fogFar: 100
 };
 
 export function createScene() {
