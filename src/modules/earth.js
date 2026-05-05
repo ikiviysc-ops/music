@@ -3,49 +3,38 @@ import * as THREE from 'three';
 const EARTH_RADIUS = 1.5;
 const ROTATION_SPEED = 0.0003;
 
-// ========== 大气层粒子（地球边缘蓝色光点，随机分布） ==========
-function createAtmosphereParticles() {
-  const count = 4000;
-  const radius = EARTH_RADIUS * 1.06;
-
-  const positions = new Float32Array(count * 3);
-
-  for (let i = 0; i < count; i++) {
-    // 随机分布，不是规律网格
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-
-    positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-    positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-    positions[i * 3 + 2] = radius * Math.cos(phi);
-  }
-
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
+// ========== 大气层（连续发光薄壳，Fresnel Shader） ==========
+function createAtmosphere() {
+  const geometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.04, 64, 64);
   const material = new THREE.ShaderMaterial({
     vertexShader: `
+      varying vec3 vNormal;
+      varying vec3 vPosition;
       void main() {
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 1.0;
-        gl_Position = projectionMatrix * mvPosition;
+        vNormal = normalize(normalMatrix * normal);
+        vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `,
     fragmentShader: `
+      varying vec3 vNormal;
+      varying vec3 vPosition;
       void main() {
-        float dist = length(gl_PointCoord - vec2(0.5));
-        if (dist > 0.5) discard;
-        float alpha = step(dist, 0.3) * 0.5;
-        vec3 color = vec3(0.4, 0.7, 1.0);
+        vec3 viewDir = normalize(-vPosition);
+        vec3 normal = normalize(vNormal);
+        float fresnel = pow(1.0 - abs(dot(viewDir, normal)), 3.5);
+        vec3 color = vec3(0.2, 0.5, 0.9);
+        float alpha = fresnel * 0.25;
         gl_FragColor = vec4(color, alpha);
       }
     `,
     transparent: true,
     depthWrite: false,
-    blending: THREE.AdditiveBlending
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide
   });
 
-  return new THREE.Points(geometry, material);
+  return new THREE.Mesh(geometry, material);
 }
 
 // ========== 大陆城市灯光粒子（密集、随机、暖色） ==========
@@ -327,7 +316,7 @@ function createEarthMesh() {
 
 export function createEarth() {
   const earth = createEarthMesh();
-  const atmosphere = createAtmosphereParticles();
+  const atmosphere = createAtmosphere();
   const continents = createContinentParticles();
 
   const group = new THREE.Group();
