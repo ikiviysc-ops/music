@@ -2,20 +2,16 @@ import * as THREE from 'three';
 
 const CONFIG = {
   antialias: true,
-  mobilePixelRatio: 2,
-  desktopPixelRatio: 3
+  pixelRatio: 3
 };
 
 export function createRenderer(container) {
-  const isMobile = window.innerWidth <= 480;
-  const pixelRatio = isMobile
-    ? Math.min(window.devicePixelRatio, CONFIG.mobilePixelRatio)
-    : Math.min(window.devicePixelRatio, CONFIG.desktopPixelRatio);
+  const pixelRatio = Math.min(window.devicePixelRatio, CONFIG.pixelRatio);
 
   const renderer = new THREE.WebGLRenderer({
     antialias: CONFIG.antialias,
     alpha: false,
-    powerPreference: isMobile ? 'low-power' : 'high-performance'
+    powerPreference: 'high-performance'
   });
 
   renderer.setSize(container.clientWidth, container.clientHeight);
@@ -29,10 +25,7 @@ export function createRenderer(container) {
 }
 
 export function updateRendererSize(renderer, container) {
-  const isMobile = window.innerWidth <= 480;
-  const pixelRatio = isMobile
-    ? Math.min(window.devicePixelRatio, CONFIG.mobilePixelRatio)
-    : Math.min(window.devicePixelRatio, CONFIG.desktopPixelRatio);
+  const pixelRatio = Math.min(window.devicePixelRatio, CONFIG.pixelRatio);
   
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setPixelRatio(pixelRatio);
