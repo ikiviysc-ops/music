@@ -5,7 +5,7 @@ const ROTATION_SPEED = 0.0003;
 
 // ========== 大气层（固定半径，密集粒子） ==========
 function createAtmosphere() {
-  const count = 12000;
+  const count = 20000;
   const radius = EARTH_RADIUS * 1.08; // 统一高度
 
   const positions = new Float32Array(count * 3);
@@ -199,7 +199,7 @@ function createContinentParticles() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        float alpha = step(dist, 0.65) * 0.4;
+        float alpha = step(dist, 0.65) * 0.1;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
