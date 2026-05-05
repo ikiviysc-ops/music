@@ -3,7 +3,7 @@ import { createScene } from './core/scene.js';
 import { createCamera, updateCameraAspect } from './core/camera.js';
 import { createRenderer, updateRendererSize } from './core/renderer.js';
 import { createControls } from './core/controls.js';
-import { createEarth, updateEarth } from './modules/earth.js';
+import { createEarth, updateEarth, setEarthMode, getCurrentEarthMode, getAvailableEarthModes, EARTH_MODES } from './modules/earth.js';
 import { createComposer, updateComposerSize } from './effects/bloom.js';
 
 class App {
@@ -114,7 +114,37 @@ class App {
       this.renderer.render(this.scene, this.camera);
     }
   }
+  
+  // 地球模式切换
+  setEarthMode(mode) {
+    if (this.earthGroup) {
+      setEarthMode(this.earthGroup, mode);
+    }
+  }
+  
+  getEarthMode() {
+    return getCurrentEarthMode();
+  }
+  
+  listEarthModes() {
+    return getAvailableEarthModes();
+  }
 }
 
 const app = new App();
 app.init();
+
+// 暴露到全局，方便在控制台使用
+window.app = app;
+window.EARTH_MODES = EARTH_MODES;
+window.setEarthMode = (mode) => app.setEarthMode(mode);
+window.getEarthMode = () => app.getEarthMode();
+window.listEarthModes = () => app.listEarthModes();
+
+console.log('=== 地球模式控制系统 ===');
+console.log('可用模式:', EARTH_MODES);
+console.log('使用方式:');
+console.log('  window.listEarthModes() - 列出所有模式');
+console.log('  window.setEarthMode(EARTH_MODES.STANDARD) - 切换模式');
+console.log('  window.getEarthMode() - 获取当前模式');
+console.log('========================');

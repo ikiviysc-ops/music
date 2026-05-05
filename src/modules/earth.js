@@ -3,6 +3,17 @@ import * as THREE from 'three';
 const EARTH_RADIUS = 1.9;
 const ROTATION_SPEED = 0.0003;
 
+// 地球显示模式
+export const EARTH_MODES = {
+  STANDARD: 'standard',           // 标准夜景模式
+  TRANSLUCENT: 'translucent',     // 半透明模式
+  GRADIENT: 'gradient',           // 渐变效果模式
+  GLOW: 'glow',                   // 发光模式
+  CITY_LIGHTS: 'cityLights'       // 城市灯光闪烁模式
+};
+
+let currentMode = EARTH_MODES.CITY_LIGHTS;
+
 // ========== 大气层（固定半径，密集粒子） ==========
 function createAtmosphere() {
   const count = 20000;
@@ -220,14 +231,17 @@ function createEarthMesh() {
       uNightTexture: { value: null },
       uTopologyTexture: { value: null },
       uEmissiveIntensity: { value: 3.5 },
-      uTime: { value: 0.0 }
+      uTime: { value: 0.0 },
+      uMode: { value: currentMode }
     },
     vertexShader: `
       varying vec2 vUv;
       varying vec3 vViewNormal;
+      varying vec3 vWorldPosition;
       void main() {
         vUv = uv;
         vViewNormal = normalize(normalMatrix * normal);
+        vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `,
@@ -236,8 +250,10 @@ function createEarthMesh() {
       uniform sampler2D uTopologyTexture;
       uniform float uEmissiveIntensity;
       uniform float uTime;
+      uniform int uMode;
       varying vec2 vUv;
       varying vec3 vViewNormal;
+      varying vec3 vWorldPosition;
       
       void main() {
         // 基础颜色
@@ -249,28 +265,46 @@ function createEarthMesh() {
           nightColor = texture2D(uNightTexture, vUv).rgb;
         }
         
-        // 城市灯光亮度检测
-        float brightness = dot(nightColor, vec3(0.299, 0.587, 0.114));
-        
-        // 强烈脉动效果 - 更明显
-        float pulse1 = sin(uTime * 3.0 + vUv.x * 20.0 + vUv.y * 15.0);
-        float pulse2 = sin(uTime * 2.5 + vUv.x * 12.0 - vUv.y * 18.0);
-        float combinedPulse = (pulse1 + pulse2) * 0.5;
-        float pulse = 0.7 + 0.3 * combinedPulse;
-        
-        // 城市灯光 - 更亮更明显
-        float lightIntensity = smoothstep(0.2, 0.6, brightness);
-        vec3 lightColor = vec3(1.0, 0.95, 0.7) * lightIntensity * pulse * 3.0;
-        
         // Fresnel 边缘发光
         vec3 viewDir = vec3(0.0, 0.0, 1.0);
         float fresnel = pow(1.0 - max(dot(vViewNormal, viewDir), 0.0), 4.0);
         vec3 glowColor = vec3(0.2, 0.4, 0.8) * fresnel * 2.0;
         
-        // 最终颜色
-        vec3 finalColor = nightColor * uEmissiveIntensity + lightColor + glowColor;
+        vec3 finalColor;
+        float finalAlpha = 1.0;
         
-        gl_FragColor = vec4(finalColor, 1.0);
+        if (uMode == 0) {
+          // STANDARD - 标准夜景模式
+          finalColor = nightColor * uEmissiveIntensity + glowColor;
+        } else if (uMode == 1) {
+          // TRANSLUCENT - 半透明模式
+          finalColor = nightColor * uEmissiveIntensity * 0.8 + glowColor * 1.5;
+          finalAlpha = 0.7;
+        } else if (uMode == 2) {
+          // GRADIENT - 渐变效果模式
+          float gradient = smoothstep(-1.0, 1.0, vWorldPosition.y);
+          vec3 gradientColor = mix(vec3(0.02, 0.03, 0.05), vec3(0.08, 0.12, 0.2), gradient);
+          finalColor = nightColor * uEmissiveIntensity * 0.5 + gradientColor + glowColor;
+        } else if (uMode == 3) {
+          // GLOW - 发光模式
+          float strongFresnel = pow(1.0 - max(dot(vViewNormal, viewDir), 0.0), 2.5);
+          vec3 strongGlow = vec3(0.3, 0.5, 1.0) * strongFresnel * 4.0;
+          finalColor = nightColor * uEmissiveIntensity * 0.3 + strongGlow;
+        } else if (uMode == 4) {
+          // CITY_LIGHTS - 城市灯光闪烁模式
+          float brightness = dot(nightColor, vec3(0.299, 0.587, 0.114));
+          float pulse1 = sin(uTime * 3.0 + vUv.x * 20.0 + vUv.y * 15.0);
+          float pulse2 = sin(uTime * 2.5 + vUv.x * 12.0 - vUv.y * 18.0);
+          float combinedPulse = (pulse1 + pulse2) * 0.5;
+          float pulse = 0.7 + 0.3 * combinedPulse;
+          float lightIntensity = smoothstep(0.2, 0.6, brightness);
+          vec3 lightColor = vec3(1.0, 0.95, 0.7) * lightIntensity * pulse * 3.0;
+          finalColor = nightColor * uEmissiveIntensity + lightColor + glowColor;
+        } else {
+          finalColor = nightColor * uEmissiveIntensity + glowColor;
+        }
+        
+        gl_FragColor = vec4(finalColor, finalAlpha);
       }
     `,
     transparent: false
@@ -319,4 +353,43 @@ export function updateEarth(earthGroup, deltaTime, elapsedTime, camera) {
   if (earth && earth.material && earth.material.uniforms && earth.material.uniforms.uTime) {
     earth.material.uniforms.uTime.value = elapsedTime;
   }
+}
+
+// 切换地球显示模式
+export function setEarthMode(earthGroup, mode) {
+  const { earth } = earthGroup.userData;
+  if (!earth || !earth.material || !earth.material.uniforms) return;
+  
+  // 验证模式
+  const modeValues = Object.values(EARTH_MODES);
+  if (!modeValues.includes(mode)) {
+    console.warn('Invalid earth mode:', mode);
+    return;
+  }
+  
+  currentMode = mode;
+  
+  // 更新uniform
+  const modeIndex = modeValues.indexOf(mode);
+  earth.material.uniforms.uMode.value = modeIndex;
+  
+  // 处理透明模式
+  if (mode === EARTH_MODES.TRANSLUCENT) {
+    earth.material.transparent = true;
+  } else {
+    earth.material.transparent = false;
+  }
+  
+  earth.material.needsUpdate = true;
+  console.log('Earth mode set to:', mode);
+}
+
+// 获取当前模式
+export function getCurrentEarthMode() {
+  return currentMode;
+}
+
+// 获取所有可用模式
+export function getAvailableEarthModes() {
+  return EARTH_MODES;
 }
