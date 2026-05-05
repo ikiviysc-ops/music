@@ -275,8 +275,8 @@ function createEarthMesh() {
         float finalAlpha = 1.0;
         
         if (uMode == 0) {
-          // STANDARD - 标准夜景模式
-          finalColor = nightColor * uEmissiveIntensity + glowColor;
+          // STANDARD - 标准夜景模式 - 只显示夜景纹理本身
+          finalColor = nightColor * uEmissiveIntensity;
         } else if (uMode == 1) {
           // TRANSLUCENT - 半透明模式
           finalColor = nightColor * uEmissiveIntensity * 0.8 + glowColor * 1.5;
