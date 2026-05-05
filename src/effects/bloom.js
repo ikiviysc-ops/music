@@ -7,15 +7,15 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 
 const BLOOM_CONFIG = {
-  strength: 0.8,
-  radius: 0.6,
-  threshold: 0.3
+  strength: 1.2,
+  radius: 0.4,
+  threshold: 0.1
 };
 
 const VIGNETTE_SHADER = {
   uniforms: {
     tDiffuse: { value: null },
-    uDarkness: { value: 1.2 },
+    uDarkness: { value: 0.6 },
     uOffset: { value: 1.0 }
   },
   vertexShader: `

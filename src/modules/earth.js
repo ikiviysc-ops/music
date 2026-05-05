@@ -34,11 +34,11 @@ function createAtmosphereParticles() {
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        // 中心亮点 + 0.2光晕
+        // 中心亮点 + 0.2光晕，更亮
         float core = step(dist, 0.25);
         float halo = (1.0 - smoothstep(0.25, 0.5, dist)) * 0.2;
-        float alpha = (core + halo) * 0.4;
-        vec3 color = vec3(0.35, 0.55, 0.9);
+        float alpha = (core + halo) * 0.9;
+        vec3 color = vec3(0.5, 0.75, 1.0);
         gl_FragColor = vec4(color, alpha);
       }
     `,
@@ -134,10 +134,10 @@ function createContinentParticles() {
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        // 中心亮点 + 0.2光晕
+        // 中心亮点 + 0.2光晕，更亮
         float core = step(dist, 0.25);
         float halo = (1.0 - smoothstep(0.25, 0.5, dist)) * 0.2;
-        float alpha = (core + halo) * 0.5;
+        float alpha = (core + halo) * 0.9;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,

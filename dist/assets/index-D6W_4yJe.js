@@ -3835,11 +3835,11 @@ void main() {
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        // 中心亮点 + 0.2光晕
+        // 中心亮点 + 0.2光晕，更亮
         float core = step(dist, 0.25);
         float halo = (1.0 - smoothstep(0.25, 0.5, dist)) * 0.2;
-        float alpha = (core + halo) * 0.4;
-        vec3 color = vec3(0.35, 0.55, 0.9);
+        float alpha = (core + halo) * 0.9;
+        vec3 color = vec3(0.5, 0.75, 1.0);
         gl_FragColor = vec4(color, alpha);
       }
     `,transparent:!0,depthWrite:!1,blending:ri});return new xs(n,s)}function qp(){const i=[{lat:40,lng:-95,spread:20,count:400},{lat:35,lng:-80,spread:12,count:300},{lat:45,lng:-75,spread:10,count:250},{lat:30,lng:-95,spread:15,count:200},{lat:-20,lng:-55,spread:18,count:300},{lat:-10,lng:-55,spread:12,count:200},{lat:50,lng:10,spread:10,count:350},{lat:45,lng:15,spread:8,count:300},{lat:52,lng:-1,spread:6,count:200},{lat:5,lng:20,spread:20,count:250},{lat:-25,lng:25,spread:12,count:150},{lat:0,lng:35,spread:8,count:100},{lat:35,lng:105,spread:25,count:500},{lat:25,lng:115,spread:15,count:350},{lat:40,lng:75,spread:18,count:300},{lat:50,lng:85,spread:20,count:250},{lat:15,lng:100,spread:10,count:200},{lat:22,lng:78,spread:8,count:250},{lat:36,lng:138,spread:6,count:180},{lat:37,lng:127,spread:4,count:150},{lat:5,lng:110,spread:10,count:200},{lat:-30,lng:145,spread:12,count:180},{lat:-25,lng:135,spread:10,count:120},{lat:25,lng:50,spread:10,count:100}];let t=0;i.forEach(o=>t+=o.count);const e=new Float32Array(t*3),n=new Float32Array(t*3);let s=0;i.forEach(o=>{for(let l=0;l<o.count;l++){const c=o.lat+(Math.random()-.5)*o.spread,h=o.lng+(Math.random()-.5)*o.spread,d=Ms+.005,f=(90-c)*(Math.PI/180),m=(h+180)*(Math.PI/180);e[s*3]=d*Math.sin(f)*Math.cos(m),e[s*3+1]=d*Math.cos(f),e[s*3+2]=d*Math.sin(f)*Math.sin(m);const g=Math.random();g<.3?(n[s*3]=1,n[s*3+1]=.9,n[s*3+2]=.7):g<.6?(n[s*3]=1,n[s*3+1]=.8,n[s*3+2]=.4):g<.85?(n[s*3]=1,n[s*3+1]=.65,n[s*3+2]=.25):(n[s*3]=.9,n[s*3+1]=.95,n[s*3+2]=1),s++}});const r=new ye;r.setAttribute("position",new ae(e,3)),r.setAttribute("aColor",new ae(n,3));const a=new ue({vertexShader:`
@@ -3856,10 +3856,10 @@ void main() {
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        // 中心亮点 + 0.2光晕
+        // 中心亮点 + 0.2光晕，更亮
         float core = step(dist, 0.25);
         float halo = (1.0 - smoothstep(0.25, 0.5, dist)) * 0.2;
-        float alpha = (core + halo) * 0.5;
+        float alpha = (core + halo) * 0.9;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,transparent:!0,depthWrite:!1,blending:ri});return new xs(r,a)}function jp(){const i=new ia(Ms,64,64),t=new xp,e="https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg",n="https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png",s=new mp({color:527896,emissive:527896,emissiveIntensity:.1,roughness:.95,metalness:0});return t.load(e,r=>{r.colorSpace=we,s.map=r,s.emissiveMap=r,s.emissive.set(16777215),s.emissiveIntensity=.35,s.needsUpdate=!0,console.log("Night texture loaded successfully")},void 0,r=>{console.log("Night texture failed:",r)}),t.load(n,r=>{s.bumpMap=r,s.bumpScale=.008,s.needsUpdate=!0,console.log("Topology texture loaded successfully")},void 0,()=>{console.log("Topology texture failed")}),new He(i,s)}function Kp(){const i=jp(),t=Yp(),e=qp(),n=new wi;return n.add(i),n.add(t),n.add(e),n.userData={earth:i,atmosphere:t,continents:e,EARTH_RADIUS:Ms,ROTATION_SPEED:Xp},n}function Zp(i,t,e){const{earth:n,ROTATION_SPEED:s}=i.userData;n.rotation.y+=s}const Cn=600,$p=1.5,Jp=`
@@ -4346,7 +4346,7 @@ void main() {
 
 			gl_FragColor = ApplyFXAA( tDiffuse, resolution.xy, vUv );
 			
-		}`},er={strength:.8,radius:.6,threshold:.3},dm={uniforms:{tDiffuse:{value:null},uDarkness:{value:1.2},uOffset:{value:1}},vertexShader:`
+		}`},er={strength:1.2,radius:.4,threshold:.1},dm={uniforms:{tDiffuse:{value:null},uDarkness:{value:.6},uOffset:{value:1}},vertexShader:`
     varying vec2 vUv;
     void main() {
       vUv = uv;
