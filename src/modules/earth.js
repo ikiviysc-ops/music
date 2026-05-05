@@ -25,10 +25,8 @@ function createAtmosphere() {
   const material = new THREE.ShaderMaterial({
     vertexShader: `
       varying vec3 vPosition;
-      varying vec3 vNormal;
       void main() {
         vPosition = position;
-        vNormal = normalize(position);
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
         gl_PointSize = 4.0;
         gl_Position = projectionMatrix * mvPosition;
@@ -36,19 +34,23 @@ function createAtmosphere() {
     `,
     fragmentShader: `
       varying vec3 vPosition;
-      varying vec3 vNormal;
-      uniform vec3 uCameraPos;
       void main() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
         
-        // 计算视角方向与粒子法线的点积
-        vec3 viewDir = normalize(uCameraPos - vPosition);
-        float dotProduct = dot(viewDir, normalize(vNormal));
+        // 在视图空间计算 - 更简单可靠
+        vec3 viewPos = vec3(modelViewMatrix * vec4(vPosition, 1.0));
+        vec3 viewDir = normalize(-viewPos);
+        vec3 normal = normalize(vPosition);
+        
+        // 把法线也转换到视图空间
+        vec3 viewNormal = normalize(normalMatrix * normal);
+        
+        // 计算点积，看粒子是否正对相机
+        float dotProduct = dot(viewDir, viewNormal);
         
         // 只有真正的边缘才显示 - 大部分区域隐藏
-        // dotProduct接近1 = 正对相机（隐藏），接近0或负数 = 边缘（显示）
         float edgeAlpha = 1.0 - smoothstep(0.2, 0.6, dotProduct);
         edgeAlpha = clamp(edgeAlpha, 0.0, 1.0);
         
@@ -66,16 +68,8 @@ function createAtmosphere() {
     blending: THREE.AdditiveBlending
   });
 
-  // 获取相机位置并传递给 shader
-  material.uniforms = {
-    uCameraPos: { value: new THREE.Vector3(0, 0, 0) }
-  };
-
   // 创建 Points 对象
   const atmosphere = new THREE.Points(geometry, material);
-
-  // 保存 material 以便更新相机位置
-  atmosphere.userData.material = material;
 
   return atmosphere;
 }
@@ -271,13 +265,6 @@ export function createEarth() {
 }
 
 export function updateEarth(earthGroup, deltaTime, elapsedTime, camera) {
-  const { atmosphere, ROTATION_SPEED: speed } = earthGroup.userData;
+  const { ROTATION_SPEED: speed } = earthGroup.userData;
   earthGroup.rotation.y += speed;
-  
-  // 更新大气粒子 shader 的相机位置
-  if (atmosphere && atmosphere.userData && atmosphere.userData.material) {
-    const worldCameraPos = new THREE.Vector3();
-    camera.getWorldPosition(worldCameraPos);
-    atmosphere.userData.material.uniforms.uCameraPos.value.copy(worldCameraPos);
-  }
 }
