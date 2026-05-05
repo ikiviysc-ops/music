@@ -239,15 +239,17 @@ function createEarthMesh() {
     uniforms: {
       uNightTexture: { value: null },
       uTopologyTexture: { value: null },
-      uEmissiveIntensity: { value: 2.0 }
+      uEmissiveIntensity: { value: 3.5 }
     },
     vertexShader: `
       varying vec4 vScreenPosition;
       varying vec2 vUv;
       varying vec3 vNormal;
+      varying vec3 vViewNormal;
       void main() {
         vUv = uv;
         vNormal = normalize(normalMatrix * normal);
+        vViewNormal = normalize(normalMatrix * normal);
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
         vec4 clipPos = projectionMatrix * mvPosition;
         vScreenPosition = clipPos;
@@ -261,6 +263,7 @@ function createEarthMesh() {
       varying vec4 vScreenPosition;
       varying vec2 vUv;
       varying vec3 vNormal;
+      varying vec3 vViewNormal;
       
       void main() {
         // 屏幕空间下半部分渐隐
@@ -278,19 +281,26 @@ function createEarthMesh() {
           nightColor = texture2D(uNightTexture, vUv).rgb;
         }
         
+        // Fresnel 边缘发光
+        vec3 viewDir = vec3(0.0, 0.0, 1.0);
+        float fresnel = pow(1.0 - max(dot(vViewNormal, viewDir), 0.0), 2.0);
+        vec3 glowColor = vec3(0.2, 0.4, 0.8) * fresnel * 2.0;
+        
         // 最终颜色
-        vec3 finalColor = nightColor * uEmissiveIntensity;
+        vec3 finalColor = nightColor * uEmissiveIntensity + glowColor;
         
         gl_FragColor = vec4(finalColor, verticalAlpha);
       }
     `,
-    transparent: true
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
   });
 
   loader.load(nightUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
     material.uniforms.uNightTexture.value = texture;
-    material.uniforms.uEmissiveIntensity.value = 2.0;
+    material.uniforms.uEmissiveIntensity.value = 3.5;
     material.needsUpdate = true;
     console.log('Night texture loaded successfully');
   }, undefined, (err) => {
