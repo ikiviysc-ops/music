@@ -278,9 +278,9 @@ function createEarthMesh() {
           // STANDARD - 标准夜景模式 - 只显示夜景纹理本身
           finalColor = nightColor * uEmissiveIntensity;
         } else if (uMode == 1) {
-          // TRANSLUCENT - 半透明模式 - 直接使用夜景纹理，整体均匀半透明
-          finalColor = nightColor * uEmissiveIntensity * 0.8 + glowColor * 1.5;
-          finalAlpha = 0.65;
+          // TRANSLUCENT - 半透明模式 - 直接使用夜景纹理，整体均匀半透明，alpha 完全独立
+          finalColor = nightColor * uEmissiveIntensity + glowColor * 1.5;
+          finalAlpha = 0.6;
         } else if (uMode == 2) {
           // GRADIENT - 渐变效果模式 - 夜景纹理 + 顶部更亮的渐变
           float gradient = smoothstep(-1.0, 1.0, vWorldPosition.y);
@@ -414,15 +414,6 @@ export function setEarthMode(earthGroup, mode) {
     earthPoints.visible = true;
     atmosphere.visible = false;
     continents.visible = false;
-  } else if (mode === EARTH_MODES.TRANSLUCENT) {
-    // 半透明模式 - 只显示地球本体，隐藏粒子层
-    atmosphere.visible = false;
-    continents.visible = false;
-    // 更新uniform
-    const modeIndex = modeValues.indexOf(mode);
-    earth.material.uniforms.uMode.value = modeIndex;
-    earth.material.transparent = true;
-    earth.material.needsUpdate = true;
   } else {
     // 更新uniform
     const modeIndex = modeValues.indexOf(mode);
@@ -431,8 +422,12 @@ export function setEarthMode(earthGroup, mode) {
     // 处理透明模式
     if (mode === EARTH_MODES.TRANSLUCENT) {
       earth.material.transparent = true;
+      // 确保材质有正确的混合模式
+      earth.material.blending = THREE.NormalBlending;
+      earth.material.depthWrite = false;
     } else {
       earth.material.transparent = false;
+      earth.material.depthWrite = true;
     }
     
     earth.material.needsUpdate = true;
