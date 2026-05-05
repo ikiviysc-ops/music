@@ -68,10 +68,13 @@ function createAtmosphere() {
     uCameraPos: { value: new THREE.Vector3(0, 0, 0) }
   };
 
+  // 创建 Points 对象
+  const atmosphere = new THREE.Points(geometry, material);
+
   // 保存 material 以便更新相机位置
   atmosphere.userData.material = material;
 
-  return new THREE.Points(geometry, material);
+  return atmosphere;
 }
 
 // ========== 大陆轮廓粒子（更稀疏，间距更大，分布在大陆上） ==========
