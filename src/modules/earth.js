@@ -185,8 +185,10 @@ function createContinentParticles() {
     vertexShader: `
       attribute vec3 aColor;
       varying vec3 vColor;
+      varying vec3 vPosition;
       void main() {
         vColor = aColor;
+        vPosition = position;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
         gl_PointSize = 4.0;
         gl_Position = projectionMatrix * mvPosition;
@@ -194,13 +196,20 @@ function createContinentParticles() {
     `,
     fragmentShader: `
       varying vec3 vColor;
+      varying vec3 vPosition;
       void main() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
+        
         // 超清锐利的大陆粒子形状
-        float alpha = 1.0 - smoothstep(0.5, 0.65, dist);
-        alpha = alpha * 0.15;
+        float circleAlpha = 1.0 - smoothstep(0.5, 0.65, dist);
+        
+        // 从地球中间往下渐隐
+        float verticalAlpha = smoothstep(-0.2, 0.2, vPosition.y);
+        verticalAlpha = clamp(verticalAlpha, 0.0, 1.0);
+        
+        float alpha = circleAlpha * verticalAlpha * 0.15;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
@@ -220,20 +229,58 @@ function createEarthMesh() {
   const nightUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg';
   const topologyUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png';
 
-  const material = new THREE.MeshStandardMaterial({
-    color: 0x0a1018,
-    emissive: 0x0a1018,
-    emissiveIntensity: 1.2,
-    roughness: 0.98,
-    metalness: 0.0
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      uNightTexture: { value: null },
+      uTopologyTexture: { value: null },
+      uEmissiveIntensity: { value: 2.0 }
+    },
+    vertexShader: `
+      varying vec3 vPosition;
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      void main() {
+        vPosition = position;
+        vUv = uv;
+        vNormal = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D uNightTexture;
+      uniform sampler2D uTopologyTexture;
+      uniform float uEmissiveIntensity;
+      varying vec3 vPosition;
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      
+      void main() {
+        // 从地球中间往下渐隐
+        float verticalAlpha = smoothstep(-0.2, 0.2, vPosition.y);
+        verticalAlpha = clamp(verticalAlpha, 0.0, 1.0);
+        
+        // 基础颜色
+        vec3 baseColor = vec3(0.04, 0.06, 0.09);
+        
+        // 夜间纹理
+        vec3 nightColor = baseColor;
+        if (textureSize(uNightTexture, 0).x > 1) {
+          nightColor = texture2D(uNightTexture, vUv).rgb;
+        }
+        
+        // 最终颜色
+        vec3 finalColor = nightColor * uEmissiveIntensity;
+        
+        gl_FragColor = vec4(finalColor, verticalAlpha);
+      }
+    `,
+    transparent: true
   });
 
   loader.load(nightUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
-    material.map = texture;
-    material.emissiveMap = texture;
-    material.emissive.set(0xffffff);
-    material.emissiveIntensity = 2.0;
+    material.uniforms.uNightTexture.value = texture;
+    material.uniforms.uEmissiveIntensity.value = 2.0;
     material.needsUpdate = true;
     console.log('Night texture loaded successfully');
   }, undefined, (err) => {
@@ -241,8 +288,7 @@ function createEarthMesh() {
   });
 
   loader.load(topologyUrl, (texture) => {
-    material.bumpMap = texture;
-    material.bumpScale = 0.005;
+    material.uniforms.uTopologyTexture.value = texture;
     material.needsUpdate = true;
     console.log('Topology texture loaded successfully');
   }, undefined, () => {
