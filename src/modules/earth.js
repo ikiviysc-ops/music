@@ -5,7 +5,7 @@ const ROTATION_SPEED = 0.0003;
 
 // ========== 大气层（固定半径，密集粒子） ==========
 function createAtmosphere() {
-  const count = 12000;
+  const count = 25000;
   const radius = EARTH_RADIUS * 1.08; // 统一高度
 
   const positions = new Float32Array(count * 3);
@@ -30,7 +30,7 @@ function createAtmosphere() {
         vPosition = position;
         vNormal = normalize(position);
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 1.8;
+        gl_PointSize = 2.5;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -48,13 +48,14 @@ function createAtmosphere() {
         float dotProduct = dot(normalize(vNormal), viewDir);
         
         // 只在边缘显示，正对摄像机的地方渐隐
-        float edgeAlpha = 1.0 - smoothstep(0.4, 0.85, dotProduct);
-        edgeAlpha = pow(edgeAlpha, 0.7);
+        float edgeAlpha = 1.0 - smoothstep(0.3, 0.9, dotProduct);
+        edgeAlpha = pow(edgeAlpha, 0.5);
         
-        float baseAlpha = step(dist, 0.65) * 0.28;
+        // 边缘更亮的蓝色
+        float baseAlpha = step(dist, 0.65) * 0.55;
         float alpha = baseAlpha * edgeAlpha;
         
-        vec3 color = vec3(0.3, 0.6, 1.0);
+        vec3 color = vec3(0.25, 0.55, 1.0);
         gl_FragColor = vec4(color, alpha);
       }
     `,
