@@ -45,6 +45,7 @@ export function createComposer(renderer, scene, camera) {
   const pixelRatio = renderer.getPixelRatio();
 
   const composer = new EffectComposer(renderer);
+  composer.setPixelRatio(pixelRatio);
 
   const renderPass = new RenderPass(scene, camera);
   composer.addPass(renderPass);
@@ -73,10 +74,10 @@ export function createComposer(renderer, scene, camera) {
   return composer;
 }
 
-export function updateComposerSize(composer, container) {
+export function updateComposerSize(composer, container, renderer) {
   const width = container.clientWidth;
   const height = container.clientHeight;
-  const pixelRatio = Math.min(window.devicePixelRatio, 2);
+  const pixelRatio = renderer.getPixelRatio();
 
   composer.setSize(width, height);
   composer.setPixelRatio(pixelRatio);

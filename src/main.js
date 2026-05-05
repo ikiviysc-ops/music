@@ -85,7 +85,7 @@ class App {
     updateCameraAspect(this.camera, this.container);
     updateRendererSize(this.renderer, this.container);
     if (this.useComposer && this.composer) {
-      updateComposerSize(this.composer, this.container);
+      updateComposerSize(this.composer, this.container, this.renderer);
     }
   }
 

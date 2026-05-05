@@ -2,8 +2,8 @@ import * as THREE from 'three';
 
 const CONFIG = {
   antialias: true,
-  mobilePixelRatio: 1.5,
-  desktopPixelRatio: 2
+  mobilePixelRatio: 2,
+  desktopPixelRatio: 3
 };
 
 export function createRenderer(container) {
@@ -13,7 +13,7 @@ export function createRenderer(container) {
     : Math.min(window.devicePixelRatio, CONFIG.desktopPixelRatio);
 
   const renderer = new THREE.WebGLRenderer({
-    antialias: !isMobile && CONFIG.antialias,
+    antialias: CONFIG.antialias,
     alpha: false,
     powerPreference: isMobile ? 'low-power' : 'high-performance'
   });
