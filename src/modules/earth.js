@@ -1,236 +1,128 @@
+import ThreeGlobe from 'three-globe';
 import * as THREE from 'three';
 
-const EARTH_RADIUS = 2.0;
 const ROTATION_SPEED = 0.0003;
+const GLOBE_RADIUS = 100;
 
-function createAtmosphere() {
-  const geometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.12, 64, 64);
-  
-  const atmosphereVertexShader = `
-    varying vec3 vNormal;
-    varying vec3 vPosition;
-    void main() {
-      vNormal = normalize(normalMatrix * normal);
-      vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `;
-  
-  const atmosphereFragmentShader = `
-    varying vec3 vNormal;
-    varying vec3 vPosition;
-    void main() {
-      vec3 viewDirection = normalize(-vPosition);
-      float fresnel = pow(1.0 - dot(viewDirection, vNormal), 2.5);
-      vec3 atmosphereColor = vec3(0.05, 0.2, 0.6);
-      float intensity = fresnel * 0.8;
-      gl_FragColor = vec4(atmosphereColor, intensity);
-    }
-  `;
-  
-  const material = new THREE.ShaderMaterial({
-    vertexShader: atmosphereVertexShader,
-    fragmentShader: atmosphereFragmentShader,
-    side: THREE.BackSide,
-    blending: THREE.AdditiveBlending,
-    transparent: true,
-    depthWrite: false
-  });
-  
-  return new THREE.Mesh(geometry, material);
+const ARC_CONNECTIONS = [
+  [0, 10], [0, 6], [1, 10], [2, 0], [3, 2],
+  [4, 7], [5, 16], [6, 7], [7, 8], [8, 9],
+  [10, 11], [10, 12], [11, 12], [13, 11],
+  [14, 5], [15, 14], [16, 4], [17, 5]
+];
+
+const CITY_DATA = [
+  { city: '东京', lat: 35.6, lng: 139.6, listeners: 120000, region: 'asia' },
+  { city: '首尔', lat: 37.5, lng: 127.0, listeners: 95000, region: 'asia' },
+  { city: '上海', lat: 31.2, lng: 121.5, listeners: 110000, region: 'asia' },
+  { city: '北京', lat: 39.9, lng: 116.4, listeners: 105000, region: 'asia' },
+  { city: '新加坡', lat: 1.3, lng: 103.8, listeners: 65000, region: 'asia' },
+  { city: '孟买', lat: 19.0, lng: 72.8, listeners: 78000, region: 'asia' },
+  { city: '伦敦', lat: 51.5, lng: -0.1, listeners: 98000, region: 'europe' },
+  { city: '巴黎', lat: 48.8, lng: 2.3, listeners: 87000, region: 'europe' },
+  { city: '柏林', lat: 52.5, lng: 13.4, listeners: 72000, region: 'europe' },
+  { city: '莫斯科', lat: 55.7, lng: 37.6, listeners: 68000, region: 'europe' },
+  { city: '纽约', lat: 40.7, lng: -74.0, listeners: 130000, region: 'americas' },
+  { city: '洛杉矶', lat: 34.0, lng: -118.2, listeners: 115000, region: 'americas' },
+  { city: '圣保罗', lat: -23.5, lng: -46.6, listeners: 89000, region: 'americas' },
+  { city: '墨西哥城', lat: 19.4, lng: -99.1, listeners: 62000, region: 'americas' },
+  { city: '开普敦', lat: -33.9, lng: 18.4, listeners: 45000, region: 'africa' },
+  { city: '拉各斯', lat: 6.5, lng: 3.4, listeners: 52000, region: 'africa' },
+  { city: '悉尼', lat: -33.8, lng: 151.2, listeners: 71000, region: 'oceania' },
+  { city: '迪拜', lat: 25.2, lng: 55.3, listeners: 58000, region: 'asia' }
+];
+
+const REGION_COLORS = {
+  asia: '#7C3AED',
+  europe: '#00D1FF',
+  americas: '#FF6B9D',
+  africa: '#FF9F43',
+  oceania: '#00FFA3'
+};
+
+function getCityColor(region) {
+  return REGION_COLORS[region] || REGION_COLORS.asia;
 }
 
-function createEarthTexture() {
-  const canvas = document.createElement('canvas');
-  canvas.width = 2048;
-  canvas.height = 1024;
-  const ctx = canvas.getContext('2d');
-  
-  // 深海背景
-  ctx.fillStyle = '#0a1628';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  // 绘制真实的大陆板块轮廓
-  const continents = [
-    // 北美洲 - 更真实的形状
-    {
-      points: [
-        [0.15, 0.15], [0.25, 0.12], [0.35, 0.15], [0.38, 0.22],
-        [0.35, 0.30], [0.30, 0.35], [0.25, 0.38], [0.20, 0.35],
-        [0.15, 0.30], [0.12, 0.25], [0.10, 0.20]
-      ],
-      color: '#1a3d2e'
-    },
-    // 南美洲
-    {
-      points: [
-        [0.28, 0.42], [0.32, 0.40], [0.35, 0.45], [0.36, 0.55],
-        [0.34, 0.65], [0.30, 0.70], [0.26, 0.68], [0.24, 0.60],
-        [0.24, 0.50]
-      ],
-      color: '#1e4a35'
-    },
-    // 欧洲
-    {
-      points: [
-        [0.48, 0.18], [0.55, 0.15], [0.58, 0.18], [0.56, 0.25],
-        [0.52, 0.28], [0.48, 0.26], [0.46, 0.22]
-      ],
-      color: '#2a4a3a'
-    },
-    // 非洲
-    {
-      points: [
-        [0.50, 0.32], [0.56, 0.30], [0.60, 0.35], [0.62, 0.45],
-        [0.60, 0.55], [0.56, 0.62], [0.52, 0.60], [0.48, 0.50],
-        [0.48, 0.40]
-      ],
-      color: '#224832'
-    },
-    // 亚洲
-    {
-      points: [
-        [0.62, 0.15], [0.75, 0.12], [0.85, 0.15], [0.90, 0.22],
-        [0.88, 0.32], [0.82, 0.38], [0.75, 0.40], [0.68, 0.38],
-        [0.62, 0.32], [0.60, 0.25]
-      ],
-      color: '#1f4035'
-    },
-    // 大洋洲
-    {
-      points: [
-        [0.82, 0.50], [0.88, 0.48], [0.92, 0.52], [0.90, 0.58],
-        [0.85, 0.60], [0.80, 0.58], [0.78, 0.54]
-      ],
-      color: '#1e4030'
-    },
-    // 南极洲
-    {
-      points: [
-        [0.20, 0.88], [0.40, 0.85], [0.60, 0.85], [0.80, 0.88],
-        [0.85, 0.92], [0.75, 0.95], [0.50, 0.96], [0.25, 0.95],
-        [0.15, 0.92]
-      ],
-      color: '#2a3a3a'
-    }
-  ];
-  
-  // 绘制大陆
-  continents.forEach(continent => {
-    ctx.fillStyle = continent.color;
-    ctx.beginPath();
-    
-    const firstPoint = continent.points[0];
-    ctx.moveTo(firstPoint[0] * canvas.width, firstPoint[1] * canvas.height);
-    
-    for (let i = 1; i < continent.points.length; i++) {
-      const point = continent.points[i];
-      ctx.lineTo(point[0] * canvas.width, point[1] * canvas.height);
-    }
-    
-    ctx.closePath();
-    ctx.fill();
-    
-    // 添加边缘发光
-    ctx.strokeStyle = 'rgba(100, 150, 120, 0.3)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  });
-  
-  // 添加海洋纹理
-  for (let i = 0; i < 1000; i++) {
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height;
-    const size = Math.random() * 1.5 + 0.5;
-    const alpha = Math.random() * 0.06 + 0.02;
-    ctx.fillStyle = `rgba(20, 60, 100, ${alpha})`;
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  
-  // 添加城市灯光
-  const cityLights = [
-    // 北美
-    [0.20, 0.25], [0.25, 0.22], [0.30, 0.28], [0.28, 0.32],
-    // 南美
-    [0.30, 0.55], [0.32, 0.60],
-    // 欧洲
-    [0.52, 0.22], [0.54, 0.20], [0.50, 0.24],
-    // 非洲
-    [0.55, 0.45], [0.56, 0.50],
-    // 亚洲
-    [0.70, 0.25], [0.75, 0.28], [0.80, 0.22], [0.72, 0.32],
-    [0.68, 0.35], [0.78, 0.30],
-    // 大洋洲
-    [0.85, 0.55], [0.88, 0.52]
-  ];
-  
-  cityLights.forEach(([x, y]) => {
-    const cx = x * canvas.width;
-    const cy = y * canvas.height;
-    const size = Math.random() * 2 + 1.5;
-    
-    // 光晕
-    const glowGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 8);
-    glowGradient.addColorStop(0, 'rgba(255, 230, 150, 0.5)');
-    glowGradient.addColorStop(0.5, 'rgba(255, 200, 100, 0.2)');
-    glowGradient.addColorStop(1, 'rgba(255, 180, 80, 0)');
-    ctx.fillStyle = glowGradient;
-    ctx.beginPath();
-    ctx.arc(cx, cy, size * 8, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // 核心
-    ctx.fillStyle = 'rgba(255, 255, 220, 0.9)';
-    ctx.beginPath();
-    ctx.arc(cx, cy, size, 0, Math.PI * 2);
-    ctx.fill();
-  });
-  
-  // 添加更多分散的小灯光
-  for (let i = 0; i < 500; i++) {
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height;
-    const size = Math.random() * 1 + 0.3;
-    const alpha = Math.random() * 0.3 + 0.1;
-    ctx.fillStyle = `rgba(255, 230, 180, ${alpha})`;
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.ClampToEdgeWrapping;
-  texture.needsUpdate = true;
-  return texture;
+function buildArcData() {
+  return ARC_CONNECTIONS.map(([fromIdx, toIdx]) => {
+    const from = CITY_DATA[fromIdx];
+    const to = CITY_DATA[toIdx];
+    if (!from || !to) return null;
+    return {
+      startLat: from.lat,
+      startLng: from.lng,
+      endLat: to.lat,
+      endLng: to.lng,
+      color: [getCityColor(from.region), getCityColor(to.region)]
+    };
+  }).filter(Boolean);
 }
 
 export function createEarth() {
-  const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 64, 64);
-  const texture = createEarthTexture();
-  
-  const material = new THREE.MeshStandardMaterial({
-    map: texture,
-    emissive: 0x0a1a2e,
-    emissiveIntensity: 0.3,
-    roughness: 0.8,
-    metalness: 0.1
-  });
-  
-  const earth = new THREE.Mesh(geometry, material);
-  const atmosphere = createAtmosphere();
-  
-  const group = new THREE.Group();
-  group.add(earth);
-  group.add(atmosphere);
-  
-  group.userData = { earth, atmosphere, EARTH_RADIUS, ROTATION_SPEED };
-  return group;
+  const globe = new ThreeGlobe({
+    waitForGlobeReady: true,
+    animateIn: true
+  })
+    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+    .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+    .showAtmosphere(true)
+    .atmosphereColor('#1a6bff')
+    .atmosphereAltitude(0.18)
+    .showGraticules(false)
+    .pointsData(CITY_DATA)
+    .pointLat(d => d.lat)
+    .pointLng(d => d.lng)
+    .pointAltitude(d => Math.log(d.listeners + 1) * 0.003)
+    .pointRadius(d => Math.log(d.listeners + 1) * 0.15)
+    .pointColor(d => getCityColor(d.region))
+    .pointsMerge(false)
+    .arcsData(buildArcData())
+    .arcStartLat(d => d.startLat)
+    .arcStartLng(d => d.startLng)
+    .arcEndLat(d => d.endLat)
+    .arcEndLng(d => d.endLng)
+    .arcColor(d => d.color)
+    .arcStroke(1.2)
+    .arcCurveResolution(64)
+    .arcCircularResolution(6)
+    .arcDashLength(0.4)
+    .arcDashGap(0.2)
+    .arcDashAnimateTime(2000 + Math.random() * 2000)
+    .arcAltitude(0.15)
+    .arcAltitudeAutoScale(0.3)
+    .ringsData(CITY_DATA.slice(0, 8))
+    .ringLat(d => d.lat)
+    .ringLng(d => d.lng)
+    .ringAltitude(0.01)
+    .ringColor(d => t => `rgba(${hexToRgb(getCityColor(d.region))}, ${1 - t})`)
+    .ringMaxRadius(d => Math.log(d.listeners + 1) * 0.3)
+    .ringPropagationSpeed(2)
+    .ringRepeatPeriod(1500)
+    .labelsData(CITY_DATA.slice(0, 8))
+    .labelLat(d => d.lat)
+    .labelLng(d => d.lng)
+    .labelText(d => d.city)
+    .labelSize(d => Math.log(d.listeners + 1) * 0.3)
+    .labelColor(d => getCityColor(d.region))
+    .labelAltitude(0.01)
+    .labelDotRadius(0.3)
+    .labelIncludeDot(true)
+    .labelDotOrientation('right');
+
+  globe.rotation.y = -Math.PI / 2;
+  globe.userData = { ROTATION_SPEED, GLOBE_RADIUS };
+
+  return globe;
 }
 
-export function updateEarth(earthGroup, deltaTime, elapsedTime) {
-  const { earth, atmosphere, ROTATION_SPEED: speed } = earthGroup.userData;
-  earth.rotation.y += speed;
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r},${g},${b}`;
+}
+
+export function updateEarth(globe, deltaTime, elapsedTime) {
+  globe.rotation.y += globe.userData.ROTATION_SPEED;
 }

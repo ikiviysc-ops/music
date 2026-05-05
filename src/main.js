@@ -4,10 +4,7 @@ import { createCamera, updateCameraAspect } from './core/camera.js';
 import { createRenderer, updateRendererSize } from './core/renderer.js';
 import { createControls } from './core/controls.js';
 import { createEarth, updateEarth } from './modules/earth.js';
-import { createCityPoints, createCityGlows } from './modules/cityPoints.js';
-import { createLabelRenderer, updateLabelRendererSize, createCityLabels } from './modules/cityLabels.js';
-import { createBeams, updateBeams, createEnergyPoints, updateEnergyPoints } from './modules/beam.js';
-import { createArcs, updateArcs } from './modules/arc.js';
+import { createParticles, updateParticles } from './modules/particles.js';
 import { createComposer, updateComposerSize } from './effects/bloom.js';
 
 class App {
@@ -16,16 +13,10 @@ class App {
     this.scene = null;
     this.camera = null;
     this.renderer = null;
-    this.labelRenderer = null;
     this.composer = null;
     this.controls = null;
-    this.earthGroup = null;
-    this.cityPoints = null;
-    this.cityGlows = null;
-    this.cityLabels = [];
-    this.beamData = null;
-    this.energyData = null;
-    this.arcData = null;
+    this.globe = null;
+    this.particleData = null;
     this.clock = new THREE.Clock();
   }
 
@@ -40,28 +31,28 @@ class App {
     this.camera = createCamera(this.container);
     this.renderer = createRenderer(this.container);
     this.composer = createComposer(this.renderer, this.scene, this.camera);
-    this.labelRenderer = createLabelRenderer(this.container);
     this.controls = createControls(this.camera, this.renderer);
 
     this.addLights();
     this.addStars();
     this.addEarth();
-    this.addCityPoints();
-    this.addBeams();
-    this.addArcs();
-    this.addCityLabels();
+    this.addParticles();
 
     window.addEventListener('resize', this.onResize.bind(this));
     this.animate();
   }
 
   addLights() {
-    const ambientLight = new THREE.AmbientLight(0x444488, 1);
+    const ambientLight = new THREE.AmbientLight(0x334466, 0.8);
     this.scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(10, 5, 10);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    directionalLight.position.set(5, 3, 5);
     this.scene.add(directionalLight);
+
+    const pointLight = new THREE.PointLight(0x4488ff, 0.5, 50);
+    pointLight.position.set(-5, 2, -5);
+    this.scene.add(pointLight);
   }
 
   addStars() {
@@ -70,7 +61,7 @@ class App {
     const positions = new Float32Array(starCount * 3);
 
     for (let i = 0; i < starCount; i++) {
-      const radius = 30 + Math.random() * 40;
+      const radius = 40 + Math.random() * 40;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
 
@@ -83,9 +74,9 @@ class App {
 
     const starsMaterial = new THREE.PointsMaterial({
       color: 0xffffff,
-      size: 0.15,
+      size: 0.12,
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.6,
       sizeAttenuation: true,
       depthWrite: false
     });
@@ -95,35 +86,18 @@ class App {
   }
 
   addEarth() {
-    this.earthGroup = createEarth();
-    this.scene.add(this.earthGroup);
+    this.globe = createEarth();
+    this.scene.add(this.globe);
   }
 
-  addCityPoints() {
-    this.cityPoints = createCityPoints();
-    this.cityGlows = createCityGlows();
-    this.earthGroup.add(this.cityPoints);
-    this.earthGroup.add(this.cityGlows);
-  }
-
-  addBeams() {
-    this.beamData = createBeams(this.earthGroup);
-    this.energyData = createEnergyPoints(this.earthGroup);
-  }
-
-  addArcs() {
-    this.arcData = createArcs(this.earthGroup);
-  }
-
-  addCityLabels() {
-    this.cityLabels = createCityLabels(this.scene);
+  addParticles() {
+    this.particleData = createParticles(this.scene);
   }
 
   onResize() {
     updateCameraAspect(this.camera, this.container);
     updateRendererSize(this.renderer, this.container);
     updateComposerSize(this.composer, this.container);
-    updateLabelRendererSize(this.labelRenderer, this.container);
   }
 
   animate() {
@@ -132,25 +106,16 @@ class App {
     const delta = this.clock.getDelta();
     const elapsed = this.clock.getElapsedTime();
 
-    if (this.earthGroup) {
-      updateEarth(this.earthGroup, delta, elapsed);
+    if (this.globe) {
+      updateEarth(this.globe, delta, elapsed);
     }
 
-    if (this.beamData) {
-      updateBeams(this.beamData.beams, elapsed);
-    }
-
-    if (this.energyData) {
-      updateEnergyPoints(this.energyData.points, elapsed);
-    }
-
-    if (this.arcData) {
-      updateArcs(this.arcData.arcs, elapsed);
+    if (this.particleData) {
+      updateParticles(this.particleData, elapsed, delta);
     }
 
     this.controls.update();
     this.composer.render();
-    this.labelRenderer.render(this.scene, this.camera);
   }
 }
 

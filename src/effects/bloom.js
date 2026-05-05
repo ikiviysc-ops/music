@@ -3,19 +3,19 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 
 const BLOOM_CONFIG = {
-  strength: 1.8,
+  strength: 0.8,
   radius: 0.6,
-  threshold: 0.25,
-  mobileStrength: 1.2,
-  mobileRadius: 0.4
+  threshold: 0.3
 };
 
-const vignetteShader = {
+const VIGNETTE_SHADER = {
   uniforms: {
     tDiffuse: { value: null },
-    uIntensity: { value: 0.4 }
+    uDarkness: { value: 1.2 },
+    uOffset: { value: 1.0 }
   },
   vertexShader: `
     varying vec2 vUv;
@@ -26,43 +26,92 @@ const vignetteShader = {
   `,
   fragmentShader: `
     uniform sampler2D tDiffuse;
-    uniform float uIntensity;
+    uniform float uDarkness;
+    uniform float uOffset;
     varying vec2 vUv;
     void main() {
-      vec4 color = texture2D(tDiffuse, vUv);
-      float dist = distance(vUv, vec2(0.5));
-      float vignette = smoothstep(0.5, 0.8, dist);
-      color.rgb *= 1.0 - vignette * uIntensity;
-      gl_FragColor = color;
+      vec4 texel = texture2D(tDiffuse, vUv);
+      vec2 uv = (vUv - vec2(0.5)) * vec2(uOffset);
+      float vignette = 1.0 - dot(uv, uv);
+      texel.rgb *= mix(1.0, vignette, uDarkness);
+      gl_FragColor = texel;
+    }
+  `
+};
+
+const TONEMAP_SHADER = {
+  uniforms: {
+    tDiffuse: { value: null },
+    uExposure: { value: 1.2 },
+    uGamma: { value: 0.9 }
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform float uExposure;
+    uniform float uGamma;
+    varying vec2 vUv;
+    void main() {
+      vec4 texel = texture2D(tDiffuse, vUv);
+      vec3 color = texel.rgb * uExposure;
+      color = color / (color + vec3(1.0));
+      color = pow(color, vec3(1.0 / uGamma));
+      gl_FragColor = vec4(color, texel.a);
     }
   `
 };
 
 export function createComposer(renderer, scene, camera) {
-  const isMobile = window.innerWidth <= 480;
-  const isLowEnd = navigator.hardwareConcurrency < 4;
+  const size = renderer.getSize(new THREE.Vector2());
+  const pixelRatio = renderer.getPixelRatio();
 
   const composer = new EffectComposer(renderer);
 
   const renderPass = new RenderPass(scene, camera);
   composer.addPass(renderPass);
 
-  if (!isLowEnd) {
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
-      isMobile ? BLOOM_CONFIG.mobileStrength : BLOOM_CONFIG.strength,
-      isMobile ? BLOOM_CONFIG.mobileRadius : BLOOM_CONFIG.radius,
-      BLOOM_CONFIG.threshold
-    );
-    composer.addPass(bloomPass);
-  }
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(size.x, size.y),
+    BLOOM_CONFIG.strength,
+    BLOOM_CONFIG.radius,
+    BLOOM_CONFIG.threshold
+  );
+  composer.addPass(bloomPass);
 
-  const vignettePass = new ShaderPass(vignetteShader);
+  const fxaaPass = new ShaderPass(FXAAShader);
+  fxaaPass.uniforms['resolution'].value.set(
+    1 / (size.x * pixelRatio),
+    1 / (size.y * pixelRatio)
+  );
+  composer.addPass(fxaaPass);
+
+  const tonemapPass = new ShaderPass(TONEMAP_SHADER);
+  composer.addPass(tonemapPass);
+
+  const vignettePass = new ShaderPass(VIGNETTE_SHADER);
   composer.addPass(vignettePass);
 
   return composer;
 }
 
 export function updateComposerSize(composer, container) {
-  composer.setSize(container.clientWidth, container.clientHeight);
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+  const pixelRatio = Math.min(window.devicePixelRatio, 2);
+
+  composer.setSize(width, height);
+  composer.setPixelRatio(pixelRatio);
+
+  const passes = composer.passes;
+  passes.forEach(pass => {
+    if (pass.uniforms && pass.uniforms['resolution']) {
+      pass.uniforms['resolution'].value.set(1 / (width * pixelRatio), 1 / (height * pixelRatio));
+    }
+  });
 }
