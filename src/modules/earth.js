@@ -4,7 +4,7 @@ const EARTH_RADIUS = 1.5;
 const ROTATION_SPEED = 0.0003;
 
 function createAtmosphere() {
-  const geometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.12, 64, 64);
+  const geometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.05, 64, 64);
   const material = new THREE.ShaderMaterial({
     vertexShader: `
       varying vec3 vNormal;
@@ -20,12 +20,10 @@ function createAtmosphere() {
       varying vec3 vPosition;
       void main() {
         vec3 viewDirection = normalize(-vPosition);
-        float fresnel = pow(1.0 - dot(viewDirection, vNormal), 3.0);
-        vec3 innerColor = vec3(0.1, 0.4, 0.8);
-        vec3 outerColor = vec3(0.0, 0.6, 1.0);
-        vec3 atmosphereColor = mix(innerColor, outerColor, fresnel);
-        float intensity = fresnel * 1.2;
-        gl_FragColor = vec4(atmosphereColor * intensity, intensity * 0.7);
+        float fresnel = pow(1.0 - dot(viewDirection, vNormal), 4.0);
+        vec3 atmosphereColor = vec3(0.15, 0.35, 0.6);
+        float intensity = fresnel * 0.35;
+        gl_FragColor = vec4(atmosphereColor, intensity);
       }
     `,
     side: THREE.BackSide,
@@ -141,8 +139,8 @@ export function createEarth() {
 
   const material = new THREE.MeshStandardMaterial({
     map: fallbackTexture,
-    emissive: 0x223355,
-    emissiveIntensity: 0.8,
+    emissive: 0x112233,
+    emissiveIntensity: 0.3,
     emissiveMap: fallbackTexture,
     roughness: 0.85,
     metalness: 0.05
@@ -153,7 +151,7 @@ export function createEarth() {
     material.map = texture;
     material.emissiveMap = texture;
     material.emissive.set(0xffffff);
-    material.emissiveIntensity = 1.0;
+    material.emissiveIntensity = 0.5;
     material.needsUpdate = true;
     console.log('Night texture loaded successfully');
   }, (progress) => {
