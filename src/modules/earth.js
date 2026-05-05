@@ -3,37 +3,32 @@ import * as THREE from 'three';
 const EARTH_RADIUS = 1.5;
 const ROTATION_SPEED = 0.0003;
 
-// ========== 大气层粒子（纯亮点，无外发光） ==========
+// ========== 大气层粒子（均匀分布，固定高度，1px 亮点） ==========
 function createAtmosphereParticles() {
-  const count = 2000;
-  const innerRadius = EARTH_RADIUS * 1.06;
-  const outerRadius = EARTH_RADIUS * 1.22;
+  const count = 2500;
+  const radius = EARTH_RADIUS * 1.12; // 固定单一高度
 
   const positions = new Float32Array(count * 3);
-  const sizes = new Float32Array(count);
 
   for (let i = 0; i < count; i++) {
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    const radius = innerRadius + Math.random() * (outerRadius - innerRadius);
+    // 均匀分布：用黄金角螺旋
+    const phi = Math.acos(1 - 2 * (i + 0.5) / count);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * i;
 
     positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
     positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
     positions[i * 3 + 2] = radius * Math.cos(phi);
-
-    sizes[i] = 0.6 + Math.random() * 1.2;
   }
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
 
   const material = new THREE.ShaderMaterial({
     vertexShader: `
-      attribute float aSize;
       void main() {
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = max(0.5, aSize * (50.0 / -mvPosition.z));
+        // 固定 1px 大小，不随距离变化
+        gl_PointSize = 1.0;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -41,9 +36,9 @@ function createAtmosphereParticles() {
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        // 硬边圆点，没有光晕扩散
-        float alpha = step(dist, 0.35) * 0.7;
-        vec3 color = vec3(0.35, 0.65, 1.0);
+        // 1px 硬边小亮点
+        float alpha = step(dist, 0.25) * 0.6;
+        vec3 color = vec3(0.4, 0.7, 1.0);
         gl_FragColor = vec4(color, alpha);
       }
     `,
@@ -55,7 +50,7 @@ function createAtmosphereParticles() {
   return new THREE.Points(geometry, material);
 }
 
-// ========== 大陆板块粒子（纯亮点，无外发光） ==========
+// ========== 大陆板块粒子（1px 小亮点） ==========
 function createContinentParticles() {
   const continentData = [
     { lat: 45, lng: -100, spread: 25, count: 300 },
@@ -80,7 +75,6 @@ function createContinentParticles() {
   continentData.forEach(c => totalCount += c.count);
 
   const positions = new Float32Array(totalCount * 3);
-  const sizes = new Float32Array(totalCount);
   const colors = new Float32Array(totalCount * 3);
 
   let idx = 0;
@@ -88,7 +82,7 @@ function createContinentParticles() {
     for (let i = 0; i < cluster.count; i++) {
       const lat = cluster.lat + (Math.random() - 0.5) * cluster.spread;
       const lng = cluster.lng + (Math.random() - 0.5) * cluster.spread;
-      const r = EARTH_RADIUS + 0.01 + Math.random() * 0.02;
+      const r = EARTH_RADIUS + 0.01;
 
       const phi = (90 - lat) * (Math.PI / 180);
       const theta = (lng + 180) * (Math.PI / 180);
@@ -96,8 +90,6 @@ function createContinentParticles() {
       positions[idx * 3] = r * Math.sin(phi) * Math.cos(theta);
       positions[idx * 3 + 1] = r * Math.cos(phi);
       positions[idx * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
-
-      sizes[idx] = 0.25 + Math.random() * 0.5;
 
       const t = Math.random();
       if (t < 0.3) {
@@ -116,18 +108,17 @@ function createContinentParticles() {
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
   geometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
 
   const material = new THREE.ShaderMaterial({
     vertexShader: `
-      attribute float aSize;
       attribute vec3 aColor;
       varying vec3 vColor;
       void main() {
         vColor = aColor;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = max(0.3, aSize * (60.0 / -mvPosition.z));
+        // 固定 1px 大小
+        gl_PointSize = 1.0;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -136,8 +127,8 @@ function createContinentParticles() {
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        // 硬边圆点，没有光晕扩散
-        float alpha = step(dist, 0.3) * 0.8;
+        // 1px 硬边小亮点
+        float alpha = step(dist, 0.25) * 0.8;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
