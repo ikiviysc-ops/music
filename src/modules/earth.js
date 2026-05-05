@@ -47,9 +47,9 @@ function createAtmosphere() {
         vec3 viewDir = normalize(uCameraPos - vPosition);
         float dotProduct = dot(normalize(vNormal), viewDir);
         
-        // 只在边缘显示，正对摄像机的地方渐隐（扩大隐藏范围）
-        float edgeAlpha = 1.0 - smoothstep(0.6, 0.95, dotProduct);
-        edgeAlpha = pow(edgeAlpha, 0.6);
+        // 只在边缘显示，正对摄像机的地方渐隐（更大隐藏范围）
+        float edgeAlpha = 1.0 - smoothstep(0.75, 0.98, dotProduct);
+        edgeAlpha = pow(edgeAlpha, 0.4);
         
         float baseAlpha = step(dist, 0.65) * 0.1;
         float alpha = baseAlpha * edgeAlpha;
