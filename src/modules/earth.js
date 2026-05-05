@@ -49,7 +49,7 @@ function createAtmosphere() {
         
         // 只有真正的边缘才显示 - 大部分区域隐藏
         // dotProduct接近1 = 正对相机（隐藏），接近0或负数 = 边缘（显示）
-        float edgeAlpha = 1.0 - smoothstep(0.7, 0.95, dotProduct);
+        float edgeAlpha = 1.0 - smoothstep(0.85, 0.98, dotProduct);
         edgeAlpha = clamp(edgeAlpha, 0.0, 1.0);
         
         float baseAlpha = step(dist, 0.65) * 0.1;
