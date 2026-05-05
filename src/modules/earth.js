@@ -3,56 +3,10 @@ import * as THREE from 'three';
 const EARTH_RADIUS = 1.5;
 const ROTATION_SPEED = 0.0003;
 
-// ========== 深空中的粒子（和大气粒子一样，更稀疏，只在地球背后） ==========
-function createSpaceParticles() {
-  const count = 800;
-  const radius = EARTH_RADIUS * 3.0;
-
-  const positions = new Float32Array(count * 3);
-
-  for (let i = 0; i < count; i++) {
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(Math.random());
-    const r = radius * (0.4 + Math.random() * 0.6);
-
-    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-    positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-    positions[i * 3 + 2] = -r * Math.cos(phi);
-  }
-
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-  const material = new THREE.ShaderMaterial({
-    vertexShader: `
-      void main() {
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 1.8;
-        gl_Position = projectionMatrix * mvPosition;
-      }
-    `,
-    fragmentShader: `
-      void main() {
-        vec2 coord = gl_PointCoord - vec2(0.5);
-        float dist = length(coord) * 2.0;
-        if (dist > 1.0) discard;
-        float alpha = step(dist, 0.65) * 0.25;
-        vec3 color = vec3(0.25, 0.55, 1.0);
-        gl_FragColor = vec4(color, alpha);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending
-  });
-
-  return new THREE.Points(geometry, material);
-}
-
 // ========== 大气层（固定半径，密集粒子） ==========
 function createAtmosphere() {
   const count = 12000;
-  const radius = EARTH_RADIUS * 1.08;
+  const radius = EARTH_RADIUS * 1.08; // 统一高度
 
   const positions = new Float32Array(count * 3);
 
