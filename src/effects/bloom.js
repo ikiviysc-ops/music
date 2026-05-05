@@ -7,9 +7,9 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 
 const BLOOM_CONFIG = {
-  strength: 0.5,
-  radius: 0.3,
-  threshold: 0.3
+  strength: 0.7,
+  radius: 0.35,
+  threshold: 0.25
 };
 
 const VIGNETTE_SHADER = {

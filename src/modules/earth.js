@@ -27,7 +27,7 @@ function createSpaceParticles() {
     vertexShader: `
       void main() {
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 1.5;
+        gl_PointSize = 1.8;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -36,7 +36,7 @@ function createSpaceParticles() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        float alpha = step(dist, 0.6) * 0.12;
+        float alpha = step(dist, 0.65) * 0.18;
         vec3 color = vec3(0.2, 0.45, 0.8);
         gl_FragColor = vec4(color, alpha);
       }
@@ -72,7 +72,7 @@ function createAtmosphere() {
     vertexShader: `
       void main() {
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 1.5;
+        gl_PointSize = 1.8;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -81,7 +81,7 @@ function createAtmosphere() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        float alpha = step(dist, 0.6) * 0.12;
+        float alpha = step(dist, 0.65) * 0.18;
         vec3 color = vec3(0.2, 0.45, 0.8);
         gl_FragColor = vec4(color, alpha);
       }
@@ -193,7 +193,7 @@ function createContinentParticles() {
       void main() {
         vColor = aColor;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 1.5;
+        gl_PointSize = 1.8;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -203,7 +203,7 @@ function createContinentParticles() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        float alpha = step(dist, 0.6) * 0.18;
+        float alpha = step(dist, 0.65) * 0.25;
         gl_FragColor = vec4(vColor, alpha);
       }
     `,
@@ -226,7 +226,7 @@ function createEarthMesh() {
   const material = new THREE.MeshStandardMaterial({
     color: 0x0a1018,
     emissive: 0x0a1018,
-    emissiveIntensity: 0.1,
+    emissiveIntensity: 0.15,
     roughness: 0.98,
     metalness: 0.0
   });
@@ -236,7 +236,7 @@ function createEarthMesh() {
     material.map = texture;
     material.emissiveMap = texture;
     material.emissive.set(0xffffff);
-    material.emissiveIntensity = 0.4;
+    material.emissiveIntensity = 0.5;
     material.needsUpdate = true;
     console.log('Night texture loaded successfully');
   }, undefined, (err) => {
