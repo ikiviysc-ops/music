@@ -4,6 +4,12 @@ import { createCamera, updateCameraAspect } from './core/camera.js';
 import { createRenderer, updateRendererSize } from './core/renderer.js';
 import { createControls } from './core/controls.js';
 import { createEarth, updateEarth } from './modules/earth.js';
+import { createCityPoints, createCityGlows } from './modules/cityPoints.js';
+import { createLabelRenderer, updateLabelRendererSize, createCityLabels } from './modules/cityLabels.js';
+import { createBeams, updateBeams, createEnergyPoints, updateEnergyPoints } from './modules/beam.js';
+import { createArcs, updateArcs } from './modules/arc.js';
+import { createComposer, updateComposerSize } from './effects/bloom.js';
+import { InteractionManager } from './modules/interaction.js';
 
 class App {
   constructor() {
@@ -11,8 +17,17 @@ class App {
     this.scene = null;
     this.camera = null;
     this.renderer = null;
+    this.labelRenderer = null;
+    this.composer = null;
     this.controls = null;
     this.earthGroup = null;
+    this.cityPoints = null;
+    this.cityGlows = null;
+    this.cityLabels = [];
+    this.beamData = null;
+    this.energyData = null;
+    this.arcData = null;
+    this.interaction = null;
     this.clock = new THREE.Clock();
     this.animationId = null;
   }
@@ -27,11 +42,18 @@ class App {
     this.scene = createScene();
     this.camera = createCamera(this.container);
     this.renderer = createRenderer(this.container);
+    this.composer = createComposer(this.renderer, this.scene, this.camera);
+    this.labelRenderer = createLabelRenderer(this.container);
     this.controls = createControls(this.camera, this.renderer);
 
     this.addLights();
     this.addStars();
     this.addEarth();
+    this.addCityPoints();
+    this.addBeams();
+    this.addArcs();
+    this.addCityLabels();
+    this.setupInteraction();
 
     window.addEventListener('resize', this.onResize.bind(this));
 
@@ -51,7 +73,6 @@ class App {
     const starsGeometry = new THREE.BufferGeometry();
     const starCount = 1500;
     const positions = new Float32Array(starCount * 3);
-    const sizes = new Float32Array(starCount);
 
     for (let i = 0; i < starCount; i++) {
       const radius = 50 + Math.random() * 50;
@@ -61,11 +82,9 @@ class App {
       positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
       positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
       positions[i * 3 + 2] = radius * Math.cos(phi);
-      sizes[i] = Math.random() * 1.5 + 0.5;
     }
 
     starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    starsGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
     const starsMaterial = new THREE.PointsMaterial({
       color: 0xffffff,
@@ -85,9 +104,55 @@ class App {
     this.scene.add(this.earthGroup);
   }
 
+  addCityPoints() {
+    this.cityPoints = createCityPoints();
+    this.cityGlows = createCityGlows();
+    this.earthGroup.add(this.cityPoints);
+    this.earthGroup.add(this.cityGlows);
+  }
+
+  addBeams() {
+    this.beamData = createBeams(this.earthGroup);
+    this.energyData = createEnergyPoints(this.earthGroup);
+  }
+
+  addArcs() {
+    this.arcData = createArcs(this.earthGroup);
+  }
+
+  addCityLabels() {
+    this.cityLabels = createCityLabels(this.earthGroup);
+  }
+
+  setupInteraction() {
+    this.interaction = new InteractionManager(this.camera, this.controls, this.renderer);
+    const allTargets = [
+      ...(this.beamData ? this.beamData.beams : []),
+      ...(this.energyData ? this.energyData.points : [])
+    ];
+    this.interaction.init(allTargets, this.energyData ? this.energyData.points : []);
+
+    this.interaction.setOnClickCallback((city) => {
+      console.log('Selected city:', city.city, city.listeners.toLocaleString() + '人在听');
+    });
+
+    this.interaction.setOnHoverCallback((city, target) => {
+      if (target.material && target.material.uniforms && target.material.uniforms.uOpacity) {
+        target.material.uniforms.uOpacity.value = 1.0;
+        setTimeout(() => {
+          if (target.material.uniforms.uOpacity) {
+            target.material.uniforms.uOpacity.value = 0.85;
+          }
+        }, 300);
+      }
+    });
+  }
+
   onResize() {
     updateCameraAspect(this.camera, this.container);
     updateRendererSize(this.renderer, this.container);
+    updateComposerSize(this.composer, this.container);
+    updateLabelRendererSize(this.labelRenderer, this.container);
   }
 
   animate() {
@@ -100,8 +165,21 @@ class App {
       updateEarth(this.earthGroup, delta);
     }
 
+    if (this.beamData) {
+      updateBeams(this.beamData.beams, elapsed);
+    }
+
+    if (this.energyData) {
+      updateEnergyPoints(this.energyData.points, elapsed);
+    }
+
+    if (this.arcData) {
+      updateArcs(this.arcData.arcs, elapsed);
+    }
+
     this.controls.update();
-    this.renderer.render(this.scene, this.camera);
+    this.composer.render();
+    this.labelRenderer.render(this.scene, this.camera);
   }
 
   dispose() {
