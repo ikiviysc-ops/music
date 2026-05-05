@@ -96,7 +96,7 @@ class App {
     const elapsed = this.clock.getElapsedTime();
 
     if (this.earthGroup) {
-      updateEarth(this.earthGroup, delta, elapsed);
+      updateEarth(this.earthGroup, delta, elapsed, this.camera);
     }
 
     this.controls.update();

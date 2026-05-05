@@ -24,18 +24,36 @@ function createAtmosphere() {
 
   const material = new THREE.ShaderMaterial({
     vertexShader: `
+      varying vec3 vPosition;
+      varying vec3 vNormal;
       void main() {
+        vPosition = position;
+        vNormal = normalize(position);
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
         gl_PointSize = 1.8;
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
     fragmentShader: `
+      varying vec3 vPosition;
+      varying vec3 vNormal;
+      uniform vec3 uCameraPos;
       void main() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
         if (dist > 1.0) discard;
-        float alpha = step(dist, 0.65) * 0.28;
+        
+        // 计算视角方向与粒子法线的点积
+        vec3 viewDir = normalize(uCameraPos - vPosition);
+        float dotProduct = dot(normalize(vNormal), viewDir);
+        
+        // 只在边缘显示，正对摄像机的地方渐隐
+        float edgeAlpha = 1.0 - smoothstep(0.4, 0.85, dotProduct);
+        edgeAlpha = pow(edgeAlpha, 0.7);
+        
+        float baseAlpha = step(dist, 0.65) * 0.28;
+        float alpha = baseAlpha * edgeAlpha;
+        
         vec3 color = vec3(0.3, 0.6, 1.0);
         gl_FragColor = vec4(color, alpha);
       }
@@ -44,6 +62,14 @@ function createAtmosphere() {
     depthWrite: false,
     blending: THREE.AdditiveBlending
   });
+
+  // 获取相机位置并传递给 shader
+  material.uniforms = {
+    uCameraPos: { value: new THREE.Vector3(0, 0, 0) }
+  };
+
+  // 保存 material 以便更新相机位置
+  atmosphere.userData.material = material;
 
   return new THREE.Points(geometry, material);
 }
@@ -223,7 +249,14 @@ export function createEarth() {
   return group;
 }
 
-export function updateEarth(earthGroup, deltaTime, elapsedTime) {
-  const { earth, ROTATION_SPEED: speed } = earthGroup.userData;
+export function updateEarth(earthGroup, deltaTime, elapsedTime, camera) {
+  const { earth, atmosphere, ROTATION_SPEED: speed } = earthGroup.userData;
   earth.rotation.y += speed;
+  
+  // 更新大气粒子 shader 的相机位置
+  if (atmosphere && atmosphere.userData && atmosphere.userData.material) {
+    const worldCameraPos = new THREE.Vector3();
+    camera.getWorldPosition(worldCameraPos);
+    atmosphere.userData.material.uniforms.uCameraPos.value.copy(worldCameraPos);
+  }
 }
