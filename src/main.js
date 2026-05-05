@@ -75,8 +75,8 @@ class App {
     backLight.position.set(-3, -2, -5);
     this.scene.add(backLight);
     
-    // 顶部光源 - 模拟太阳光
-    const topLight = new THREE.DirectionalLight(0xfff6d6, 1.5);
+    // 顶部光源 - 蓝色冷光
+    const topLight = new THREE.DirectionalLight(0xa3d4ff, 1.5);
     topLight.position.set(0, 50, 0);
     topLight.lookAt(0, 0, 0);
     this.scene.add(topLight);
