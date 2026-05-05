@@ -13,7 +13,7 @@ export const EARTH_MODES = {
   CITY_LIGHTS: 'cityLights'       // 城市灯光闪烁模式
 };
 
-let currentMode = EARTH_MODES.CITY_LIGHTS;
+let currentMode = EARTH_MODES.STANDARD;
 
 // ========== 大气层（固定半径，密集粒子） ==========
 function createAtmosphere() {
@@ -21,25 +21,37 @@ function createAtmosphere() {
   const radius = EARTH_RADIUS * 1.1;
 
   const positions = new Float32Array(count * 3);
+  const uvs = new Float32Array(count * 2);
 
   for (let i = 0; i < count; i++) {
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
 
     positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-    positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-    positions[i * 3 + 2] = radius * Math.cos(phi);
+    positions[i * 3 + 1] = radius * Math.cos(phi);
+    positions[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+    
+    // 计算UV坐标 - 标准球面UV映射
+    uvs[i * 2] = theta / (Math.PI * 2);
+    uvs[i * 2 + 1] = phi / Math.PI;
   }
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
 
   const material = new THREE.ShaderMaterial({
+    uniforms: {
+      uNightTexture: { value: null },
+      uUseNightTexture: { value: false }
+    },
     vertexShader: `
       varying vec3 vViewNormal;
+      varying vec2 vUv;
       void main() {
         vec3 normal = normalize(position);
         vViewNormal = normalize(normalMatrix * normal);
+        vUv = uv;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
         gl_PointSize = 4.0;
         gl_Position = projectionMatrix * mvPosition;
@@ -47,6 +59,9 @@ function createAtmosphere() {
     `,
     fragmentShader: `
       varying vec3 vViewNormal;
+      varying vec2 vUv;
+      uniform sampler2D uNightTexture;
+      uniform bool uUseNightTexture;
       void main() {
         vec2 coord = gl_PointCoord - vec2(0.5);
         float dist = length(coord) * 2.0;
@@ -63,7 +78,12 @@ function createAtmosphere() {
         
         float alpha = circleAlpha * edgeAlpha * 0.15;
         
+        // 根据uniform决定使用哪种颜色
         vec3 color = vec3(0.3, 0.6, 1.0);
+        if (uUseNightTexture && textureSize(uNightTexture, 0).x > 1) {
+          color = texture2D(uNightTexture, vUv).rgb * 2.0;
+        }
+        
         gl_FragColor = vec4(color, alpha);
       }
     `,
@@ -352,6 +372,7 @@ export function createEarth() {
 
   // 创建云图
   const loader = new THREE.TextureLoader();
+  const nightUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg';
   const cloudsUrl = 'https://unpkg.com/three-globe@2.31.0/example/clouds/clouds.png';
   const cloudsGeometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.015, 64, 64);
   const cloudsMaterial = new THREE.MeshBasicMaterial({
@@ -360,6 +381,23 @@ export function createEarth() {
   });
   const clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
   clouds.visible = false;
+
+  // 加载黑夜纹理，同时设置到地球本体和大气粒子
+  loader.load(nightUrl, (texture) => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    if (earth.material.uniforms && earth.material.uniforms.uNightTexture) {
+      earth.material.uniforms.uNightTexture.value = texture;
+      earth.material.uniforms.uEmissiveIntensity.value = 3.5;
+      earth.material.needsUpdate = true;
+    }
+    if (atmosphere.material.uniforms && atmosphere.material.uniforms.uNightTexture) {
+      atmosphere.material.uniforms.uNightTexture.value = texture;
+      atmosphere.material.needsUpdate = true;
+    }
+    console.log('Night texture loaded successfully for both earth and atmosphere');
+  }, undefined, (err) => {
+    console.log('Night texture failed:', err);
+  });
 
   // 加载云图纹理
   loader.load(cloudsUrl, (texture) => {
@@ -488,6 +526,12 @@ export function setEarthMode(earthGroup, mode) {
   clouds.visible = false;
   atmosphere.visible = true;
   continents.visible = false; // 始终隐藏大陆粒子
+  
+  // 控制大气粒子是否使用黑夜纹理着色（仅标准模式启用）
+  if (atmosphere.material.uniforms && atmosphere.material.uniforms.uUseNightTexture) {
+    atmosphere.material.uniforms.uUseNightTexture.value = (mode === EARTH_MODES.STANDARD);
+    atmosphere.material.needsUpdate = true;
+  }
   
   // 处理云图和点模式
   if (mode === EARTH_MODES.CLOUDS) {
