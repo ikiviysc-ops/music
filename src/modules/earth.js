@@ -404,7 +404,7 @@ export function setEarthMode(earthGroup, mode) {
   earthWireframe.visible = false;
   earthPoints.visible = false;
   atmosphere.visible = true;
-  continents.visible = true;
+  continents.visible = false; // 始终隐藏大陆粒子
   
   // 处理线框和点模式
   if (mode === EARTH_MODES.WIREFRAME) {
