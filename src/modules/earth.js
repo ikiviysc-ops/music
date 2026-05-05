@@ -298,8 +298,8 @@ function createEarthMesh() {
           // 更明显的灯光效果
           float lightIntensity = smoothstep(0.15, 0.5, brightness);
           vec3 lightColor = vec3(1.0, 0.9, 0.6) * lightIntensity * pulse * 4.0;
-          // 基础纹理稍微变暗，突出灯光
-          finalColor = nightColor * uEmissiveIntensity * 0.7 + lightColor + glowColor;
+          // 基础纹理保持正常亮度
+          finalColor = nightColor * uEmissiveIntensity + lightColor + glowColor;
         } else {
           finalColor = nightColor * uEmissiveIntensity + glowColor;
         }
