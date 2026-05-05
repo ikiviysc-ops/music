@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-const EARTH_RADIUS = 1.5;
+const EARTH_RADIUS = 1.9;
 const ROTATION_SPEED = 0.0003;
 
 // ========== 大气层（固定半径，密集粒子） ==========
