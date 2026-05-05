@@ -227,6 +227,7 @@ function createEarthMesh() {
   const nightUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg';
   const dayUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-blue-marble.jpg';
   const topologyUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png';
+  const cloudsUrl = 'https://unpkg.com/three-globe@2.31.0/example/clouds/clouds.png';
 
   const material = new THREE.ShaderMaterial({
     uniforms: {
@@ -353,40 +354,139 @@ export function createEarth() {
   const atmosphere = createAtmosphere();
   const continents = createContinentParticles();
 
-  // 创建线框模式的网格
-  const wireframeMaterial = new THREE.MeshBasicMaterial({
+  // 创建云图
+  const loader = new THREE.TextureLoader();
+  const cloudsUrl = 'https://unpkg.com/three-globe@2.31.0/example/clouds/clouds.png';
+  const cloudsGeometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.01, 64, 64);
+  const cloudsMaterial = new THREE.MeshBasicMaterial({
+    transparent: true,
+    opacity: 0.6,
+    depthWrite: false
+  });
+  const clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
+  clouds.visible = false;
+
+  // 加载云图纹理
+  loader.load(cloudsUrl, (texture) => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    cloudsMaterial.map = texture;
+    cloudsMaterial.needsUpdate = true;
+    console.log('Clouds texture loaded successfully');
+  });
+
+  // 创建线框模式的组合：白天纹理 + 线框叠加
+  const wireframeDayGroup = new THREE.Group();
+  
+  // 白天纹理层
+  const wireframeDayBaseMaterial = new THREE.ShaderMaterial({
+    uniforms: { uDayTexture: { value: null } },
+    transparent: true,
+    opacity: 0.9,
+    lights: false,
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D uDayTexture;
+      varying vec2 vUv;
+      void main() {
+        vec3 dayColor = vec3(0.04, 0.06, 0.09);
+        if (textureSize(uDayTexture, 0).x > 1) {
+          dayColor = texture2D(uDayTexture, vUv).rgb;
+        }
+        float brightness = dot(dayColor, vec3(0.299, 0.587, 0.114));
+        float overexposureFactor = smoothstep(0.5, 0.8, brightness);
+        vec3 suppressedColor = mix(dayColor, dayColor * 0.6, overexposureFactor);
+        gl_FragColor = vec4(suppressedColor * 1.15, 1.0);
+      }
+    `
+  });
+  const earthWireframeBase = new THREE.Mesh(earth.geometry.clone(), wireframeDayBaseMaterial);
+  earthWireframeBase.visible = true;
+  
+  // 线框层
+  const wireframeOverlayMaterial = new THREE.MeshBasicMaterial({
     color: 0x3366ff,
     wireframe: true,
     transparent: true,
-    opacity: 0.8
+    opacity: 0.7
   });
-  const earthWireframe = new THREE.Mesh(earth.geometry.clone(), wireframeMaterial);
-  earthWireframe.visible = false;
+  const earthWireframeOverlay = new THREE.Mesh(earth.geometry.clone(), wireframeOverlayMaterial);
+  earthWireframeOverlay.visible = true;
+  
+  wireframeDayGroup.add(earthWireframeBase);
+  wireframeDayGroup.add(earthWireframeOverlay);
+  wireframeDayGroup.visible = false;
 
-  // 创建点模式的网格
-  const pointsMaterial = new THREE.PointsMaterial({
-    color: 0x3366ff,
-    size: 0.03,
+  // 创建点模式的网格 - 使用白天纹理
+  const pointsDayMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      uDayTexture: { value: null }
+    },
     transparent: true,
-    opacity: 0.9
+    lights: false,
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_PointSize = 4.0;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D uDayTexture;
+      varying vec2 vUv;
+      void main() {
+        // 圆形点
+        vec2 coord = gl_PointCoord - vec2(0.5);
+        if (length(coord) > 0.45) discard;
+        
+        vec3 dayColor = vec3(0.04, 0.06, 0.09);
+        if (textureSize(uDayTexture, 0).x > 1) {
+          dayColor = texture2D(uDayTexture, vUv).rgb;
+        }
+        gl_FragColor = vec4(dayColor * 1.3, 1.0);
+      }
+    `
   });
-  const earthPoints = new THREE.Points(earth.geometry.clone(), pointsMaterial);
+  const earthPoints = new THREE.Points(earth.geometry.clone(), pointsDayMaterial);
   earthPoints.visible = false;
 
   const group = new THREE.Group();
   group.add(earth);
-  group.add(earthWireframe);
+  group.add(wireframeDayGroup);
   group.add(earthPoints);
+  group.add(clouds);
   group.add(atmosphere);
   group.add(continents);
   
   // 先隐藏大陆粒子，以后再优化
   continents.visible = false;
 
+  // 加载白天纹理到线框和点模式
+  const dayUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-blue-marble.jpg';
+  loader.load(dayUrl, (texture) => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    if (wireframeDayBaseMaterial.uniforms && wireframeDayBaseMaterial.uniforms.uDayTexture) {
+      wireframeDayBaseMaterial.uniforms.uDayTexture.value = texture;
+      wireframeDayBaseMaterial.needsUpdate = true;
+    }
+    if (pointsDayMaterial.uniforms && pointsDayMaterial.uniforms.uDayTexture) {
+      pointsDayMaterial.uniforms.uDayTexture.value = texture;
+      pointsDayMaterial.needsUpdate = true;
+    }
+    console.log('Day texture loaded for wireframe/points');
+  });
+
   group.userData = { 
     earth, 
-    earthWireframe, 
+    wireframeDayGroup, 
     earthPoints, 
+    clouds,
     atmosphere, 
     continents, 
     EARTH_RADIUS, 
@@ -407,7 +507,7 @@ export function updateEarth(earthGroup, deltaTime, elapsedTime, camera) {
 
 // 切换地球显示模式
 export function setEarthMode(earthGroup, mode) {
-  const { earth, earthWireframe, earthPoints, atmosphere, continents } = earthGroup.userData;
+  const { earth, wireframeDayGroup, earthPoints, clouds, atmosphere, continents } = earthGroup.userData;
   if (!earth || !earth.material || !earth.material.uniforms) return;
   
   // 验证模式
@@ -421,18 +521,22 @@ export function setEarthMode(earthGroup, mode) {
   
   // 先隐藏所有特殊模式
   earth.visible = true;
-  earthWireframe.visible = false;
+  wireframeDayGroup.visible = false;
   earthPoints.visible = false;
+  clouds.visible = false;
   atmosphere.visible = true;
   continents.visible = false; // 始终隐藏大陆粒子
   
   // 处理线框和点模式
   if (mode === EARTH_MODES.WIREFRAME) {
+    // 线框模式：显示线框 + 云图
     earth.visible = false;
-    earthWireframe.visible = true;
+    wireframeDayGroup.visible = true;
+    clouds.visible = true;
     atmosphere.visible = false;
     continents.visible = false;
   } else if (mode === EARTH_MODES.POINTS) {
+    // 点模式：只显示点
     earth.visible = false;
     earthPoints.visible = true;
     atmosphere.visible = false;
