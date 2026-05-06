@@ -3,117 +3,161 @@ import { latLngToVector3 } from '../utils/geo.js';
 import { CITY_DATA, getCityColor } from '../data/cities.js';
 
 const EARTH_RADIUS = 1.6;
-const ARC_MIN_HEIGHT = 0.4;
-const ARC_MAX_HEIGHT = 0.7;
-const ARC_SEGMENTS = 40;
-const PARTICLES_PER_ARC = 24;
-const LABEL_SIZE = 0.66;
+const BEAM_MIN_HEIGHT = 0.8;
+const BEAM_MAX_HEIGHT = 1.8;
+const BEAM_WIDTH = 0.18;
+const LABEL_SIZE = 0.55;
 const TEX_W = 256;
 const TEX_H = 320;
 
-const arcLineVertexShader = `
-  attribute float aProgress;
-  varying float vProgress;
-  void main() {
-    vProgress = aProgress;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
+const beamVertexShader = `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
 `;
 
-const arcLineFragmentShader = `
-  uniform vec3 uColor;
-  uniform float uTime;
-  uniform float uPhase;
-  varying float vProgress;
+const beamFragmentShader = `
+precision highp float;
 
-  void main() {
-    float alpha = smoothstep(0.0, 0.1, vProgress) * smoothstep(1.0, 0.85, vProgress);
-    alpha *= 0.5 + 0.3 * vProgress;
+uniform float uTime;
+uniform vec3 uColor;
+uniform float uPhase;
+uniform float uWispDensity;
+uniform float uWispSpeed;
+uniform float uWispIntensity;
+uniform float uFlowSpeed;
+uniform float uFlowStrength;
+uniform float uFogIntensity;
+uniform float uFogScale;
+uniform float uFogFallSpeed;
+uniform float uDecay;
+uniform float uFalloffStart;
 
-    float breath = 0.75 + 0.25 * sin(uTime * 1.8 + uPhase);
-    alpha *= breath;
+varying vec2 vUv;
 
-    float flow = fract(vProgress - uTime * 0.3 + uPhase);
-    float trail = smoothstep(0.0, 0.15, flow) * smoothstep(0.4, 0.15, flow);
-    alpha += trail * 0.4;
+#define PI 3.14159265359
+#define EPS 1e-6
 
-    float p1 = fract(vProgress - uTime * 0.8 + uPhase);
-    float pulse1 = pow(smoothstep(0.15, 0.0, p1) * smoothstep(-0.02, 0.02, p1), 2.0);
-    float p2 = fract(vProgress - uTime * 0.5 + uPhase + 0.33);
-    float pulse2 = pow(smoothstep(0.12, 0.0, p2) * smoothstep(-0.02, 0.02, p2), 2.0);
-    float p3 = fract(vProgress - uTime * 1.2 + uPhase + 0.66);
-    float pulse3 = pow(smoothstep(0.1, 0.0, p3) * smoothstep(-0.02, 0.02, p3), 2.0);
-    float pulse = (pulse1 * 1.2 + pulse2 * 0.8 + pulse3 * 0.6);
-
-    vec3 col = uColor * (1.0 + pulse * 2.0);
-    alpha += pulse * 0.6;
-
-    gl_FragColor = vec4(col, alpha);
-  }
-`;
-
-const particleVertexShader = `
-  attribute float aAlpha;
-  varying float vAlpha;
-  void main() {
-    vAlpha = aAlpha;
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = max(1.5, 3.0 * aAlpha);
-    gl_Position = projectionMatrix * mvPosition;
-  }
-`;
-
-const particleFragmentShader = `
-  uniform vec3 uColor;
-  varying float vAlpha;
-  void main() {
-    float dist = length(gl_PointCoord - vec2(0.5));
-    if (dist > 0.5) discard;
-    float glow = 1.0 - dist * 2.0;
-    glow = pow(glow, 1.5);
-    gl_FragColor = vec4(uColor, glow * vAlpha);
-  }
-`;
-
-function hashStr(s) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-  return h;
+float h21(vec2 p) {
+  p = fract(p * vec2(123.34, 456.21));
+  p += dot(p, p + 34.123);
+  return fract(p.x * p.y);
 }
 
-function createArcCurve(surfacePos, direction, height, city, cityIndex) {
-  const east = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).normalize();
-  if (east.length() < 0.01) {
-    east.crossVectors(new THREE.Vector3(1, 0, 0), direction).normalize();
-  }
-  const north = new THREE.Vector3().crossVectors(direction, east).normalize();
-  const nameHash = hashStr(city.city + city.cityEn);
-  const spreadAngle = (nameHash % 360) * (Math.PI / 180);
-  const bendDir = east.clone().multiplyScalar(Math.cos(spreadAngle))
-    .add(north.clone().multiplyScalar(Math.sin(spreadAngle)))
-    .normalize();
-
-  const straightUp = surfacePos.clone().add(direction.clone().multiplyScalar(height * 0.65));
-  const peakPos = surfacePos.clone()
-    .add(direction.clone().multiplyScalar(height * 0.95))
-    .add(bendDir.clone().multiplyScalar(height * 0.15));
-  const endPos = surfacePos.clone()
-    .add(direction.clone().multiplyScalar(height * 0.55))
-    .add(bendDir.clone().multiplyScalar(height * 0.7));
-
-  const cp1 = straightUp.clone();
-  const cp2 = peakPos.clone()
-    .add(bendDir.clone().multiplyScalar(height * 0.25));
-
-  return { curve: new THREE.CubicBezierCurve3(surfacePos, cp1, cp2, endPos), endPos };
+float vnoise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  float a = h21(i), b = h21(i + vec2(1,0)), c = h21(i + vec2(0,1)), d = h21(i + vec2(1,1));
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
 }
+
+float fbm(vec2 p) {
+  float v = 0.0, amp = 0.6;
+  mat2 m = mat2(0.86, 0.5, -0.5, 0.86);
+  for (int i = 0; i < 4; ++i) {
+    v += amp * vnoise(p);
+    p = m * p * 2.03 + 17.1;
+    amp *= 0.52;
+  }
+  return v;
+}
+
+float tri01(float x) {
+  float f = fract(x);
+  return 1.0 - abs(f * 2.0 - 1.0);
+}
+
+float rGate(float x, float l, float aa) {
+  float a = smoothstep(0.0, aa, x);
+  float b = 1.0 - smoothstep(l, l + aa, x);
+  return max(0.0, a * b);
+}
+
+void main() {
+  vec2 uv = vUv;
+  float y = uv.y;
+  float x = uv.x;
+
+  float topFade = pow(1.0 - smoothstep(0.0, 1.0, y), uDecay);
+  float bottomFade = smoothstep(0.0, 0.08, y);
+
+  float cx = (x - 0.5) * 2.0;
+  float beamCore = exp(-cx * cx * 8.0);
+  float beamWide = exp(-cx * cx * 2.0);
+
+  float flowPhase = y / max(0.3, 0.3) + uTime * uFlowSpeed + uPhase;
+  float flow = pow(tri01(flowPhase), 1.5);
+  float flowMod = mix(1.0 - uFlowStrength, 1.0, flow);
+
+  float L = (beamCore * 1.2 + beamWide * 0.4) * topFade * bottomFade * flowMod;
+
+  float wispSum = 0.0;
+  float yf = (y + uTime * uWispSpeed * 0.01) / 15.0 + uPhase;
+  int lanes = int(max(1.0, floor(uWispDensity * 6.0 + 0.5)));
+  for (int s = 0; s < 2; ++s) {
+    float sgn = s == 0 ? -1.0 : 1.0;
+    for (int i = 0; i < 6; ++i) {
+      if (i >= lanes) break;
+      float off = 0.08 + float(i) * 0.04;
+      float xc = 0.5 + sgn * off * (1.0 + 0.5 * topFade);
+      float dx = abs(x - xc);
+      float lat = 1.0 - smoothstep(0.005, 0.02, dx);
+      float amp = exp(-off * 3.0);
+      float seed = h21(vec2(off, sgn * 17.0));
+      float yf2 = yf + seed * 7.0;
+      float ci = floor(yf2);
+      float fy = fract(yf2);
+      float seg = mix(0.01, 0.4, h21(vec2(ci, off * 2.3)));
+      float spR = h21(vec2(ci, off + sgn * 31.0));
+      float seg1 = rGate(fy, seg, 0.15) * step(spR, min(uWispDensity, 1.0));
+      if (uWispDensity > 1.0) {
+        float spR2 = h21(vec2(ci * 3.1 + 7.0, off * 5.3 + sgn * 13.0));
+        float f2 = fract(fy + 0.5);
+        seg1 += rGate(f2, seg * 0.9, 0.15) * step(spR2, uWispDensity - 1.0);
+      }
+      wispSum += amp * lat * seg1;
+    }
+  }
+  float wisp = uWispIntensity * 0.02 * wispSum * topFade * bottomFade;
+
+  float fog = 0.0;
+  if (uFogIntensity > 0.0) {
+    vec2 fuv = vec2(cx, y - 0.5) * uFogScale;
+    fuv += uTime * uFogFallSpeed * vec2(0.1, -0.1);
+    fuv += vec2(fbm(fuv + vec2(7.3, 2.1)), fbm(fuv + vec2(-3.7, 5.9))) * 0.3;
+    float n = fbm(fuv);
+    n = pow(clamp(n, 0.0, 1.0), 1.2);
+    float beamMask = smoothstep(0.0, 0.75, L);
+    float expandMask = 1.0 - pow(1.0 - beamMask, 8.0);
+    expandMask = mix(expandMask * beamMask, expandMask, 0.5);
+    float bottomBias = mix(1.0, 1.0 - y, 0.8);
+    fog = n * uFogIntensity * 1.8 * bottomBias * expandMask;
+  }
+
+  float LF = L + fog;
+  float tone = LF + wisp;
+  tone = clamp(tone, 0.0, 1.0);
+  tone = pow(tone, 1.0 / 2.4) * 1.055 - 0.055;
+  tone = max(0.0, tone);
+
+  float alpha = clamp(L + wisp * 0.6 + fog * 0.5, 0.0, 1.0);
+  float edgeFade = 1.0 - smoothstep(0.35, 0.5, abs(cx));
+  alpha *= edgeFade;
+
+  vec3 col = tone * uColor;
+
+  gl_FragColor = vec4(col, alpha);
+}
+`;
 
 function drawLabelCanvas(ctx, city, color, imgSource) {
   ctx.clearRect(0, 0, TEX_W, TEX_H);
 
-  const imgSize = 112;
+  const imgSize = 100;
   const imgX = (TEX_W - imgSize) / 2;
-  const imgY = 20;
+  const imgY = 16;
 
   if (imgSource) {
     ctx.save();
@@ -143,18 +187,18 @@ function drawLabelCanvas(ctx, city, color, imgSource) {
   }
 
   ctx.fillStyle = '#cccccc';
-  ctx.font = 'bold 32px sans-serif';
+  ctx.font = 'bold 30px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(city.city, TEX_W / 2, imgY + imgSize + 40);
+  ctx.fillText(city.city, TEX_W / 2, imgY + imgSize + 38);
 
   ctx.fillStyle = 'rgba(200,200,200,0.65)';
-  ctx.font = '22px sans-serif';
-  ctx.fillText(city.cityEn, TEX_W / 2, imgY + imgSize + 72);
+  ctx.font = '20px sans-serif';
+  ctx.fillText(city.cityEn, TEX_W / 2, imgY + imgSize + 66);
 
   ctx.fillStyle = color;
-  ctx.font = '18px sans-serif';
+  ctx.font = '16px sans-serif';
   const listeners = city.listeners >= 1000 ? (city.listeners / 1000).toFixed(0) + 'K' : city.listeners;
-  ctx.fillText('♫ ' + listeners, TEX_W / 2, imgY + imgSize + 100);
+  ctx.fillText('♫ ' + listeners, TEX_W / 2, imgY + imgSize + 92);
 }
 
 function createCityLabelTexture(city, color) {
@@ -170,11 +214,68 @@ function createCityLabelTexture(city, color) {
   return tex;
 }
 
-function getArcHeight(listeners) {
+function getBeamHeight(listeners) {
   const minL = 40000;
   const maxL = 140000;
   const t = Math.min(1, Math.max(0, (listeners - minL) / (maxL - minL)));
-  return ARC_MIN_HEIGHT + t * (ARC_MAX_HEIGHT - ARC_MIN_HEIGHT);
+  return BEAM_MIN_HEIGHT + t * (BEAM_MAX_HEIGHT - BEAM_MIN_HEIGHT);
+}
+
+function createBeamMesh(surfacePos, direction, height, color, phase) {
+  const group = new THREE.Group();
+
+  const beamH = height;
+  const beamW = BEAM_WIDTH;
+
+  const geometry = new THREE.PlaneGeometry(beamW, beamH, 1, 32);
+  geometry.translate(0, beamH / 2, 0);
+
+  const material = new THREE.ShaderMaterial({
+    vertexShader: beamVertexShader,
+    fragmentShader: beamFragmentShader,
+    uniforms: {
+      uTime: { value: 0 },
+      uColor: { value: new THREE.Color(color.hex) },
+      uPhase: { value: phase },
+      uWispDensity: { value: 3.0 },
+      uWispSpeed: { value: 18.0 },
+      uWispIntensity: { value: 8.0 },
+      uFlowSpeed: { value: 0.5 },
+      uFlowStrength: { value: 0.2 },
+      uFogIntensity: { value: 0.4 },
+      uFogScale: { value: 0.3 },
+      uFogFallSpeed: { value: 0.5 },
+      uDecay: { value: 1.1 },
+      uFalloffStart: { value: 1.0 }
+    },
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending
+  });
+
+  const frontPlane = new THREE.Mesh(geometry, material);
+  group.add(frontPlane);
+
+  const sideGeo = new THREE.PlaneGeometry(beamW, beamH, 1, 32);
+  sideGeo.translate(0, beamH / 2, 0);
+  sideGeo.rotateY(Math.PI / 2);
+
+  const sideMat = material.clone();
+  sideMat.uniforms = { ...material.uniforms };
+  for (const key in material.uniforms) {
+    sideMat.uniforms[key] = { value: material.uniforms[key].value };
+  }
+  const sidePlane = new THREE.Mesh(sideGeo, sideMat);
+  group.add(sidePlane);
+
+  group.position.copy(surfacePos);
+
+  const up = direction.clone();
+  const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), up);
+  group.quaternion.copy(quat);
+
+  return { group, materials: [material, sideMat] };
 }
 
 export function createBeams(earthGroup, camera) {
@@ -186,62 +287,15 @@ export function createBeams(earthGroup, camera) {
 
   CITY_DATA.forEach((city, cityIndex) => {
     const color = getCityColor(city.region);
-    const height = getArcHeight(city.listeners);
+    const height = getBeamHeight(city.listeners);
     const phase = Math.random() * Math.PI * 2;
 
     const surfacePos = latLngToVector3(city.lat, city.lng, EARTH_RADIUS);
     const direction = surfacePos.clone().normalize();
-    const { curve, endPos } = createArcCurve(surfacePos, direction, height, city, cityIndex);
 
-    const linePoints = curve.getPoints(ARC_SEGMENTS);
-    const lineGeometry = new THREE.BufferGeometry().setFromPoints(linePoints);
-    const lineUvArr = new Float32Array((ARC_SEGMENTS + 1));
-    for (let i = 0; i <= ARC_SEGMENTS; i++) lineUvArr[i] = i / ARC_SEGMENTS;
-    lineGeometry.setAttribute('aProgress', new THREE.BufferAttribute(lineUvArr, 1));
+    const { group, materials } = createBeamMesh(surfacePos, direction, height, color, phase);
+    beamGroup.add(group);
 
-    const lineMaterial = new THREE.ShaderMaterial({
-      vertexShader: arcLineVertexShader,
-      fragmentShader: arcLineFragmentShader,
-      uniforms: {
-        uColor: { value: new THREE.Color(color.hex) },
-        uTime: { value: 0 },
-        uPhase: { value: phase }
-      },
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending
-    });
-
-    const line = new THREE.Line(lineGeometry, lineMaterial);
-    beamGroup.add(line);
-
-    const pCount = PARTICLES_PER_ARC;
-    const pPositions = new Float32Array(pCount * 3);
-    const pAlphas = new Float32Array(pCount);
-    for (let i = 0; i < pCount; i++) {
-      const t = i / pCount;
-      const pt = curve.getPoint(t);
-      pPositions[i * 3] = pt.x;
-      pPositions[i * 3 + 1] = pt.y;
-      pPositions[i * 3 + 2] = pt.z;
-      pAlphas[i] = 1.0 - t * 0.5;
-    }
-    const pGeometry = new THREE.BufferGeometry();
-    pGeometry.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
-    pGeometry.setAttribute('aAlpha', new THREE.BufferAttribute(pAlphas, 1));
-
-    const pMaterial = new THREE.ShaderMaterial({
-      vertexShader: particleVertexShader,
-      fragmentShader: particleFragmentShader,
-      uniforms: { uColor: { value: new THREE.Color(color.hex) } },
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending
-    });
-
-    const particles = new THREE.Points(pGeometry, pMaterial);
-    particles.userData = { curve, speed: 0.15 + Math.random() * 0.1, offset: Math.random(), pCount };
-    beamGroup.add(particles);
     const labelTexture = createCityLabelTexture(city, color.hex);
     const labelMaterial = new THREE.SpriteMaterial({
       map: labelTexture,
@@ -252,7 +306,8 @@ export function createBeams(earthGroup, camera) {
       blending: THREE.NormalBlending
     });
     const label = new THREE.Sprite(labelMaterial);
-    label.position.copy(endPos);
+    const labelPos = surfacePos.clone().add(direction.clone().multiplyScalar(height + 0.15));
+    label.position.copy(labelPos);
     label.scale.set(LABEL_SIZE * 0.8, LABEL_SIZE, 1);
     label.userData = { city, baseHeight: height };
     beamGroup.add(label);
@@ -274,7 +329,7 @@ export function createBeams(earthGroup, camera) {
       }, undefined, () => {});
     }
 
-    beams.push({ line, particles, city, phase, height });
+    beams.push({ group, materials, city, phase, height, direction, surfacePos });
   });
 
   earthGroup.add(beamGroup);
@@ -282,26 +337,12 @@ export function createBeams(earthGroup, camera) {
 }
 
 export function updateBeams(beams, globalTime, camera) {
-  beams.forEach(({ line, particles, phase }) => {
-    if (line.material.uniforms) {
-      line.material.uniforms.uTime.value = globalTime;
-    }
-
-    const { curve, speed, offset, pCount } = particles.userData;
-    const positions = particles.geometry.attributes.position.array;
-    const alphaAttr = particles.geometry.attributes.aAlpha;
-    const baseT = (globalTime * speed + offset) % 1.0;
-
-    for (let i = 0; i < pCount; i++) {
-      const t = (baseT + i / pCount) % 1.0;
-      const pt = curve.getPoint(t);
-      positions[i * 3] = pt.x;
-      positions[i * 3 + 1] = pt.y;
-      positions[i * 3 + 2] = pt.z;
-      alphaAttr.array[i] = 1.0 - (i / pCount) * 0.6;
-    }
-    particles.geometry.attributes.position.needsUpdate = true;
-    alphaAttr.needsUpdate = true;
+  beams.forEach(({ materials }) => {
+    materials.forEach(mat => {
+      if (mat.uniforms && mat.uniforms.uTime) {
+        mat.uniforms.uTime.value = globalTime;
+      }
+    });
   });
 }
 
