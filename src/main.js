@@ -368,13 +368,6 @@ class App {
     const particleR = 200;
     const colors = [1, 2, 3, 1, 2, 3, 1, 4];
 
-    const colorVars = {
-      1: '#7C3AED',
-      2: '#00D1FF',
-      3: '#FF6B9D',
-      4: '#00FFA3'
-    };
-
     const noise = (n = 1) => n / 2 - Math.random() * n;
 
     const getXY = (distance, pointIndex, totalPoints) => {
@@ -415,7 +408,7 @@ class App {
           particle.style.setProperty('--end-y', `${p.end[1]}px`);
           particle.style.setProperty('--time', `${p.time}ms`);
           particle.style.setProperty('--scale', `${p.scale}`);
-          particle.style.setProperty('--color', colorVars[p.color] || 'white');
+          particle.style.setProperty('--color', `var(--color-${p.color}, white)`);
           particle.style.setProperty('--rotate', `${p.rotate}deg`);
 
           point.classList.add('point');
