@@ -133,13 +133,22 @@ class App {
     const fpPlayerWrap = document.getElementById('fpPlayerWrap');
     const fpPlayerCard = document.getElementById('fpPlayerCard');
     const fpProgressFill = document.getElementById('fpProgressFill');
-    
+
+    const doTogglePlay = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('Play button clicked!');
+      this.togglePlay();
+    };
+
     if (fpPlayerWrap) {
-      fpPlayerWrap.addEventListener('click', () => {
-        this.togglePlay();
-      });
+      fpPlayerWrap.addEventListener('click', doTogglePlay);
+      const innerBtn = fpPlayerWrap.querySelector('div[style*="cursor: pointer"]');
+      if (innerBtn) innerBtn.addEventListener('click', doTogglePlay);
+      const svgEl = fpPlayerWrap.querySelector('svg');
+      if (svgEl) svgEl.addEventListener('click', doTogglePlay);
     }
-    
+
     if (fpPlayerCard) {
       fpPlayerCard.addEventListener('click', (e) => {
         if (e.target.closest('#fpPlayerWrap')) return;
@@ -187,20 +196,26 @@ class App {
       console.error('Audio element not found');
       return;
     }
-    
-    console.log('Current audio src:', this.musicPlayer.currentSrc);
+
+    console.log('togglePlay called, isPlaying:', this.isPlaying);
+    console.log('Audio src:', this.musicPlayer.currentSrc || 'none');
     console.log('Audio readyState:', this.musicPlayer.readyState);
-    console.log('Audio paused:', this.musicPlayer.paused);
-    
+
     if (this.isPlaying) {
       this.musicPlayer.pause();
     } else {
-      this.musicPlayer.play().then(() => {
-        console.log('Playback started successfully');
-      }).catch(e => {
-        console.error('Playback failed:', e);
-        this.tryNextSource();
-      });
+      const playPromise = this.musicPlayer.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          console.log('Playback started!');
+          this.isPlaying = true;
+          this.updatePlayerUI();
+        }).catch((err) => {
+          console.error('Play error:', err.name, err.message);
+          this.isPlaying = false;
+          this.updatePlayerUI();
+        });
+      }
     }
   }
   
