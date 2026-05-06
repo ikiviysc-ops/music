@@ -30,44 +30,82 @@ class App {
   }
 
   init() {
+    console.log('=== App.init() called');
+    
     this.container = document.getElementById('canvas-container');
     if (!this.container) {
-      console.error('canvas-container not found');
+      console.error('❌ canvas-container not found');
       return;
     }
+    console.log('✅ canvas-container found:', this.container);
 
     // 确保容器尺寸就绪
     const w = this.container.clientWidth;
     const h = this.container.clientHeight;
-    console.log('Container size:', w, 'x', h);
+    console.log('✅ Container size:', w, 'x', h);
     if (w === 0 || h === 0) {
-      console.error('Container has zero dimensions!');
+      console.error('❌ Container has zero dimensions!');
       return;
     }
 
+    console.log('Creating scene...');
     this.scene = createScene();
+    console.log('✅ Scene created:', this.scene);
+
+    console.log('Creating camera...');
     this.camera = createCamera(this.container);
-    this.renderer = createRenderer(this.container);
+    console.log('✅ Camera created, position:', this.camera.position);
+
+    console.log('Creating renderer...');
+    try {
+      this.renderer = createRenderer(this.container);
+      console.log('✅ Renderer created');
+    } catch (e) {
+      console.error('❌ Failed to create renderer:', e);
+      return;
+    }
 
     try {
+      console.log('Creating EffectComposer...');
       this.composer = createComposer(this.renderer, this.scene, this.camera);
       this.useComposer = true;
+      console.log('✅ EffectComposer created');
     } catch (e) {
-      console.error('EffectComposer failed, falling back to direct render:', e);
+      console.error('❌ EffectComposer failed, falling back to direct render:', e);
       this.useComposer = false;
     }
 
+    console.log('Creating controls...');
     this.controls = createControls(this.camera, this.renderer);
+    console.log('✅ Controls created');
 
+    console.log('Adding lights...');
     this.addLights();
-    this.addEarth();
-    this.addBeams();
-    this.addParticles();
-    this.addArcs();
+    console.log('✅ Lights added');
 
-    console.log('Scene children:', this.scene.children.length);
-    console.log('Camera position:', this.camera.position);
-    console.log('Earth group:', this.earthGroup);
+    console.log('Adding earth...');
+    this.addEarth();
+    console.log('✅ Earth added');
+
+    console.log('Adding beams...');
+    this.addBeams();
+    console.log('✅ Beams added');
+
+    console.log('Adding particles...');
+    this.addParticles();
+    console.log('✅ Particles added');
+
+    console.log('Adding arcs...');
+    this.addArcs();
+    console.log('✅ Arcs added');
+
+    console.log('=== Scene children:', this.scene);
+    console.log('=== Scene children count:', this.scene.children.length);
+    this.scene.children.forEach((child, i) => {
+      console.log(`  [${i}]', child.name || child.type, child);
+    });
+    console.log('=== Camera position:', this.camera.position);
+    console.log('=== Earth group:', this.earthGroup);
 
     window.addEventListener('resize', this.onResize.bind(this));
     
