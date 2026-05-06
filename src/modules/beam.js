@@ -3,12 +3,25 @@ import { latLngToVector3 } from '../utils/geo.js';
 import { CITY_DATA, getCityColor } from '../data/cities.js';
 
 const EARTH_RADIUS = 1.6;
-const BEAM_MIN_HEIGHT = 0.8;
-const BEAM_MAX_HEIGHT = 1.8;
-const BEAM_WIDTH = 0.18;
+let BEAM_MIN_HEIGHT = 0.8;
+let BEAM_MAX_HEIGHT = 1.8;
+let BEAM_WIDTH = 0.18;
 const LABEL_SIZE = 0.55;
 const TEX_W = 256;
 const TEX_H = 320;
+
+let _beamConfig = {
+  wispDensity: 3.0,
+  wispSpeed: 18.0,
+  wispIntensity: 8.0,
+  flowSpeed: 0.5,
+  flowStrength: 0.2,
+  fogIntensity: 0.4,
+  fogScale: 0.3,
+  fogFallSpeed: 0.5,
+  decay: 1.1,
+  falloffStart: 1.0
+};
 
 const beamVertexShader = `
 varying vec2 vUv;
@@ -237,16 +250,16 @@ function createBeamMesh(surfacePos, direction, height, color, phase) {
       uTime: { value: 0 },
       uColor: { value: new THREE.Color(color.hex) },
       uPhase: { value: phase },
-      uWispDensity: { value: 3.0 },
-      uWispSpeed: { value: 18.0 },
-      uWispIntensity: { value: 8.0 },
-      uFlowSpeed: { value: 0.5 },
-      uFlowStrength: { value: 0.2 },
-      uFogIntensity: { value: 0.4 },
-      uFogScale: { value: 0.3 },
-      uFogFallSpeed: { value: 0.5 },
-      uDecay: { value: 1.1 },
-      uFalloffStart: { value: 1.0 }
+      uWispDensity: { value: _beamConfig.wispDensity },
+      uWispSpeed: { value: _beamConfig.wispSpeed },
+      uWispIntensity: { value: _beamConfig.wispIntensity },
+      uFlowSpeed: { value: _beamConfig.flowSpeed },
+      uFlowStrength: { value: _beamConfig.flowStrength },
+      uFogIntensity: { value: _beamConfig.fogIntensity },
+      uFogScale: { value: _beamConfig.fogScale },
+      uFogFallSpeed: { value: _beamConfig.fogFallSpeed },
+      uDecay: { value: _beamConfig.decay },
+      uFalloffStart: { value: _beamConfig.falloffStart }
     },
     transparent: true,
     depthWrite: false,
@@ -278,7 +291,46 @@ function createBeamMesh(surfacePos, direction, height, color, phase) {
   return { group, materials: [material, sideMat] };
 }
 
+export function updateBeams(beams, globalTime, camera) {
+  beams.forEach(({ materials }) => {
+    materials.forEach(mat => {
+      if (mat.uniforms && mat.uniforms.uTime) {
+        mat.uniforms.uTime.value = globalTime;
+      }
+    });
+  });
+}
+
+export function updateLabels(labels, camera) {
+}
+
+export function updateBeamConfig(key, value) {
+  _beamConfig[key] = value;
+  if (!_globalBeams) return;
+  _globalBeams.forEach(({ materials }) => {
+    materials.forEach(mat => {
+      if (mat.uniforms && mat.uniforms[key]) {
+        mat.uniforms[key].value = value;
+      }
+    });
+  });
+}
+
+export function setBeamDimensions(width, minH, maxH) {
+  BEAM_WIDTH = width;
+  BEAM_MIN_HEIGHT = minH;
+  BEAM_MAX_HEIGHT = maxH;
+}
+
+let _globalBeams = null;
+let _globalEarthGroup = null;
+let _globalCamera = null;
+let _globalBeamGroup = null;
+
 export function createBeams(earthGroup, camera) {
+  _globalEarthGroup = earthGroup;
+  _globalCamera = camera;
+
   const beams = [];
   const labels = [];
   const beamGroup = new THREE.Group();
@@ -333,18 +385,11 @@ export function createBeams(earthGroup, camera) {
   });
 
   earthGroup.add(beamGroup);
+  _globalBeams = beams;
+  _globalBeamGroup = beamGroup;
   return { beamGroup, beams, labels };
 }
 
-export function updateBeams(beams, globalTime, camera) {
-  beams.forEach(({ materials }) => {
-    materials.forEach(mat => {
-      if (mat.uniforms && mat.uniforms.uTime) {
-        mat.uniforms.uTime.value = globalTime;
-      }
-    });
-  });
-}
-
-export function updateLabels(labels, camera) {
+export function getBeamConfig() {
+  return { ..._beamConfig, beamWidth: BEAM_WIDTH, beamMinH: BEAM_MIN_HEIGHT, beamMaxH: BEAM_MAX_HEIGHT };
 }
