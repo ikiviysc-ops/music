@@ -356,16 +356,134 @@ class App {
   }
 
   setupNavUI() {
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach((item, index) => {
-      item.addEventListener('click', () => {
-        navItems.forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        
-        const navNames = ['首页', '发现', '电台', '收藏', '我的'];
-        console.log(`导航到: ${navNames[index]}`);
+    const container = document.getElementById('gooeyNav');
+    const filterEl = document.getElementById('gooeyFilter');
+    const textEl = document.getElementById('gooeyText');
+    if (!container) return;
+
+    const animationTime = 600;
+    const timeVariance = 1300;
+    const particleCount = 17;
+    const particleDistances = [90, 10];
+    const particleR = 200;
+    const colors = [1, 2, 3, 1, 2, 3, 1, 4];
+
+    const colorVars = {
+      1: '#7C3AED',
+      2: '#00D1FF',
+      3: '#FF6B9D',
+      4: '#00FFA3'
+    };
+
+    const noise = (n = 1) => n / 2 - Math.random() * n;
+
+    const getXY = (distance, pointIndex, totalPoints) => {
+      const angle = ((360 + noise(8)) / totalPoints) * pointIndex * (Math.PI / 180);
+      return [distance * Math.cos(angle), distance * Math.sin(angle)];
+    };
+
+    const createParticle = (i, t, d, r) => {
+      const rotate = noise(r / 10);
+      return {
+        start: getXY(d[0], particleCount - i, particleCount),
+        end: getXY(d[1] + noise(7), particleCount - i, particleCount),
+        time: t,
+        scale: 1 + noise(0.2),
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotate: rotate > 0 ? (rotate + r / 20) * 10 : (rotate - r / 20) * 10
+      };
+    };
+
+    const makeParticles = (element) => {
+      const d = particleDistances;
+      const r = particleR;
+      const bubbleTime = animationTime * 2 + timeVariance;
+      element.style.setProperty('--time', `${bubbleTime}ms`);
+
+      for (let i = 0; i < particleCount; i++) {
+        const t = animationTime * 2 + noise(timeVariance * 2);
+        const p = createParticle(i, t, d, r);
+        element.classList.remove('active');
+
+        setTimeout(() => {
+          const particle = document.createElement('span');
+          const point = document.createElement('span');
+          particle.classList.add('particle');
+          particle.style.setProperty('--start-x', `${p.start[0]}px`);
+          particle.style.setProperty('--start-y', `${p.start[1]}px`);
+          particle.style.setProperty('--end-x', `${p.end[0]}px`);
+          particle.style.setProperty('--end-y', `${p.end[1]}px`);
+          particle.style.setProperty('--time', `${p.time}ms`);
+          particle.style.setProperty('--scale', `${p.scale}`);
+          particle.style.setProperty('--color', colorVars[p.color] || 'white');
+          particle.style.setProperty('--rotate', `${p.rotate}deg`);
+
+          point.classList.add('point');
+          particle.appendChild(point);
+          element.appendChild(particle);
+          requestAnimationFrame(() => {
+            element.classList.add('active');
+          });
+          setTimeout(() => {
+            try { element.removeChild(particle); } catch (e) {}
+          }, t);
+        }, 30);
+      }
+    };
+
+    const updateEffectPosition = (element) => {
+      if (!container || !filterEl || !textEl) return;
+      const containerRect = container.getBoundingClientRect();
+      const pos = element.getBoundingClientRect();
+
+      const styles = {
+        left: `${pos.x - containerRect.x}px`,
+        top: `${pos.y - containerRect.y}px`,
+        width: `${pos.width}px`,
+        height: `${pos.height}px`
+      };
+      Object.assign(filterEl.style, styles);
+      Object.assign(textEl.style, styles);
+      textEl.innerText = element.innerText;
+    };
+
+    const lis = container.querySelectorAll('li');
+    lis.forEach((li, index) => {
+      const link = li.querySelector('a');
+      if (!link) return;
+
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const wasActive = li.classList.contains('active');
+        if (wasActive) return;
+
+        lis.forEach(l => l.classList.remove('active'));
+        li.classList.add('active');
+
+        updateEffectPosition(li);
+
+        if (filterEl) {
+          const particles = filterEl.querySelectorAll('.particle');
+          particles.forEach(p => filterEl.removeChild(p));
+        }
+
+        if (textEl) {
+          textEl.classList.remove('active');
+          void textEl.offsetWidth;
+          textEl.classList.add('active');
+        }
+
+        if (filterEl) {
+          makeParticles(filterEl);
+        }
       });
     });
+
+    const activeLi = container.querySelector('li.active');
+    if (activeLi) {
+      updateEffectPosition(activeLi);
+      if (textEl) textEl.classList.add('active');
+    }
   }
   
   updateModeUI(activeMode) {
