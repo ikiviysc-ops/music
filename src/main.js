@@ -196,12 +196,19 @@ class App {
   
   updatePlayerUI() {
     const fpPlayerWrap = document.getElementById('fpPlayerWrap');
+    const fpMusicCover = document.getElementById('fpMusicCover');
     if (!fpPlayerWrap) return;
     
     if (this.isPlaying) {
       fpPlayerWrap.classList.add('playing');
+      if (fpMusicCover) {
+        fpMusicCover.classList.add('playing');
+      }
     } else {
       fpPlayerWrap.classList.remove('playing');
+      if (fpMusicCover) {
+        fpMusicCover.classList.remove('playing');
+      }
     }
   }
   

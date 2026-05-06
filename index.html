@@ -542,6 +542,7 @@
       -webkit-user-select: none;
       box-shadow: 0 2px 20px rgba(0, 0, 0, 0.12);
       transition: all 0.25s ease;
+      padding-left: 0;
     }
 
     #fpPlayerCard:hover {
@@ -550,16 +551,17 @@
 
     #fpMusicBackground {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 120%;
-      height: 120%;
-      background: linear-gradient(135deg, #2562ea, #7aa8ff);
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 150%;
+      height: 150%;
+      background: linear-gradient(135deg, rgba(37, 98, 234, 0.15) 0%, rgba(122, 168, 255, 0.1) 100%);
       background-size: cover;
       background-position: center;
-      filter: blur(4px);
-      opacity: 0.2;
+      filter: blur(8px);
+      opacity: 0.5;
       z-index: 0;
       transition: opacity 0.5s;
       will-change: opacity;
@@ -631,6 +633,16 @@
       height: 100%;
       object-fit: cover;
       border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+
+    #fpMusicCover.playing #fpCoverImage {
+      animation: coverRotate 8s linear infinite;
+    }
+
+    @keyframes coverRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     #fpCoverPlaceholder {
