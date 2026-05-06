@@ -351,7 +351,7 @@ export function createBeams(earthGroup, camera) {
     const surfacePos = latLngToVector3(city.lat, city.lng, EARTH_RADIUS);
     const direction = surfacePos.clone().normalize();
 
-    const { group, materials } = createBeamMesh(surfacePos, direction, height, color, phase);
+    const { group, materials, uniforms } = createBeamMesh(surfacePos, direction, height, color, phase);
     beamGroup.add(group);
 
     const labelTexture = createCityLabelTexture(city, color.hex);
