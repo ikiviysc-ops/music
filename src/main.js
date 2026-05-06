@@ -361,12 +361,13 @@ class App {
     const textEl = document.getElementById('gooeyText');
     if (!container) return;
 
-    const animationTime = 600;
+    const animationTime = 500;
     const timeVariance = 1300;
     const particleCount = 17;
-    const particleDistances = [90, 10];
+    const particleDistances = [90, 0];
     const particleR = 200;
     const colors = [1, 2, 3, 1, 2, 3, 1, 4];
+    let activeIndex = 0;
 
     const noise = (n = 1) => n / 2 - Math.random() * n;
 
@@ -376,7 +377,7 @@ class App {
     };
 
     const createParticle = (i, t, d, r) => {
-      const rotate = noise(r / 10);
+      let rotate = noise(r / 10);
       return {
         start: getXY(d[0], particleCount - i, particleCount),
         end: getXY(d[1] + noise(7), particleCount - i, particleCount),
@@ -418,7 +419,7 @@ class App {
             element.classList.add('active');
           });
           setTimeout(() => {
-            try { element.removeChild(particle); } catch (e) {}
+            try { element.removeChild(particle); } catch {}
           }, t);
         }, 30);
       }
@@ -447,9 +448,9 @@ class App {
 
       link.addEventListener('click', (e) => {
         e.preventDefault();
-        const wasActive = li.classList.contains('active');
-        if (wasActive) return;
+        if (activeIndex === index) return;
 
+        activeIndex = index;
         lis.forEach(l => l.classList.remove('active'));
         li.classList.add('active');
 
@@ -477,6 +478,14 @@ class App {
       updateEffectPosition(activeLi);
       if (textEl) textEl.classList.add('active');
     }
+
+    const resizeObserver = new ResizeObserver(() => {
+      const currentActiveLi = container.querySelectorAll('li')[activeIndex];
+      if (currentActiveLi) {
+        updateEffectPosition(currentActiveLi);
+      }
+    });
+    resizeObserver.observe(container);
   }
   
   updateModeUI(activeMode) {
