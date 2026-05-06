@@ -8,6 +8,8 @@ const ARC_MAX_HEIGHT = 0.7;
 const ARC_SEGMENTS = 40;
 const PARTICLES_PER_ARC = 24;
 const LABEL_SIZE = 0.66;
+const TEX_W = 256;
+const TEX_H = 320;
 
 const arcLineVertexShader = `
   varying float vProgress;
@@ -58,51 +60,74 @@ const particleFragmentShader = `
   }
 `;
 
-function createArcCurve(surfacePos, direction, height) {
+function createArcCurve(surfacePos, direction, height, cityIndex) {
   const endPos = surfacePos.clone().add(direction.clone().multiplyScalar(height));
-  const tangent = new THREE.Vector3().crossVectors(direction, new THREE.Vector3(0, 1, 0)).normalize();
-  if (tangent.length() < 0.01) {
-    tangent.crossVectors(direction, new THREE.Vector3(1, 0, 0)).normalize();
+  const baseTangent = new THREE.Vector3().crossVectors(direction, new THREE.Vector3(0, 1, 0)).normalize();
+  if (baseTangent.length() < 0.01) {
+    baseTangent.crossVectors(direction, new THREE.Vector3(1, 0, 0)).normalize();
   }
-  const cp1 = surfacePos.clone().add(direction.clone().multiplyScalar(height * 0.3)).add(tangent.clone().multiplyScalar(height * 0.35));
-  const cp2 = endPos.clone().add(tangent.clone().multiplyScalar(height * 0.2));
+  const angle = (cityIndex / CITY_DATA.length) * Math.PI * 2 + (cityIndex * 1.618) * Math.PI;
+  const tangent = baseTangent.clone().applyAxisAngle(direction, angle);
+  const spread = height * 0.4;
+  const cp1 = surfacePos.clone()
+    .add(direction.clone().multiplyScalar(height * 0.25))
+    .add(tangent.clone().multiplyScalar(spread));
+  const cp2 = endPos.clone()
+    .add(tangent.clone().multiplyScalar(spread * 0.5));
   return new THREE.CubicBezierCurve3(surfacePos, cp1, cp2, endPos);
+}
+
+function drawLabelCanvas(ctx, city, color, imgSource) {
+  ctx.clearRect(0, 0, TEX_W, TEX_H);
+
+  const imgSize = 112;
+  const imgX = (TEX_W - imgSize) / 2;
+  const imgY = 20;
+
+  if (imgSource) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(imgX + imgSize / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(imgSource, imgX, imgY, imgSize, imgSize);
+    ctx.restore();
+  } else {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(imgX + imgSize / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(imgX, imgY, imgSize, imgSize);
+    ctx.restore();
+  }
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 32px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(city.city, TEX_W / 2, imgY + imgSize + 40);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.65)';
+  ctx.font = '22px sans-serif';
+  ctx.fillText(city.cityEn, TEX_W / 2, imgY + imgSize + 72);
+
+  ctx.fillStyle = color;
+  ctx.font = '18px sans-serif';
+  const listeners = city.listeners >= 1000 ? (city.listeners / 1000).toFixed(0) + 'K' : city.listeners;
+  ctx.fillText('♫ ' + listeners, TEX_W / 2, imgY + imgSize + 100);
 }
 
 function createCityLabelTexture(city, color) {
   const canvas = document.createElement('canvas');
-  canvas.width = 128;
-  canvas.height = 160;
+  canvas.width = TEX_W;
+  canvas.height = TEX_H;
   const ctx = canvas.getContext('2d');
-
-  const imgSize = 56;
-  const imgX = (128 - imgSize) / 2;
-  const imgY = 12;
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(imgX + imgSize / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
-  ctx.closePath();
-  ctx.clip();
-  ctx.fillStyle = '#1a1a2e';
-  ctx.fillRect(imgX, imgY, imgSize, imgSize);
-  ctx.restore();
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(city.city, 64, imgY + imgSize + 20);
-
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
-  ctx.font = '11px sans-serif';
-  ctx.fillText(city.cityEn, 64, imgY + imgSize + 36);
-
-  ctx.fillStyle = color;
-  ctx.font = '9px sans-serif';
-  const listeners = city.listeners >= 1000 ? (city.listeners / 1000).toFixed(0) + 'K' : city.listeners;
-  ctx.fillText('♫ ' + listeners, 64, imgY + imgSize + 50);
-
+  drawLabelCanvas(ctx, city, color, null);
   const tex = new THREE.CanvasTexture(canvas);
   tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.generateMipmaps = false;
   return tex;
 }
 
@@ -119,14 +144,14 @@ export function createBeams(earthGroup, camera) {
   const beamGroup = new THREE.Group();
   const loader = new THREE.TextureLoader();
 
-  CITY_DATA.forEach((city) => {
+  CITY_DATA.forEach((city, cityIndex) => {
     const color = getCityColor(city.region);
     const height = getArcHeight(city.listeners);
     const phase = Math.random() * Math.PI * 2;
 
     const surfacePos = latLngToVector3(city.lat, city.lng, EARTH_RADIUS);
     const direction = surfacePos.clone().normalize();
-    const curve = createArcCurve(surfacePos, direction, height);
+    const curve = createArcCurve(surfacePos, direction, height, cityIndex);
 
     const linePoints = curve.getPoints(ARC_SEGMENTS);
     const lineGeometry = new THREE.BufferGeometry().setFromPoints(linePoints);
@@ -184,10 +209,13 @@ export function createBeams(earthGroup, camera) {
       map: labelTexture,
       transparent: true,
       depthWrite: false,
+      depthTest: false,
+      sizeAttenuation: false,
       blending: THREE.NormalBlending
     });
     const label = new THREE.Sprite(labelMaterial);
     label.position.copy(endPos);
+    label.renderOrder = 999;
     label.scale.set(LABEL_SIZE * 0.8, LABEL_SIZE, 1);
     label.userData = { city, baseHeight: height };
     beamGroup.add(label);
@@ -196,37 +224,14 @@ export function createBeams(earthGroup, camera) {
     if (city.img) {
       loader.load(city.img, (tex) => {
         const canvas = document.createElement('canvas');
-        canvas.width = 128;
-        canvas.height = 160;
+        canvas.width = TEX_W;
+        canvas.height = TEX_H;
         const ctx = canvas.getContext('2d');
-
-        const imgSize = 56;
-        const imgX = (128 - imgSize) / 2;
-        const imgY = 12;
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(imgX + imgSize / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(tex.image, imgX, imgY, imgSize, imgSize);
-        ctx.restore();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(city.city, 64, imgY + imgSize + 20);
-
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.font = '11px sans-serif';
-        ctx.fillText(city.cityEn, 64, imgY + imgSize + 36);
-
-        ctx.fillStyle = color.hex;
-        ctx.font = '9px sans-serif';
-        const listeners = city.listeners >= 1000 ? (city.listeners / 1000).toFixed(0) + 'K' : city.listeners;
-        ctx.fillText('♫ ' + listeners, 64, imgY + imgSize + 50);
-
+        drawLabelCanvas(ctx, city, color.hex, tex.image);
         const newTex = new THREE.CanvasTexture(canvas);
         newTex.minFilter = THREE.LinearFilter;
+        newTex.magFilter = THREE.LinearFilter;
+        newTex.generateMipmaps = false;
         labelMaterial.map = newTex;
         labelMaterial.needsUpdate = true;
       }, undefined, () => {});
@@ -269,8 +274,8 @@ export function updateLabels(labels, camera) {
   const refDist = 4.0;
   labels.forEach(label => {
     const dist = label.position.distanceTo(camPos);
-    const s = (refDist / Math.max(dist, 0.1));
-    const baseScale = LABEL_SIZE * s;
-    label.scale.set(baseScale * 0.8, baseScale, 1);
+    const s = refDist / Math.max(dist, 0.1);
+    const screenScale = 0.08 + s * 0.04;
+    label.scale.set(screenScale * 0.8, screenScale, 1);
   });
 }
