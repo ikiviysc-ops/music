@@ -183,14 +183,42 @@ class App {
   }
   
   togglePlay() {
-    if (!this.musicPlayer) return;
+    if (!this.musicPlayer) {
+      console.error('Audio element not found');
+      return;
+    }
+    
+    console.log('Current audio src:', this.musicPlayer.currentSrc);
+    console.log('Audio readyState:', this.musicPlayer.readyState);
+    console.log('Audio paused:', this.musicPlayer.paused);
     
     if (this.isPlaying) {
       this.musicPlayer.pause();
     } else {
-      this.musicPlayer.play().catch(e => {
+      this.musicPlayer.play().then(() => {
+        console.log('Playback started successfully');
+      }).catch(e => {
         console.error('Playback failed:', e);
+        this.tryNextSource();
       });
+    }
+  }
+  
+  tryNextSource() {
+    const sources = this.musicPlayer.querySelectorAll('source');
+    let currentSrc = this.musicPlayer.currentSrc;
+    
+    for (let i = 0; i < sources.length; i++) {
+      if (sources[i].src !== currentSrc) {
+        console.log('Trying next source:', sources[i].src);
+        this.musicPlayer.src = sources[i].src;
+        this.musicPlayer.play().then(() => {
+          console.log('Playback started with fallback source');
+        }).catch(e => {
+          console.error('Fallback source failed:', e);
+        });
+        break;
+      }
     }
   }
   
