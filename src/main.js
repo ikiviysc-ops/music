@@ -332,7 +332,7 @@ class App {
   }
 
   addBeams() {
-    const { beamGroup, beams } = createBeams(this.earthGroup);
+    const { beamGroup, beams } = createBeams(this.earthGroup, this.camera);
     this.beamGroup = beamGroup;
     this.beams = beams;
   }
@@ -356,7 +356,7 @@ class App {
     }
 
     if (this.beams) {
-      updateBeams(this.beams, elapsed);
+      updateBeams(this.beams, elapsed, this.camera);
     }
 
     this.controls.update();
