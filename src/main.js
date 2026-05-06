@@ -4,7 +4,7 @@ import { createCamera, updateCameraAspect } from './core/camera.js';
 import { createRenderer, updateRendererSize } from './core/renderer.js';
 import { createControls } from './core/controls.js';
 import { createEarth, updateEarth, setEarthMode, getCurrentEarthMode, getAvailableEarthModes, EARTH_MODES } from './modules/earth.js';
-import { createBeams, updateBeams } from './modules/beam.js';
+import { createBeams, updateBeams, updateLabels } from './modules/beam.js';
 import { createComposer, updateComposerSize } from './effects/bloom.js';
 
 class App {
@@ -359,6 +359,9 @@ class App {
 
     if (this.beams) {
       updateBeams(this.beams, elapsed, this.camera);
+      if (this.beamLabels) {
+        updateLabels(this.beamLabels, this.camera);
+      }
     }
 
     this.controls.update();

@@ -7,7 +7,7 @@ const ARC_MIN_HEIGHT = 0.4;
 const ARC_MAX_HEIGHT = 0.7;
 const ARC_SEGMENTS = 40;
 const PARTICLES_PER_ARC = 24;
-const LABEL_SIZE = 0.22;
+const LABEL_SIZE = 0.66;
 
 const arcLineVertexShader = `
   varying float vProgress;
@@ -60,8 +60,13 @@ const particleFragmentShader = `
 
 function createArcCurve(surfacePos, direction, height) {
   const endPos = surfacePos.clone().add(direction.clone().multiplyScalar(height));
-  const midPos = surfacePos.clone().add(direction.clone().multiplyScalar(height * 0.55));
-  return new THREE.QuadraticBezierCurve3(surfacePos, midPos, endPos);
+  const tangent = new THREE.Vector3().crossVectors(direction, new THREE.Vector3(0, 1, 0)).normalize();
+  if (tangent.length() < 0.01) {
+    tangent.crossVectors(direction, new THREE.Vector3(1, 0, 0)).normalize();
+  }
+  const cp1 = surfacePos.clone().add(direction.clone().multiplyScalar(height * 0.3)).add(tangent.clone().multiplyScalar(height * 0.35));
+  const cp2 = endPos.clone().add(tangent.clone().multiplyScalar(height * 0.2));
+  return new THREE.CubicBezierCurve3(surfacePos, cp1, cp2, endPos);
 }
 
 function createCityLabelTexture(city, color) {
@@ -255,5 +260,17 @@ export function updateBeams(beams, globalTime, camera) {
     }
     particles.geometry.attributes.position.needsUpdate = true;
     alphaAttr.needsUpdate = true;
+  });
+}
+
+export function updateLabels(labels, camera) {
+  if (!camera) return;
+  const camPos = camera.position;
+  const refDist = 4.0;
+  labels.forEach(label => {
+    const dist = label.position.distanceTo(camPos);
+    const s = (refDist / Math.max(dist, 0.1));
+    const baseScale = LABEL_SIZE * s;
+    label.scale.set(baseScale * 0.8, baseScale, 1);
   });
 }
