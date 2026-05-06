@@ -1,60 +1,47 @@
 from playwright.sync_api import sync_playwright
-import time
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
+    browser = p.chromium.launch(headless=True, args=['--no-sandbox', '--use-gl=angle'])
     page = browser.new_page(viewport={"width": 390, "height": 844})
     
-    console_logs = []
-    page.on("console", lambda msg: console_logs.append(f"[{msg.type}] {msg.text}"))
-    page.on("pageerror", lambda err: console_logs.append(f"[ERROR] {err}"))
+    console_msgs = []
+    page.on("console", lambda msg: console_msgs.append(f"[{msg.type}] {msg.text}"))
+    page.on("pageerror", lambda err: console_msgs.append(f"[PAGE_ERROR] {err}"))
     
-    page.goto('http://localhost:3002/', timeout=15000)
-    page.wait_for_load_state('networkidle', timeout=15000)
-    time.sleep(3)
+    page.goto('http://localhost:5173')
+    page.wait_for_load_state('networkidle')
+    page.wait_for_timeout(5000)
     
-    page.screenshot(path='/workspace/test_screenshot.png', full_page=True)
+    page.screenshot(path='/workspace/test_final.png')
     
-    print("=== Console Logs ===")
-    for log in console_logs[-30:]:
-        print(log)
-    
-    print("\n=== Audio Element ===")
-    audio_info = page.evaluate("""() => {
-        const audio = document.getElementById('musicPlayer');
-        if (!audio) return 'Audio element NOT found';
+    result = page.evaluate('''() => {
+        const canvas = document.querySelector("#canvas-container canvas");
+        if (!canvas) return { error: "no canvas" };
+        const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+        if (!gl) return { error: "no webgl context" };
+        const d = new Uint8Array(4);
+        gl.readPixels(195, 400, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, d);
+        const d2 = new Uint8Array(4);
+        gl.readPixels(195, 700, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, d2);
         return {
-            src: audio.currentSrc || 'no src',
-            readyState: audio.readyState,
-            paused: audio.paused,
-            duration: audio.duration,
-            error: audio.error ? audio.error.message : 'none',
-            sourceCount: audio.querySelectorAll('source').length,
-            sourceSrcs: Array.from(audio.querySelectorAll('source')).map(s => s.src)
+            canvasSize: { w: canvas.width, h: canvas.height },
+            centerPixel: Array.from(d),
+            bottomPixel: Array.from(d2),
+            rendererInfo: gl.getParameter(gl.RENDERER),
+            sceneChildren: window.app ? window.app.scene.children.length : -1
         };
-    }""")
-    print(audio_info)
+    }''')
+    print(f"WebGL result: {result}")
     
-    print("\n=== Canvas Element ===")
-    canvas_info = page.evaluate("""() => {
-        const canvas = document.querySelector('canvas');
-        if (!canvas) return 'Canvas NOT found';
-        return { width: canvas.width, height: canvas.height };
-    }""")
-    print(canvas_info)
+    all_errors = [m for m in console_msgs if '[error]' in m or '[PAGE_ERROR]' in m]
+    non_cors = [e for e in all_errors if 'CORS' not in e and 'ERR_FAILED' not in e and 'mchost.guru' not in e]
+    print(f"\nNon-CORS errors ({len(non_cors)}):")
+    for e in non_cors[:10]:
+        print(f"  {e}")
     
-    print("\n=== Earth Group ===")
-    earth_info = page.evaluate("""() => {
-        if (!window.app || !window.app.earthGroup) return 'Earth group NOT found';
-        return { children: window.app.earthGroup.children.length, visible: window.app.earthGroup.visible };
-    }""")
-    print(earth_info)
-    
-    print("\n=== Beam Group ===")
-    beam_info = page.evaluate("""() => {
-        if (!window.app || !window.app.beamGroup) return 'Beam group NOT found';
-        return { children: window.app.beamGroup.children.length, visible: window.app.beamGroup.visible };
-    }""")
-    print(beam_info)
+    all_logs = [m for m in console_msgs if '[log]' in m]
+    print(f"\nAll logs ({len(all_logs)}):")
+    for l in all_logs[:15]:
+        print(f"  {l}")
     
     browser.close()

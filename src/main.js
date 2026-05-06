@@ -346,9 +346,10 @@ class App {
           const wSlider = document.getElementById('beam-width');
           const minHSlider = document.getElementById('beam-min-h');
           const maxHSlider = document.getElementById('beam-max-h');
-          const w = wSlider ? parseFloat(wSlider.value) : BEAM_WIDTH;
-          const minH = minHSlider ? parseFloat(minHSlider.value) : BEAM_MIN_HEIGHT;
-          const maxH = maxHSlider ? parseFloat(maxHSlider.value) : BEAM_MAX_HEIGHT;
+          const cfg = getBeamConfig();
+          const w = wSlider ? parseFloat(wSlider.value) : cfg.beamWidth;
+          const minH = minHSlider ? parseFloat(minHSlider.value) : cfg.beamMinH;
+          const maxH = maxHSlider ? parseFloat(maxHSlider.value) : cfg.beamMaxH;
           setBeamDimensions(w, minH, maxH);
         }
       });
