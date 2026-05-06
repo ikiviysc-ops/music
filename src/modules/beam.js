@@ -63,9 +63,10 @@ const beamVertexShader = `
 
     float scaleX = length(modelMatrix[0].xyz);
     float scaleY = uLength;
+    float t = position.y + 0.5;
     vec3 finalPos = modelPos.xyz
       + (newRight * position.x * scaleX)
-      + (localAxis * position.y * scaleY);
+      + (localAxis * t * scaleY);
 
     float dotView = abs(dot(toCamera, localAxis));
     vZAxisFade = 1.0 - smoothstep(0.92, 0.98, dotView);
@@ -106,8 +107,9 @@ const beamFragmentShader = `
     float beam_edge_start = half_width - (half_width * (1.0 - uBeamSharpness));
     float horiz_mask = 1.0 - smoothstep(beam_edge_start, half_width, dist_x);
 
-    float vert_mask = pow(max(1.0 - vUv.y, 0.001), uBeamFade);
-    vert_mask *= smoothstep(0.0, uConeStartWidth * 0.5, vUv.y);
+    float vert_mask = pow(vUv.y, uBeamFade);
+    vert_mask *= smoothstep(0.0, uConeStartWidth * 0.5, 1.0 - vUv.y);
+    vert_mask *= smoothstep(0.0, 0.1, vUv.y);
 
     vec2 worldOffset = vWorldPos.xz * 0.5 + vWorldPos.y * 0.1;
     vec2 distortionOffset = uNoiseDistortionScrollSpeed * uTime;
@@ -133,7 +135,7 @@ const beamFragmentShader = `
     alpha += surgeEffect * 0.4;
     alpha *= uIntensity;
 
-    vec3 col = uColor * (0.7 + 0.5 * (1.0 - vUv.y));
+    vec3 col = uColor * (0.7 + 0.5 * vUv.y);
     col += uColor * surgeEffect * 1.2;
 
     gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0));
@@ -152,9 +154,6 @@ export function createBeams(earthGroup, camera) {
   const beamGroup = new THREE.Group();
 
   const geometry = new THREE.PlaneGeometry(1, 1, 1, 1);
-  const uvs = geometry.attributes.uv;
-  for (let i = 0; i < uvs.count; i++) uvs.setY(i, 1.0 - uvs.getY(i));
-  geometry.translate(0, -0.5, 0);
 
   CITY_DATA.forEach((city) => {
     const color = getCityColor(city.region);
