@@ -174,6 +174,7 @@ export function createBeams(earthGroup, camera) {
   const labels = [];
   const beamGroup = new THREE.Group();
   const loader = new THREE.TextureLoader();
+  loader.crossOrigin = 'anonymous';
 
   CITY_DATA.forEach((city, cityIndex) => {
     const color = getCityColor(city.region);
