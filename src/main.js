@@ -20,6 +20,7 @@ class App {
     this.beams = null;
     this.clock = new THREE.Clock();
     this.useComposer = true;
+    this.isPlaying = false;
   }
 
   init() {
@@ -65,7 +66,12 @@ class App {
     // 设置模式选择UI
     this.setupModeUI();
     
-    // 立即强制更新一次尺寸，确保刷新后也清晰
+    // 设置播放器UI
+    this.setupPlayerUI();
+    
+    // 设置导航UI
+    this.setupNavUI();
+    
     setTimeout(() => {
       this.onResize();
     }, 50);
@@ -93,7 +99,6 @@ class App {
         e.stopPropagation();
         const mode = item.dataset.mode;
         
-        // 映射到常量
         const modeMap = {
           'standard': EARTH_MODES.STANDARD,
           'translucent': EARTH_MODES.TRANSLUCENT,
@@ -108,22 +113,69 @@ class App {
           this.updateModeUI(mode);
         }
         
-        // 关闭菜单
         modeMenu.classList.remove('show');
         modeBtn.classList.remove('active');
       });
     });
     
-    // 点击外部关闭菜单
     document.addEventListener('click', () => {
       modeMenu.classList.remove('show');
       modeBtn.classList.remove('active');
     });
     
-    // 初始化当前选中状态
     const currentMode = getCurrentEarthMode();
     const modeKey = Object.keys(EARTH_MODES).find(k => EARTH_MODES[k] === currentMode) || 'cityLights';
     this.updateModeUI(modeKey.toLowerCase());
+  }
+  
+  setupPlayerUI() {
+    const playBtn = document.querySelector('.player-btn-play');
+    const progressBar = document.querySelector('.player-progress');
+    
+    if (playBtn) {
+      playBtn.addEventListener('click', () => {
+        this.isPlaying = !this.isPlaying;
+        this.updatePlayerUI();
+      });
+    }
+    
+    if (progressBar) {
+      progressBar.addEventListener('click', (e) => {
+        const rect = progressBar.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        const progressFill = progressBar.querySelector('.progress-fill');
+        if (progressFill) {
+          progressFill.style.width = `${Math.max(0, Math.min(100, percent * 100))}%`;
+        }
+      });
+    }
+  }
+  
+  updatePlayerUI() {
+    const playBtn = document.querySelector('.player-btn-play');
+    if (!playBtn) return;
+    
+    const icon = playBtn.querySelector('svg');
+    if (icon) {
+      if (this.isPlaying) {
+        icon.innerHTML = `<circle cx="12" cy="12" r="8"/>`;
+      } else {
+        icon.innerHTML = `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`;
+      }
+    }
+  }
+  
+  setupNavUI() {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach((item, index) => {
+      item.addEventListener('click', () => {
+        navItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        
+        const navNames = ['首页', '发现', '电台', '收藏', '我的'];
+        console.log(`导航到: ${navNames[index]}`);
+      });
+    });
   }
   
   updateModeUI(activeMode) {
