@@ -231,6 +231,8 @@ function createEarthMesh() {
       uNightTexture: { value: null },
       uDayTexture: { value: null },
       uTopologyTexture: { value: null },
+      uHasNightTexture: { value: false },
+      uHasDayTexture: { value: false },
       uEmissiveIntensity: { value: 3.5 },
       uTime: { value: 0.0 },
       uMode: { value: 0 }
@@ -251,6 +253,8 @@ function createEarthMesh() {
       uniform sampler2D uNightTexture;
       uniform sampler2D uDayTexture;
       uniform sampler2D uTopologyTexture;
+      uniform bool uHasNightTexture;
+      uniform bool uHasDayTexture;
       uniform float uEmissiveIntensity;
       uniform float uTime;
       uniform int uMode;
@@ -259,18 +263,15 @@ function createEarthMesh() {
       varying vec3 vWorldPosition;
       
       void main() {
-        // 基础颜色
         vec3 baseColor = vec3(0.04, 0.06, 0.09);
         
-        // 夜间纹理
         vec3 nightColor = baseColor;
-        if (textureSize(uNightTexture, 0).x > 1) {
+        if (uHasNightTexture) {
           nightColor = texture2D(uNightTexture, vUv).rgb;
         }
         
-        // 白天纹理
         vec3 dayColor = baseColor;
-        if (textureSize(uDayTexture, 0).x > 1) {
+        if (uHasDayTexture) {
           dayColor = texture2D(uDayTexture, vUv).rgb;
         }
         
@@ -319,6 +320,7 @@ function createEarthMesh() {
   loader.load(nightUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
     material.uniforms.uNightTexture.value = texture;
+    material.uniforms.uHasNightTexture.value = true;
     material.uniforms.uEmissiveIntensity.value = 3.5;
     material.needsUpdate = true;
     console.log('Night texture loaded successfully');
@@ -329,6 +331,7 @@ function createEarthMesh() {
   loader.load(dayUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
     material.uniforms.uDayTexture.value = texture;
+    material.uniforms.uHasDayTexture.value = true;
     material.needsUpdate = true;
     console.log('Day texture loaded successfully');
   }, undefined, (err) => {
@@ -368,6 +371,7 @@ export function createEarth() {
     texture.colorSpace = THREE.SRGBColorSpace;
     if (earth.material.uniforms && earth.material.uniforms.uNightTexture) {
       earth.material.uniforms.uNightTexture.value = texture;
+      earth.material.uniforms.uHasNightTexture.value = true;
       earth.material.uniforms.uEmissiveIntensity.value = 3.5;
       earth.material.needsUpdate = true;
     }
@@ -400,7 +404,8 @@ export function createEarth() {
   // 创建点模式的网格 - 使用白天纹理
   const pointsDayMaterial = new THREE.ShaderMaterial({
     uniforms: {
-      uDayTexture: { value: null }
+      uDayTexture: { value: null },
+      uHasDayTexture: { value: false }
     },
     transparent: true,
     lights: false,
@@ -414,14 +419,14 @@ export function createEarth() {
     `,
     fragmentShader: `
       uniform sampler2D uDayTexture;
+      uniform bool uHasDayTexture;
       varying vec2 vUv;
       void main() {
-        // 圆形点
         vec2 coord = gl_PointCoord - vec2(0.5);
         if (length(coord) > 0.45) discard;
         
         vec3 dayColor = vec3(0.04, 0.06, 0.09);
-        if (textureSize(uDayTexture, 0).x > 1) {
+        if (uHasDayTexture) {
           dayColor = texture2D(uDayTexture, vUv).rgb;
         }
         gl_FragColor = vec4(dayColor * 1.3, 1.0);
@@ -454,6 +459,7 @@ export function createEarth() {
     // 点模式使用shader材质
     if (pointsDayMaterial.uniforms && pointsDayMaterial.uniforms.uDayTexture) {
       pointsDayMaterial.uniforms.uDayTexture.value = texture;
+      pointsDayMaterial.uniforms.uHasDayTexture.value = true;
       pointsDayMaterial.needsUpdate = true;
     }
     console.log('Day texture loaded for clouds/points');
