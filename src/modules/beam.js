@@ -3,11 +3,11 @@ import { latLngToVector3 } from '../utils/geo.js';
 import { CITY_DATA, getCityColor } from '../data/cities.js';
 
 const EARTH_RADIUS = 1.9;
-const ARC_MIN_HEIGHT = 0.25;
-const ARC_MAX_HEIGHT = 0.5;
+const ARC_MIN_HEIGHT = 0.4;
+const ARC_MAX_HEIGHT = 0.7;
 const ARC_SEGMENTS = 40;
 const PARTICLES_PER_ARC = 24;
-const LABEL_SIZE = 0.12;
+const LABEL_SIZE = 0.22;
 
 const arcLineVertexShader = `
   varying float vProgress;
@@ -75,7 +75,7 @@ function createCityLabelTexture(city, color) {
   canvas.height = 160;
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = 'rgba(10, 10, 20, 0.75)';
+  ctx.fillStyle = 'rgba(10, 10, 20, 0.7)';
   const r = 12;
   ctx.beginPath();
   ctx.moveTo(r, 0);
@@ -90,10 +90,6 @@ function createCityLabelTexture(city, color) {
   ctx.closePath();
   ctx.fill();
 
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-
   const imgSize = 56;
   const imgX = (128 - imgSize) / 2;
   const imgY = 12;
@@ -105,12 +101,6 @@ function createCityLabelTexture(city, color) {
   ctx.fillStyle = '#1a1a2e';
   ctx.fillRect(imgX, imgY, imgSize, imgSize);
   ctx.restore();
-
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.arc(imgX + imgSize / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
-  ctx.stroke();
 
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 16px sans-serif';
@@ -225,7 +215,7 @@ export function createBeams(earthGroup, camera) {
         canvas.height = 160;
         const ctx = canvas.getContext('2d');
 
-        ctx.fillStyle = 'rgba(10, 10, 20, 0.8)';
+        ctx.fillStyle = 'rgba(10, 10, 20, 0.7)';
         const r = 12;
         ctx.beginPath();
         ctx.moveTo(r, 0);
@@ -240,10 +230,6 @@ export function createBeams(earthGroup, camera) {
         ctx.closePath();
         ctx.fill();
 
-        ctx.strokeStyle = color.hex;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
         const imgSize = 56;
         const imgX = (128 - imgSize) / 2;
         const imgY = 12;
@@ -254,12 +240,6 @@ export function createBeams(earthGroup, camera) {
         ctx.clip();
         ctx.drawImage(tex.image, imgX, imgY, imgSize, imgSize);
         ctx.restore();
-
-        ctx.strokeStyle = color.hex;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc(imgX + imgSize / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
-        ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 16px sans-serif';
