@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0a0a1a">
-  <title>全球正在一起听</title>
+  <meta name="theme-color" content="#050510">
+  <title>全球一起听</title>
   <style>
     * {
       margin: 0;
@@ -18,20 +18,19 @@
       --primary-blue: #00D1FF;
       --primary-pink: #FF6B9D;
       --accent-green: #00FFA3;
-      --accent-orange: #FF9F43;
-      --bg-dark: #0a0a1a;
-      --bg-card: rgba(20, 20, 40, 0.7);
+      --bg-dark: #050510;
+      --bg-card: rgba(15, 15, 30, 0.6);
       --text-primary: #ffffff;
-      --text-secondary: rgba(255, 255, 255, 0.6);
-      --text-muted: rgba(255, 255, 255, 0.4);
-      --border-color: rgba(255, 255, 255, 0.1);
+      --text-secondary: rgba(255, 255, 255, 0.55);
+      --text-muted: rgba(255, 255, 255, 0.35);
+      --border-color: rgba(255, 255, 255, 0.08);
     }
 
     html, body {
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3a 50%, #0a0a1a 100%);
+      background: #050510;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -64,43 +63,41 @@
       pointer-events: auto;
     }
 
-    /* 背景装饰光效 */
     .bg-glow {
-      position: fixed;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
-      top: -200px;
-      left: -200px;
-      z-index: 2;
-      animation: glowPulse 8s ease-in-out infinite;
-    }
-
-    .bg-glow-right {
       position: fixed;
       width: 400px;
       height: 400px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(0, 209, 255, 0.1) 0%, transparent 70%);
-      bottom: -150px;
-      right: -150px;
+      background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
+      top: -150px;
+      left: -150px;
       z-index: 2;
-      animation: glowPulse 10s ease-in-out infinite reverse;
+      animation: glowPulse 10s ease-in-out infinite;
+    }
+
+    .bg-glow-right {
+      position: fixed;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 209, 255, 0.08) 0%, transparent 70%);
+      bottom: -100px;
+      right: -100px;
+      z-index: 2;
+      animation: glowPulse 12s ease-in-out infinite reverse;
     }
 
     @keyframes glowPulse {
-      0%, 100% { transform: scale(1); opacity: 0.6; }
-      50% { transform: scale(1.2); opacity: 0.8; }
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.15); opacity: 0.7; }
     }
 
-    /* 顶部区域 */
     .header-section {
-      padding: 20px 24px 0;
+      padding: 14px 16px 0;
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 16px;
+      gap: 12px;
       z-index: 30;
     }
 
@@ -109,16 +106,15 @@
     }
 
     .main-title {
-      font-size: 42px;
-      line-height: 1.02;
-      font-weight: 800;
+      font-size: 28px;
+      line-height: 1.1;
+      font-weight: 700;
       color: var(--text-primary);
-      letter-spacing: -1.5px;
-      position: relative;
+      letter-spacing: -0.8px;
     }
 
     .title-gradient {
-      background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-blue) 50%, var(--primary-pink) 100%);
+      background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-blue) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -126,27 +122,22 @@
 
     .wave-icon {
       display: inline-block;
-      margin-left: 10px;
-      animation: waveAnimation 2s ease-in-out infinite;
-    }
-
-    @keyframes waveAnimation {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-3px); }
+      margin-left: 6px;
+      vertical-align: middle;
     }
 
     .subtitle {
-      margin-top: 10px;
-      font-size: 15px;
+      margin-top: 6px;
+      font-size: 12px;
       color: var(--text-secondary);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .live-dot {
-      width: 6px;
-      height: 6px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
       background: var(--accent-green);
       animation: livePulse 1.5s ease-in-out infinite;
@@ -154,76 +145,55 @@
 
     @keyframes livePulse {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
+      50% { opacity: 0.4; transform: scale(0.8); }
     }
 
     .header-right {
       display: flex;
-      gap: 14px;
-      padding-top: 8px;
+      gap: 10px;
+      padding-top: 4px;
     }
 
     .search-btn {
-      width: 46px;
-      height: 46px;
-      border-radius: 23px;
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
       border: 1px solid var(--border-color);
       background: var(--bg-card);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .search-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-      transition: left 0.5s ease;
-    }
-
-    .search-btn:hover::before {
-      left: 100%;
+      transition: all 0.25s ease;
     }
 
     .search-btn:hover {
-      border-color: rgba(124, 58, 237, 0.5);
+      border-color: rgba(124, 58, 237, 0.4);
       transform: scale(1.05);
     }
 
     .search-icon {
-      width: 24px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
       color: var(--text-primary);
     }
 
     .avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: 26px;
-      border: 2px solid transparent;
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      border: 1.5px solid transparent;
       background: linear-gradient(var(--bg-dark), var(--bg-dark)) padding-box,
                   linear-gradient(135deg, var(--primary-purple), var(--primary-blue)) border-box;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       overflow: hidden;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 0.25s ease;
     }
 
     .avatar:hover {
-      transform: scale(1.08);
-      box-shadow: 0 8px 30px rgba(124, 58, 237, 0.4);
+      transform: scale(1.05);
     }
 
     .avatar-img {
@@ -232,16 +202,15 @@
       object-fit: cover;
     }
 
-    /* 实时数据统计卡片 */
     .stats-section {
-      padding: 0 24px;
-      margin-top: 16px;
+      padding: 0 16px;
+      margin-top: 10px;
       z-index: 25;
     }
 
     .stats-grid {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       overflow-x: auto;
       scrollbar-width: none;
       -ms-overflow-style: none;
@@ -253,135 +222,110 @@
 
     .stat-card {
       flex-shrink: 0;
-      min-width: 100px;
-      padding: 14px 18px;
+      min-width: 75px;
+      padding: 10px 12px;
       background: var(--bg-card);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 12px;
       border: 1px solid var(--border-color);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s ease;
       cursor: pointer;
     }
 
     .stat-card:hover {
-      border-color: rgba(124, 58, 237, 0.4);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      border-color: rgba(124, 58, 237, 0.3);
+      transform: translateY(-1px);
     }
 
     .stat-value {
-      font-size: 24px;
-      font-weight: 700;
+      font-size: 18px;
+      font-weight: 600;
       color: var(--text-primary);
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       font-variant-numeric: tabular-nums;
     }
 
     .stat-label {
-      font-size: 12px;
+      font-size: 10px;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
     }
 
     .stat-trend {
       display: flex;
       align-items: center;
-      gap: 4px;
-      margin-top: 6px;
-      font-size: 11px;
+      gap: 3px;
+      margin-top: 4px;
+      font-size: 9px;
       color: var(--accent-green);
     }
 
-    /* 地球空间 */
     .earth-space {
       flex: 1;
       position: relative;
       z-index: 20;
     }
 
-    /* 右侧控制按钮 */
     .side-controls {
       position: absolute;
-      right: 16px;
-      bottom: 200px;
+      right: 12px;
+      bottom: 160px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
       z-index: 25;
     }
 
     .control-btn {
-      width: 50px;
-      height: 50px;
-      border-radius: 25px;
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
       background: var(--bg-card);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--border-color);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .control-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(0, 209, 255, 0.3));
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .control-btn:hover::before {
-      opacity: 1;
+      transition: all 0.25s ease;
     }
 
     .control-btn:hover {
-      transform: scale(1.1);
-      border-color: rgba(124, 58, 237, 0.6);
+      border-color: rgba(124, 58, 237, 0.5);
+      transform: scale(1.08);
     }
 
     .control-btn.active {
-      background: linear-gradient(135deg, rgba(124, 58, 237, 0.4), rgba(0, 209, 255, 0.2));
+      background: rgba(124, 58, 237, 0.25);
       border-color: var(--primary-purple);
     }
 
     .control-btn svg {
-      width: 24px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
       color: var(--text-primary);
-      position: relative;
-      z-index: 1;
     }
 
-    /* 地球模式选择菜单 */
     .mode-menu {
       position: fixed;
-      right: 16px;
-      bottom: 270px;
-      background: rgba(15, 15, 30, 0.98);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      right: 12px;
+      bottom: 210px;
+      background: rgba(10, 10, 25, 0.96);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 12px;
+      border-radius: 14px;
+      padding: 8px;
       z-index: 100;
-      min-width: 200px;
+      min-width: 160px;
       opacity: 0;
       visibility: hidden;
-      transform: translateY(15px);
-      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateY(10px);
+      transition: all 0.3s ease;
       pointer-events: none;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     }
 
     .mode-menu.show {
@@ -392,46 +336,45 @@
     }
 
     .mode-menu-title {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-muted);
-      padding: 8px 14px 6px;
+      padding: 6px 10px 4px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
       font-weight: 600;
     }
 
     .mode-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      border-radius: 12px;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.2s ease;
       color: var(--text-secondary);
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 500;
     }
 
     .mode-item:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .mode-item.active {
-      background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(0, 209, 255, 0.1));
+      background: rgba(124, 58, 237, 0.2);
       color: var(--text-primary);
     }
 
     .mode-check {
-      width: 16px;
-      height: 16px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
-      border: 2px solid var(--border-color);
+      border: 1.5px solid var(--border-color);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      transition: all 0.25s ease;
     }
 
     .mode-item.active .mode-check {
@@ -441,36 +384,35 @@
 
     .mode-item.active .mode-check::after {
       content: '';
-      width: 6px;
-      height: 6px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
       background: white;
     }
 
-    /* 热门歌曲推荐 */
     .hot-tracks {
       position: absolute;
-      left: 16px;
-      bottom: 200px;
+      left: 12px;
+      bottom: 160px;
       z-index: 25;
-      width: 280px;
+      width: 220px;
     }
 
     .section-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .section-title {
-      font-size: 15px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--text-primary);
     }
 
     .section-more {
-      font-size: 12px;
+      font-size: 10px;
       color: var(--text-muted);
       cursor: pointer;
       transition: color 0.2s ease;
@@ -483,31 +425,31 @@
     .track-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .track-item {
       display: flex;
-      gap: 12px;
-      padding: 10px 12px;
+      gap: 10px;
+      padding: 8px 10px;
       background: var(--bg-card);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 14px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 10px;
       border: 1px solid var(--border-color);
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s ease;
     }
 
     .track-item:hover {
-      border-color: rgba(124, 58, 237, 0.3);
-      transform: translateX(4px);
+      border-color: rgba(124, 58, 237, 0.25);
+      transform: translateX(3px);
     }
 
     .track-cover {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
       overflow: hidden;
       flex-shrink: 0;
       position: relative;
@@ -521,16 +463,16 @@
 
     .track-rank {
       position: absolute;
-      top: -4px;
-      left: -4px;
-      width: 20px;
-      height: 20px;
-      border-radius: 6px;
+      top: -3px;
+      left: -3px;
+      width: 16px;
+      height: 16px;
+      border-radius: 5px;
       background: var(--primary-purple);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
+      font-size: 8px;
       font-weight: 700;
       color: white;
     }
@@ -544,7 +486,7 @@
     }
 
     .track-name {
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 500;
       color: var(--text-primary);
       white-space: nowrap;
@@ -553,63 +495,62 @@
     }
 
     .track-artist {
-      font-size: 11px;
+      font-size: 9px;
       color: var(--text-muted);
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
     .track-players {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      margin-top: 3px;
     }
 
     .track-players svg {
-      width: 14px;
-      height: 14px;
+      width: 11px;
+      height: 11px;
       color: var(--accent-green);
     }
 
     .track-players span {
-      font-size: 11px;
+      font-size: 9px;
       color: var(--text-muted);
       font-variant-numeric: tabular-nums;
     }
 
-    /* 底部播放器 */
     .bottom-player {
       position: fixed;
-      bottom: 58px;
+      bottom: 52px;
       left: 0;
       right: 0;
-      padding: 0 16px;
+      padding: 0 12px;
       z-index: 35;
       pointer-events: auto;
     }
 
     .player-card {
-      background: rgba(15, 15, 30, 0.92);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      background: rgba(10, 10, 25, 0.9);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 12px 16px;
+      border-radius: 16px;
+      padding: 9px 12px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      gap: 10px;
       cursor: pointer;
+      transition: all 0.25s ease;
     }
 
     .player-card:hover {
-      border-color: rgba(124, 58, 237, 0.3);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      border-color: rgba(124, 58, 237, 0.25);
     }
 
     .player-cover {
-      width: 52px;
-      height: 52px;
-      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
       overflow: hidden;
       flex-shrink: 0;
       position: relative;
@@ -628,19 +569,19 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), transparent);
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), transparent);
     }
 
     .player-info {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
       min-width: 0;
     }
 
     .player-song-name {
-      font-size: 15px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--text-primary);
       white-space: nowrap;
@@ -649,16 +590,16 @@
     }
 
     .player-artist {
-      font-size: 12px;
+      font-size: 10px;
       color: var(--text-secondary);
     }
 
     .player-progress {
       width: 100%;
-      height: 3px;
+      height: 2px;
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 2px;
-      margin-top: 6px;
+      border-radius: 1px;
+      margin-top: 4px;
       cursor: pointer;
       overflow: hidden;
     }
@@ -666,78 +607,76 @@
     .progress-fill {
       height: 100%;
       background: linear-gradient(90deg, var(--primary-purple), var(--primary-blue));
-      border-radius: 2px;
-      transition: width 0.3s ease;
+      border-radius: 1px;
       width: 45%;
     }
 
     .player-controls {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .player-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 18px;
+      width: 28px;
+      height: 28px;
+      border-radius: 14px;
       border: none;
       background: transparent;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.2s ease;
     }
 
     .player-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      transform: scale(1.1);
+      background: rgba(255, 255, 255, 0.06);
+      transform: scale(1.08);
     }
 
     .player-btn svg {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       color: var(--text-primary);
     }
 
     .player-btn-play {
-      width: 54px;
-      height: 54px;
-      border-radius: 27px;
+      width: 42px;
+      height: 42px;
+      border-radius: 21px;
       background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
+      transition: all 0.25s ease;
     }
 
     .player-btn-play:hover {
-      transform: scale(1.08);
-      box-shadow: 0 12px 35px rgba(124, 58, 237, 0.5);
+      transform: scale(1.06);
+      box-shadow: 0 8px 25px rgba(124, 58, 237, 0.45);
     }
 
     .player-btn-play svg {
-      width: 24px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
     }
 
-    /* 底部导航栏 */
     .bottom-nav {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 56px;
-      background: rgba(10, 10, 20, 0.98);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      height: 50px;
+      background: rgba(5, 5, 15, 0.98);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-top: 1px solid var(--border-color);
       display: flex;
       align-items: center;
       justify-content: space-around;
-      padding-bottom: max(4px, env(safe-area-inset-bottom));
+      padding-bottom: max(2px, env(safe-area-inset-bottom));
       z-index: 40;
       pointer-events: auto;
     }
@@ -746,24 +685,24 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
       cursor: pointer;
-      padding: 6px 12px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 4px 8px;
+      transition: all 0.25s ease;
       position: relative;
     }
 
     .nav-item svg {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       color: var(--text-muted);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s ease;
     }
 
     .nav-item span {
-      font-size: 10px;
+      font-size: 9px;
       color: var(--text-muted);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s ease;
     }
 
     .nav-item.active svg,
@@ -775,10 +714,10 @@
       content: '';
       position: absolute;
       top: 0;
-      width: 20px;
-      height: 3px;
+      width: 16px;
+      height: 2px;
       background: linear-gradient(90deg, var(--primary-purple), var(--primary-blue));
-      border-radius: 0 0 3px 3px;
+      border-radius: 0 0 2px 2px;
     }
 
     .nav-item:hover svg {
@@ -789,35 +728,25 @@
       color: var(--text-secondary);
     }
 
-    /* 响应式调整 */
     @media (max-width: 375px) {
       .main-title {
-        font-size: 36px;
+        font-size: 26px;
       }
       .header-section {
-        padding: 16px 16px 0;
+        padding: 12px 12px 0;
       }
       .stats-section {
-        padding: 0 16px;
+        padding: 0 12px;
       }
       .hot-tracks {
-        width: 260px;
+        width: 200px;
       }
       .player-card {
-        padding: 10px 12px;
+        padding: 8px 10px;
       }
       .player-cover {
-        width: 48px;
-        height: 48px;
-      }
-    }
-
-    @media (min-width: 414px) {
-      .main-title {
-        font-size: 48px;
-      }
-      .hot-tracks {
-        width: 300px;
+        width: 36px;
+        height: 36px;
       }
     }
   </style>
@@ -832,21 +761,14 @@
     <div class="header-section interactive">
       <div class="title-block">
         <h1 class="main-title">
-          <span class="title-gradient">全球正在</span><br>一起听
+          <span class="title-gradient">全球</span>一起听
           <span class="wave-icon">
-            <svg width="52px" height="28px" viewBox="0 0 56 30" fill="none">
-              <path d="M4 22C4 22 8 16 10 14C14 10 20 10 22 14C24 18 26 22 26 22C26 22 28 16 30 14C34 10 40 10 44 14C48 18 48 22 48 22" stroke="url(#waveGradient)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M2 16C2 16 6 12 8 12C12 12 16 16 16 16C16 16 20 12 24 12C28 12 32 16 32 16C32 16 36 12 40 12C44 12 50 16 50 16" stroke="url(#waveGradient2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg width="32px" height="16px" viewBox="0 0 36 18" fill="none">
+              <path d="M2 14C2 14 5 10 6 8C8 6 11 6 13 8C14 10 15 14 15 14C15 14 16 10 18 8C20 6 23 6 25 8C27 10 27 14 27 14" stroke="url(#waveGradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <defs>
                 <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stop-color="#7C3AED"/>
-                  <stop offset="50%" stop-color="#00D1FF"/>
-                  <stop offset="100%" stop-color="#FF6B9D"/>
-                </linearGradient>
-                <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#7C3AED" stop-opacity="0.6"/>
-                  <stop offset="50%" stop-color="#00D1FF" stop-opacity="0.6"/>
-                  <stop offset="100%" stop-color="#FF6B9D" stop-opacity="0.6"/>
+                  <stop offset="100%" stop-color="#00D1FF"/>
                 </linearGradient>
               </defs>
             </svg>
@@ -900,16 +822,6 @@
               <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
             </svg>
             +8%
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">99.9%</div>
-          <div class="stat-label">可用性</div>
-          <div class="stat-trend">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 18 13 8 21 16"/>
-            </svg>
-            稳定
           </div>
         </div>
       </div>
@@ -1003,23 +915,6 @@
                   <circle cx="12" cy="12" r="3"/>
                 </svg>
                 <span>95K</span>
-              </div>
-            </div>
-          </div>
-          <div class="track-item">
-            <div class="track-cover">
-              <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=200&auto=format&fit=crop" alt="cover">
-              <div class="track-rank">3</div>
-            </div>
-            <div class="track-info">
-              <div class="track-name">As It Was</div>
-              <div class="track-artist">Harry Styles</div>
-              <div class="track-players">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14.53 10.53A8 8 0 0 1 12 20a8 8 0 0 1-8-8 8.001 8.001 0 0 1 14.53-5.47z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-                <span>82K</span>
               </div>
             </div>
           </div>
