@@ -61,17 +61,22 @@ const particleFragmentShader = `
   }
 `;
 
-function createArcCurve(surfacePos, direction, height, city) {
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return h;
+}
+
+function createArcCurve(surfacePos, direction, height, city, cityIndex) {
   const east = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).normalize();
   if (east.length() < 0.01) {
     east.crossVectors(new THREE.Vector3(1, 0, 0), direction).normalize();
   }
   const north = new THREE.Vector3().crossVectors(direction, east).normalize();
-  const lngRad = (city.lng * Math.PI) / 180;
-  const latRad = (city.lat * Math.PI) / 180;
-  const bendAngle = lngRad * 0.6 + latRad * 0.2;
-  const bendDir = east.clone().multiplyScalar(Math.cos(bendAngle))
-    .add(north.clone().multiplyScalar(Math.sin(bendAngle)))
+  const nameHash = hashStr(city.city + city.cityEn);
+  const spreadAngle = (nameHash % 360) * (Math.PI / 180);
+  const bendDir = east.clone().multiplyScalar(Math.cos(spreadAngle))
+    .add(north.clone().multiplyScalar(Math.sin(spreadAngle)))
     .normalize();
 
   const straightUp = surfacePos.clone().add(direction.clone().multiplyScalar(height * 0.65));
@@ -163,7 +168,7 @@ export function createBeams(earthGroup, camera) {
 
     const surfacePos = latLngToVector3(city.lat, city.lng, EARTH_RADIUS);
     const direction = surfacePos.clone().normalize();
-    const { curve, endPos } = createArcCurve(surfacePos, direction, height, city);
+    const { curve, endPos } = createArcCurve(surfacePos, direction, height, city, cityIndex);
 
     const linePoints = curve.getPoints(ARC_SEGMENTS);
     const lineGeometry = new THREE.BufferGeometry().setFromPoints(linePoints);
