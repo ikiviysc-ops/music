@@ -21,7 +21,6 @@ class App {
     this.clock = new THREE.Clock();
     this.useComposer = true;
     this.isPlaying = false;
-    this.musicPlayer = null;
   }
 
   init() {
@@ -131,77 +130,177 @@ class App {
   
   setupPlayerUI() {
     this.musicPlayer = document.getElementById('musicPlayer');
+    const fpPlayerWrap = document.getElementById('fpPlayerWrap');
+    const fpPlayerCard = document.getElementById('fpPlayerCard');
+    const fpProgressFill = document.getElementById('fpProgressFill');
     
-    const playBtn = document.querySelector('.player-btn-play');
-    const progressBar = document.querySelector('.player-progress');
-    
-    if (playBtn) {
-      playBtn.addEventListener('click', () => {
+    if (fpPlayerWrap) {
+      fpPlayerWrap.addEventListener('click', () => {
         this.togglePlay();
       });
     }
     
+    if (fpPlayerCard) {
+      fpPlayerCard.addEventListener('click', (e) => {
+        if (e.target.closest('#fpPlayerWrap')) return;
+        const rect = fpPlayerCard.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        if (fpProgressFill) {
+          fpProgressFill.style.width = `${Math.max(0, Math.min(100, percent * 100))}%`;
+        }
+        if (this.musicPlayer && this.musicPlayer.duration > 0) {
+          this.musicPlayer.currentTime = percent * this.musicPlayer.duration;
+        }
+      });
+    }
+    
     if (this.musicPlayer) {
-      this.musicPlayer.addEventListener('timeupdate', () => this.updateProgress());
-      this.musicPlayer.addEventListener('loadedmetadata', () => this.updateDuration());
+      this.musicPlayer.addEventListener('timeupdate', () => {
+        this.updateProgress();
+      });
+      
+      this.musicPlayer.addEventListener('loadedmetadata', () => {
+        this.updateTimeDisplay();
+      });
+      
+      this.musicPlayer.addEventListener('ended', () => {
+        this.isPlaying = false;
+        this.updatePlayerUI();
+      });
+      
       this.musicPlayer.addEventListener('play', () => {
         this.isPlaying = true;
         this.updatePlayerUI();
       });
+      
       this.musicPlayer.addEventListener('pause', () => {
         this.isPlaying = false;
         this.updatePlayerUI();
       });
     }
     
-    if (progressBar) {
-      progressBar.addEventListener('click', (e) => {
-        const rect = progressBar.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        const progressFill = progressBar.querySelector('.progress-fill');
-        if (progressFill) {
-          progressFill.style.width = `${Math.max(0, Math.min(100, percent * 100))}%`;
-        }
-      });
-    }
+    this.animateWave();
   }
   
   togglePlay() {
-    if (!this.musicPlayer) return;
+    if (!this.musicPlayer) {
+      console.error('Audio element not found');
+      return;
+    }
+    
+    console.log('Current audio src:', this.musicPlayer.currentSrc);
+    console.log('Audio readyState:', this.musicPlayer.readyState);
+    console.log('Audio paused:', this.musicPlayer.paused);
     
     if (this.isPlaying) {
       this.musicPlayer.pause();
     } else {
-      this.musicPlayer.play().catch(e => console.error('Play failed:', e));
+      this.musicPlayer.play().then(() => {
+        console.log('Playback started successfully');
+      }).catch(e => {
+        console.error('Playback failed:', e);
+        this.tryNextSource();
+      });
+    }
+  }
+  
+  tryNextSource() {
+    const sources = this.musicPlayer.querySelectorAll('source');
+    let currentSrc = this.musicPlayer.currentSrc;
+    
+    for (let i = 0; i < sources.length; i++) {
+      if (sources[i].src !== currentSrc) {
+        console.log('Trying next source:', sources[i].src);
+        this.musicPlayer.src = sources[i].src;
+        this.musicPlayer.play().then(() => {
+          console.log('Playback started with fallback source');
+        }).catch(e => {
+          console.error('Fallback source failed:', e);
+        });
+        break;
+      }
+    }
+  }
+  
+  updatePlayerUI() {
+    const fpPlayerWrap = document.getElementById('fpPlayerWrap');
+    const fpMusicCover = document.getElementById('fpMusicCover');
+    if (!fpPlayerWrap) return;
+    
+    if (this.isPlaying) {
+      fpPlayerWrap.classList.add('playing');
+      if (fpMusicCover) {
+        fpMusicCover.classList.add('playing');
+      }
+    } else {
+      fpPlayerWrap.classList.remove('playing');
+      if (fpMusicCover) {
+        fpMusicCover.classList.remove('playing');
+      }
     }
   }
   
   updateProgress() {
-    if (!this.musicPlayer || !this.musicPlayer.duration) return;
+    if (!this.musicPlayer || this.musicPlayer.duration === 0) return;
     
-    const progressFill = document.querySelector('.progress-fill');
-    if (progressFill) {
-      const percent = (this.musicPlayer.currentTime / this.musicPlayer.duration) * 100;
-      progressFill.style.width = `${percent}%`;
+    const fpProgressFill = document.getElementById('fpProgressFill');
+    const progress = (this.musicPlayer.currentTime / this.musicPlayer.duration) * 100;
+    
+    if (fpProgressFill) {
+      fpProgressFill.style.width = `${progress}%`;
     }
-  }
-  
-  updateDuration() {
-    console.log('Duration:', this.musicPlayer.duration);
-  }
-  
-  updatePlayerUI() {
-    const playBtn = document.querySelector('.player-btn-play');
-    if (!playBtn) return;
     
-    const icon = playBtn.querySelector('svg');
-    if (icon) {
-      if (this.isPlaying) {
-        icon.innerHTML = `<circle cx="12" cy="12" r="8"/>`;
-      } else {
-        icon.innerHTML = `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`;
+    this.updateTimeDisplay();
+  }
+  
+  updateTimeDisplay() {
+    if (!this.musicPlayer) return;
+    
+    const fpTimeDisplay = document.getElementById('fpTimeDisplay');
+    if (!fpTimeDisplay) return;
+    
+    const currentTime = this.formatTime(this.musicPlayer.currentTime);
+    const duration = this.musicPlayer.duration > 0 ? this.formatTime(this.musicPlayer.duration) : '0:00';
+    
+    fpTimeDisplay.textContent = `${currentTime} / ${duration}`;
+  }
+  
+  formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+  
+  animateWave() {
+    const wave1 = document.getElementById('fpWave1');
+    const wave2 = document.getElementById('fpWave2');
+    if (!wave1 || !wave2) return;
+    
+    let time = 0;
+    const animate = () => {
+      time += 0.02;
+      
+      const amplitude = this.isPlaying ? 2.5 + Math.sin(time * 2) * 0.5 : 1.5;
+      const frequency = this.isPlaying ? 0.15 : 0.08;
+      
+      let path1 = '';
+      let path2 = '';
+      for (let x = 0; x <= 32; x++) {
+        const y1 = 16 + Math.sin((x + time * 30) * frequency * Math.PI) * amplitude * 0.8;
+        const y2 = 16 + Math.sin((x + time * 25 + 10) * frequency * Math.PI) * amplitude;
+        path1 += (x === 0 ? 'M' : 'L') + x + ',' + y1 + ' ';
+        path2 += (x === 0 ? 'M' : 'L') + x + ',' + y2 + ' ';
       }
-    }
+      path1 += 'L32,32 L0,32 Z';
+      path2 += 'L32,32 L0,32 Z';
+      
+      wave1.setAttribute('d', path1);
+      wave2.setAttribute('d', path2);
+      
+      requestAnimationFrame(animate);
+    };
+    
+    animate();
   }
   
   setupNavUI() {
