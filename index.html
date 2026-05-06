@@ -4,13 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#050510">
-  <title>全球正在一起听</title>
+  <title>全球一起听</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --primary-purple: #7C3AED;
+      --primary-blue: #00D1FF;
+      --primary-pink: #FF6B9D;
+      --accent-green: #00FFA3;
+      --bg-dark: #050510;
+      --bg-card: rgba(15, 15, 30, 0.6);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.55);
+      --text-muted: rgba(255, 255, 255, 0.35);
+      --border-color: rgba(255, 255, 255, 0.08);
     }
 
     html, body {
@@ -50,13 +63,42 @@
       pointer-events: auto;
     }
 
-    /* 顶部区域 */
+    .bg-glow {
+      position: fixed;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
+      top: -150px;
+      left: -150px;
+      z-index: 2;
+      animation: glowPulse 10s ease-in-out infinite;
+    }
+
+    .bg-glow-right {
+      position: fixed;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 209, 255, 0.08) 0%, transparent 70%);
+      bottom: -100px;
+      right: -100px;
+      z-index: 2;
+      animation: glowPulse 12s ease-in-out infinite reverse;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.15); opacity: 0.7; }
+    }
+
     .header-section {
-      padding: 16px 20px 0;
+      padding: 14px 16px 0;
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
+      z-index: 30;
     }
 
     .title-block {
@@ -64,58 +106,94 @@
     }
 
     .main-title {
-      font-size: 38px;
-      line-height: 1.05;
-      font-weight: 800;
-      color: #fff;
-      letter-spacing: -1px;
+      font-size: 28px;
+      line-height: 1.1;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.8px;
+    }
+
+    .title-gradient {
+      background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .wave-icon {
       display: inline-block;
-      margin-left: 8px;
+      margin-left: 6px;
+      vertical-align: middle;
     }
 
     .subtitle {
-      margin-top: 8px;
-      font-size: 15px;
-      color: rgba(255, 255, 255, 0.6);
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      animation: livePulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
     }
 
     .header-right {
       display: flex;
-      gap: 12px;
-      padding-top: 6px;
+      gap: 10px;
+      padding-top: 4px;
     }
 
     .search-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 21px;
-      border: none;
-      background: transparent;
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.25s ease;
+    }
+
+    .search-btn:hover {
+      border-color: rgba(124, 58, 237, 0.4);
+      transform: scale(1.05);
     }
 
     .search-icon {
-      width: 28px;
-      height: 28px;
-      color: #fff;
+      width: 18px;
+      height: 18px;
+      color: var(--text-primary);
     }
 
     .avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 24px;
-      border: 2px solid #7C3AED;
-      background: linear-gradient(135deg, #7C3AED, #00D1FF);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      border: 1.5px solid transparent;
+      background: linear-gradient(var(--bg-dark), var(--bg-dark)) padding-box,
+                  linear-gradient(135deg, var(--primary-purple), var(--primary-blue)) border-box;
       overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.25s ease;
+    }
+
+    .avatar:hover {
+      transform: scale(1.05);
     }
 
     .avatar-img {
@@ -124,68 +202,125 @@
       object-fit: cover;
     }
 
-    /* 地球空间 - 占据中间主要区域 */
+    .stats-section {
+      padding: 0 16px;
+      margin-top: 10px;
+      z-index: 25;
+    }
+
+    .stats-grid {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .stats-grid::-webkit-scrollbar {
+      display: none;
+    }
+
+    .stat-card {
+      flex-shrink: 0;
+      min-width: 75px;
+      padding: 10px 12px;
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .stat-card:hover {
+      border-color: rgba(124, 58, 237, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .stat-trend {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      margin-top: 4px;
+      font-size: 9px;
+      color: var(--accent-green);
+    }
+
     .earth-space {
       flex: 1;
       position: relative;
-    }
-
-    /* 右侧控制按钮 */
-    .side-controls {
-      position: absolute;
-      right: 14px;
-      bottom: 146px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
       z-index: 20;
     }
 
+    .side-controls {
+      position: absolute;
+      right: 12px;
+      bottom: 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 25;
+    }
+
     .control-btn {
-      width: 46px;
-      height: 46px;
-      border-radius: 23px;
-      background: rgba(255, 255, 255, 0.08);
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      background: var(--bg-card);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid var(--border-color);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
     }
 
     .control-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(124, 58, 237, 0.5);
       transform: scale(1.08);
     }
 
     .control-btn.active {
-      background: rgba(124, 58, 237, 0.3);
-      border-color: #7C3AED;
+      background: rgba(124, 58, 237, 0.25);
+      border-color: var(--primary-purple);
     }
 
     .control-btn svg {
-      width: 24px;
-      height: 24px;
-      color: #fff;
+      width: 18px;
+      height: 18px;
+      color: var(--text-primary);
     }
 
-    /* 地球模式选择菜单 */
     .mode-menu {
       position: fixed;
-      right: 14px;
-      bottom: 206px;
-      background: rgba(10, 10, 20, 0.95);
+      right: 12px;
+      bottom: 210px;
+      background: rgba(10, 10, 25, 0.96);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
       padding: 8px;
       z-index: 100;
-      min-width: 180px;
+      min-width: 160px;
       opacity: 0;
       visibility: hidden;
       transform: translateY(10px);
@@ -201,199 +336,478 @@
     }
 
     .mode-menu-title {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.5);
-      padding: 8px 12px 4px;
+      font-size: 10px;
+      color: var(--text-muted);
+      padding: 6px 10px 4px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
+      font-weight: 600;
     }
 
     .mode-item {
       display: flex;
       align-items: center;
-      padding: 10px 12px;
+      gap: 10px;
+      padding: 9px 10px;
       border-radius: 10px;
       cursor: pointer;
       transition: all 0.2s ease;
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 14px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
     }
 
     .mode-item:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .mode-item.active {
-      background: rgba(124, 58, 237, 0.25);
-      color: #fff;
+      background: rgba(124, 58, 237, 0.2);
+      color: var(--text-primary);
     }
 
-    .mode-item.active::before {
-      content: '';
-      width: 8px;
-      height: 8px;
+    .mode-check {
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
-      background: transparent;
-      margin-right: 10px;
-      flex-shrink: 0;
-    }
-
-    .mode-item.active::before {
-      background: #7C3AED;
-    }
-
-    /* 左下播放指示器 */
-    .play-indicator {
-      position: absolute;
-      left: 14px;
-      bottom: 146px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-radius: 24px;
-      padding: 6px 12px;
-    }
-
-    .play-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 22px;
-      border: 2px solid rgba(255, 255, 255, 0.5);
-      background: transparent;
-      cursor: pointer;
+      border: 1.5px solid var(--border-color);
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
-    .play-btn svg {
-      width: 20px;
-      height: 20px;
-      color: #fff;
+    .mode-item.active .mode-check {
+      border-color: var(--primary-purple);
+      background: var(--primary-purple);
     }
 
-    .play-texts {
+    .mode-item.active .mode-check::after {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: white;
+    }
+
+    .hot-tracks {
+      position: absolute;
+      left: 12px;
+      bottom: 160px;
+      z-index: 25;
+      width: 220px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .section-more {
+      font-size: 10px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .section-more:hover {
+      color: var(--primary-purple);
+    }
+
+    .track-list {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 8px;
     }
 
-    .play-text {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.9);
+    .track-item {
+      display: flex;
+      gap: 10px;
+      padding: 8px 10px;
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.25s ease;
     }
 
-    .play-time {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.65);
+    .track-item:hover {
+      border-color: rgba(124, 58, 237, 0.25);
+      transform: translateX(3px);
     }
 
-    /* 底部播放器 */
+    .track-cover {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .track-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .track-rank {
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      width: 16px;
+      height: 16px;
+      border-radius: 5px;
+      background: var(--primary-purple);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .track-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .track-name {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-artist {
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .track-players {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 3px;
+    }
+
+    .track-players svg {
+      width: 11px;
+      height: 11px;
+      color: var(--accent-green);
+    }
+
+    .track-players span {
+      font-size: 9px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
     .bottom-player {
       position: fixed;
       bottom: 52px;
       left: 0;
       right: 0;
       padding: 0 12px;
-      z-index: 25;
+      z-index: 35;
       pointer-events: auto;
     }
 
-    .player-card {
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 18px;
-      padding: 10px 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .player-cover {
-      width: 46px;
-      height: 46px;
-      border-radius: 9px;
-      background: linear-gradient(135deg, #7C3AED, #FF6B9D);
-      flex-shrink: 0;
+    #fpPlayerCard {
+      background: rgba(22, 22, 22, 0.12);
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 50px;
       overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.12);
+      transition: all 0.25s ease;
+      padding-left: 0;
     }
 
-    .player-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+    #fpPlayerCard:hover {
+      border-color: rgba(124, 58, 237, 0.25);
     }
 
-    .player-song-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: #fff;
+    #fpMusicBackground {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 150%;
+      height: 150%;
+      background: linear-gradient(135deg, rgba(37, 98, 234, 0.15) 0%, rgba(122, 168, 255, 0.1) 100%);
+      background-size: cover;
+      background-position: center;
+      filter: blur(8px);
+      opacity: 0.5;
+      z-index: 0;
+      transition: opacity 0.5s;
+      will-change: opacity;
     }
 
-    .player-artist {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.6);
+    #fpLyricBigChar {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      font-weight: 900;
+      opacity: 0;
+      filter: blur(1px);
+      pointer-events: none;
+      z-index: 1;
+      color: rgba(255, 255, 255, 0.3);
+      white-space: nowrap;
     }
 
-    .player-controls {
+    #fpProgressFill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(37, 98, 234, 0.25) 0%, rgba(122, 168, 255, 0.15) 80%, rgba(122, 168, 255, 0.25) 100%);
+      z-index: 0;
+      transition: width 0.3s ease;
+      pointer-events: none;
+    }
+
+    #fpBreathBar {
+      position: absolute;
+      right: -1px;
+      top: 0;
+      height: 100%;
+      width: 1px;
+      background: rgba(255, 255, 255, 0.6);
+      animation: breathBar 1.5s ease-in-out infinite;
+    }
+
+    @keyframes breathBar {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    #fpMusicPlayerCard {
+      padding: 0 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      height: 44px;
+      position: relative;
+      z-index: 2;
     }
 
-    .player-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 16px;
-      border: none;
-      background: transparent;
-      cursor: pointer;
+    #fpMusicCover {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
+    }
+
+    #fpCoverImage {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+
+    #fpMusicCover.playing #fpCoverImage {
+      animation: coverRotate 8s linear infinite;
+    }
+
+    @keyframes coverRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    #fpCoverPlaceholder {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      padding: 10px;
+    }
+
+    #fpMusicTitle {
+      font-size: 10px;
+      font-weight: 700;
+      margin: 0;
+      line-height: 1.2;
+      white-space: normal;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    #fpLyricsArea {
+      flex: 1;
+      min-width: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 0 10px;
+      z-index: 1;
+      position: relative;
     }
 
-    .player-btn svg {
-      width: 20px;
-      height: 20px;
-      color: #fff;
+    #fpLyricsContainer {
+      min-height: 12px;
+      overflow: visible;
+      text-align: center;
+      width: 100%;
+      position: relative;
     }
 
-    .player-btn-play {
-      width: 50px;
-      height: 50px;
-      border-radius: 25px;
-      border: 2px solid rgba(255, 255, 255, 0.6);
-      background: rgba(255, 255, 255, 0.08);
+    #fpLyricText {
+      font-size: 10px;
+      line-height: 1.2;
+      color: rgba(255, 255, 255, 0.6);
+      margin: 0;
+      white-space: nowrap;
+      max-width: 100%;
+      position: relative;
+      z-index: 1;
     }
 
-    .player-btn-play svg {
-      width: 22px;
-      height: 22px;
+    #fpMusicQuality {
+      font-size: 6px;
+      padding: 1px 4px;
+      border-radius: 100px;
+      background: rgba(37, 98, 234, 0.2);
+      font-weight: 600;
+      color: #a8d4ff;
+      text-align: left;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
     }
 
-    /* 底部导航栏 */
+    #fpMusicSize {
+      font-size: 6px;
+      padding: 1px 4px;
+      border-radius: 100px;
+      background: rgba(255, 255, 255, 0.1);
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.7);
+      text-align: left;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    #fpTimeDisplay {
+      font-size: 6px;
+      color: rgba(255, 255, 255, 0.4);
+      font-variant-numeric: tabular-nums;
+      text-align: left;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 4px;
+    }
+
+    #fpPlayerWrap {
+      flex-shrink: 0;
+      position: relative;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      overflow: visible;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    #fpRing {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid transparent;
+      background: conic-gradient(from 0deg, rgba(120, 80, 255, 0) 0%, rgba(120, 80, 255, 0.9) 30%, rgba(60, 200, 240, 0.9) 60%, rgba(120, 80, 255, 0) 100%) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: destination-out;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+
+    #fpPlayerWrap.playing #fpRing {
+      opacity: 1;
+      animation: ringRotate 3s linear infinite;
+    }
+
+    @keyframes ringRotate {
+      to { transform: rotate(360deg); }
+    }
+
+    .ctrl-icon {
+      transition: opacity 0.25s, transform 0.25s;
+      transform-origin: center;
+    }
+
+    .icon-pause {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+
+    #fpPlayerWrap.playing .icon-play {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+
+    #fpPlayerWrap.playing .icon-pause {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .fp-icon-fill {
+      fill: rgba(255, 255, 255, 0.95);
+    }
+
     .bottom-nav {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
       height: 50px;
-      background: rgba(10, 10, 20, 0.95);
+      background: rgba(5, 5, 15, 0.98);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid var(--border-color);
       display: flex;
       align-items: center;
       justify-content: space-around;
       padding-bottom: max(2px, env(safe-area-inset-bottom));
-      z-index: 30;
+      z-index: 40;
       pointer-events: auto;
     }
 
@@ -403,62 +817,91 @@
       align-items: center;
       gap: 2px;
       cursor: pointer;
-      padding: 4px 10px;
-      transition: all 0.3s ease;
+      padding: 4px 8px;
+      transition: all 0.25s ease;
+      position: relative;
     }
 
     .nav-item svg {
-      width: 22px;
-      height: 22px;
-      color: rgba(255, 255, 255, 0.5);
-      transition: all 0.3s ease;
+      width: 20px;
+      height: 20px;
+      color: var(--text-muted);
+      transition: all 0.25s ease;
     }
 
     .nav-item span {
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.5);
-      transition: all 0.3s ease;
+      font-size: 9px;
+      color: var(--text-muted);
+      transition: all 0.25s ease;
     }
 
     .nav-item.active svg,
     .nav-item.active span {
-      color: #7C3AED;
+      color: var(--primary-purple);
     }
 
-    /* 响应式调整 */
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 16px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary-purple), var(--primary-blue));
+      border-radius: 0 0 2px 2px;
+    }
+
+    .nav-item:hover svg {
+      color: var(--text-secondary);
+    }
+
+    .nav-item:hover span {
+      color: var(--text-secondary);
+    }
+
     @media (max-width: 375px) {
       .main-title {
-        font-size: 34px;
+        font-size: 26px;
       }
       .header-section {
-        padding: 12px 14px 0;
+        padding: 12px 12px 0;
       }
-    }
-
-    @media (min-width: 414px) {
-      .main-title {
-        font-size: 42px;
+      .stats-section {
+        padding: 0 12px;
+      }
+      .hot-tracks {
+        width: 200px;
       }
     }
   </style>
-  <script type="module" crossorigin src="/music/assets/index-CS88_rJm.js"></script>
+  <script type="module" crossorigin src="/music/assets/index-DqfJ9kuK.js"></script>
 </head>
 <body>
   <div id="canvas-container"></div>
+  
+  <div class="bg-glow"></div>
+  <div class="bg-glow-right"></div>
   
   <div class="ui-overlay">
     <div class="header-section interactive">
       <div class="title-block">
         <h1 class="main-title">
-          全球正在<br>一起听
+          <span class="title-gradient">全球</span>一起听
           <span class="wave-icon">
-            <svg width="48px" height="26px" viewBox="0 0 52 28" fill="none">
-              <path d="M4 20C4 20 8 14 10 12C14 8 20 8 22 12C24 16 26 20 26 20C26 20 28 14 30 12C34 8 40 8 44 12C48 16 48 20 48 20" stroke="#7C3AED" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M2 14C2 14 6 10 8 10C12 10 16 14 16 14C16 14 20 10 24 10C28 10 32 14 32 14C32 14 36 10 40 10C44 10 50 14 50 14" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+            <svg width="32px" height="16px" viewBox="0 0 36 18" fill="none">
+              <path d="M2 14C2 14 5 10 6 8C8 6 11 6 13 8C14 10 15 14 15 14C15 14 16 10 18 8C20 6 23 6 25 8C27 10 27 14 27 14" stroke="url(#waveGradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <defs>
+                <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#7C3AED"/>
+                  <stop offset="100%" stop-color="#00D1FF"/>
+                </linearGradient>
+              </defs>
             </svg>
           </span>
         </h1>
-        <p class="subtitle">此刻，世界各地都在听相同的旋律</p>
+        <p class="subtitle">
+          <span class="live-dot"></span>
+          此刻，世界各地都在听相同的旋律
+        </p>
       </div>
       <div class="header-right">
         <button class="search-btn">
@@ -476,63 +919,169 @@
     <div class="earth-space">
       <div class="side-controls interactive">
         <button class="control-btn" id="mode-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M12 1v6m0 6v6m-7.5-10.5h6m6 0h6m-10.5 7.5h6m6 0h6m-13.5-10.5l4.5 4.5m6 6l4.5 4.5m0-15l-4.5 4.5m-6 6l-4.5 4.5"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <ellipse cx="12" cy="12" rx="4" ry="10"/>
+            <path d="M2 12h20"/>
+            <path d="M4 7h16"/>
+            <path d="M4 17h16"/>
           </svg>
         </button>
       </div>
       
-      <!-- 地球模式选择菜单 -->
       <div class="mode-menu interactive" id="mode-menu">
         <div class="mode-menu-title">地球模式</div>
-        <div class="mode-item" data-mode="standard">标准夜景</div>
-        <div class="mode-item" data-mode="translucent">半透明</div>
-        <div class="mode-item" data-mode="daytime">白天模式</div>
-        <div class="mode-item" data-mode="clouds">云图模式</div>
-        <div class="mode-item" data-mode="points">点模式</div>
-        <div class="mode-item" data-mode="cityLights">城市灯光</div>
+        <div class="mode-item" data-mode="standard">
+          <div class="mode-check"></div>
+          <span>标准夜景</span>
+        </div>
+        <div class="mode-item" data-mode="translucent">
+          <div class="mode-check"></div>
+          <span>半透明</span>
+        </div>
+        <div class="mode-item" data-mode="daytime">
+          <div class="mode-check"></div>
+          <span>白天模式</span>
+        </div>
+        <div class="mode-item" data-mode="clouds">
+          <div class="mode-check"></div>
+          <span>云图模式</span>
+        </div>
+        <div class="mode-item" data-mode="points">
+          <div class="mode-check"></div>
+          <span>点模式</span>
+        </div>
+        <div class="mode-item" data-mode="cityLights">
+          <div class="mode-check"></div>
+          <span>城市灯光</span>
+        </div>
       </div>
       
-
+      <div class="hot-tracks interactive">
+        <div class="section-header">
+          <span class="section-title">🔥 热门歌曲</span>
+          <span class="section-more">查看全部</span>
+        </div>
+        <div class="track-list">
+          <div class="track-item">
+            <div class="track-cover">
+              <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=200&auto=format&fit=crop" alt="cover">
+              <div class="track-rank">1</div>
+            </div>
+            <div class="track-info">
+              <div class="track-name">Cruel Summer</div>
+              <div class="track-artist">Taylor Swift</div>
+              <div class="track-players">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14.53 10.53A8 8 0 0 1 12 20a8 8 0 0 1-8-8 8.001 8.001 0 0 1 14.53-5.47z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span>128K</span>
+              </div>
+            </div>
+          </div>
+          <div class="track-item">
+            <div class="track-cover">
+              <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=200&auto=format&fit=crop" alt="cover">
+              <div class="track-rank">2</div>
+            </div>
+            <div class="track-info">
+              <div class="track-name">vampire</div>
+              <div class="track-artist">Olivia Rodrigo</div>
+              <div class="track-players">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14.53 10.53A8 8 0 0 1 12 20a8 8 0 0 1-8-8 8.001 8.001 0 0 1 14.53-5.47z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span>95K</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   
   <div class="bottom-player interactive">
-    <div class="player-card">
-      <div class="player-cover">
-        <img class="song-cover-img" src="https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=200&auto=format&fit=crop" alt="Mystery of Love">
+    <div id="fpPlayerCard">
+      <div id="fpMusicBackground"></div>
+      <span id="fpLyricBigChar"></span>
+      <div id="fpProgressFill">
+        <div id="fpBreathBar"></div>
       </div>
-      <div class="player-info">
-        <div class="player-song-name">Mystery of Love</div>
-        <div class="player-artist">Sufjan Stevens</div>
-      </div>
-      <div class="player-controls">
-        <button class="player-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="19 20 9 12 19 4 19 20"/>
-            <line x1="5" y1="19" x2="5" y2="5"/>
-          </svg>
-        </button>
-        <button class="player-btn player-btn-play">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <rect x="6" y="4" width="4" height="16"/>
-            <rect x="14" y="4" width="4" height="16"/>
-          </svg>
-        </button>
-        <button class="player-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="5 4 15 12 5 20 5 4"/>
-            <line x1="19" y1="5" x2="19" y2="19"/>
-          </svg>
-        </button>
-        <button class="player-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="10" width="18" height="10" rx="2"/>
-            <circle cx="8" cy="15" r="2"/>
-            <path d="M12 3v7"/>
-          </svg>
-        </button>
+      <div id="fpMusicPlayerCard">
+        <div style="flex-shrink: 0; position: relative; margin-left: -13px; z-index: 1;">
+          <div id="fpMusicCover">
+            <img id="fpCoverImage" src="https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=200&auto=format&fit=crop" alt="专辑封面">
+            <svg id="fpCoverPlaceholder" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 2v2"></path>
+              <path d="M12 20v2"></path>
+              <path d="m4.93 4.93 1.41 1.41"></path>
+              <path d="m17.66 17.66 1.41 1.41"></path>
+              <path d="M2 12h2"></path>
+              <path d="M20 12h2"></path>
+              <path d="m6.34 17.66-1.41 1.41"></path>
+              <path d="m19.07 4.93-1.41 1.41"></path>
+            </svg>
+          </div>
+        </div>
+        <div style="flex-shrink: 0; margin-left: 3px; max-width: 100px; display: flex; flex-direction: column; gap: 1px; z-index: 1;">
+          <h4 id="fpMusicTitle">Ambient Globe</h4>
+        </div>
+        <div id="fpLyricsArea">
+          <div id="fpLyricsContainer">
+            <p id="fpLyricText">享受音乐</p>
+          </div>
+        </div>
+        <div style="flex-shrink: 0; display: flex; align-items: center; gap: 3px; margin-left: auto; margin-right: -13px; z-index: 1;">
+          <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 1px;">
+            <span id="fpMusicQuality">高品质</span>
+            <span id="fpMusicSize">BGM</span>
+            <span id="fpTimeDisplay">0:00 / 0:00</span>
+          </div>
+          <div id="fpPlayerWrap">
+            <div id="fpRing" class="ring"></div>
+            <div style="position: relative; width: 32px; height: 32px; cursor: pointer;">
+              <svg id="fpPlayerSvg" class="player-svg" viewBox="0 0 32 32" style="width: 100%; height: 100%;">
+                <defs>
+                  <clipPath id="fpCircleClip">
+                    <circle cx="16" cy="16" r="14"/>
+                  </clipPath>
+                  <linearGradient id="fpWaveGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#2562ea" stop-opacity="0.85"/>
+                    <stop offset="100%" stop-color="#7aa8ff" stop-opacity="0.6"/>
+                  </linearGradient>
+                  <radialGradient id="fpBgGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="rgba(255,255,255,0.15)"/>
+                    <stop offset="100%" stop-color="rgba(255,255,255,0.08)"/>
+                  </radialGradient>
+                  <filter id="fpWaveGlow">
+                    <feGaussianBlur stdDeviation="1" result="blur"/>
+                    <feMerge>
+                      <feMergeNode in="blur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                </defs>
+                <circle cx="16" cy="16" r="14" fill="url(#fpBgGrad)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+                <g clip-path="url(#fpCircleClip)">
+                  <path id="fpWave2" fill="url(#fpWaveGrad)" fill-opacity="0.35" filter="url(#fpWaveGlow)"/>
+                  <path id="fpWave1" fill="url(#fpWaveGrad)" fill-opacity="0.65"/>
+                </g>
+                <circle cx="16" cy="16" r="14" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+                <g id="fpPlayIconSvg" class="ctrl-icon icon-play">
+                  <polygon points="13,11 13,21 21,16" class="fp-icon-fill"/>
+                </g>
+                <g id="fpPauseIconSvg" class="ctrl-icon icon-pause">
+                  <rect x="12" y="11" width="3" height="10" rx="1" class="fp-icon-fill"/>
+                  <rect x="17" y="11" width="3" height="10" rx="1" class="fp-icon-fill"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
