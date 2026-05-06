@@ -60,12 +60,7 @@ const particleFragmentShader = `
 
 function createArcCurve(surfacePos, direction, height) {
   const endPos = surfacePos.clone().add(direction.clone().multiplyScalar(height));
-  const midHeight = height * 0.6;
-  const side = new THREE.Vector3().crossVectors(direction, new THREE.Vector3(0, 1, 0)).normalize();
-  if (side.length() < 0.01) {
-    side.crossVectors(direction, new THREE.Vector3(1, 0, 0)).normalize();
-  }
-  const midPos = surfacePos.clone().add(direction.clone().multiplyScalar(midHeight)).add(side.multiplyScalar(height * 0.15));
+  const midPos = surfacePos.clone().add(direction.clone().multiplyScalar(height * 0.55));
   return new THREE.QuadraticBezierCurve3(surfacePos, midPos, endPos);
 }
 
@@ -74,21 +69,6 @@ function createCityLabelTexture(city, color) {
   canvas.width = 128;
   canvas.height = 160;
   const ctx = canvas.getContext('2d');
-
-  ctx.fillStyle = 'rgba(10, 10, 20, 0.7)';
-  const r = 12;
-  ctx.beginPath();
-  ctx.moveTo(r, 0);
-  ctx.lineTo(128 - r, 0);
-  ctx.quadraticCurveTo(128, 0, 128, r);
-  ctx.lineTo(128, 160 - r);
-  ctx.quadraticCurveTo(128, 160, 128 - r, 160);
-  ctx.lineTo(r, 160);
-  ctx.quadraticCurveTo(0, 160, 0, 160 - r);
-  ctx.lineTo(0, r);
-  ctx.quadraticCurveTo(0, 0, r, 0);
-  ctx.closePath();
-  ctx.fill();
 
   const imgSize = 56;
   const imgX = (128 - imgSize) / 2;
@@ -214,21 +194,6 @@ export function createBeams(earthGroup, camera) {
         canvas.width = 128;
         canvas.height = 160;
         const ctx = canvas.getContext('2d');
-
-        ctx.fillStyle = 'rgba(10, 10, 20, 0.7)';
-        const r = 12;
-        ctx.beginPath();
-        ctx.moveTo(r, 0);
-        ctx.lineTo(128 - r, 0);
-        ctx.quadraticCurveTo(128, 0, 128, r);
-        ctx.lineTo(128, 160 - r);
-        ctx.quadraticCurveTo(128, 160, 128 - r, 160);
-        ctx.lineTo(r, 160);
-        ctx.quadraticCurveTo(0, 160, 0, 160 - r);
-        ctx.lineTo(0, r);
-        ctx.quadraticCurveTo(0, 0, r, 0);
-        ctx.closePath();
-        ctx.fill();
 
         const imgSize = 56;
         const imgX = (128 - imgSize) / 2;
