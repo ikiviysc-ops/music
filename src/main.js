@@ -6,6 +6,7 @@ import { createControls } from './core/controls.js';
 import { createEarth, updateEarth, setEarthMode, getCurrentEarthMode, getAvailableEarthModes, EARTH_MODES } from './modules/earth.js';
 import { createBeams, updateBeams, updateLabels } from './modules/beam.js';
 import { createComposer, updateComposerSize } from './effects/bloom.js';
+import { getMusicEngine } from './modules/ambient-music.js';
 
 class App {
   constructor() {
@@ -130,7 +131,7 @@ class App {
   }
   
   setupPlayerUI() {
-    this.musicPlayer = document.getElementById('musicPlayer');
+    this.musicPlayer = getMusicEngine();
     const fpPlayerWrap = document.getElementById('fpPlayerWrap');
     const fpPlayerCard = document.getElementById('fpPlayerCard');
     const fpProgressFill = document.getElementById('fpProgressFill');
