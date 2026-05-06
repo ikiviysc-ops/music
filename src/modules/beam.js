@@ -3,220 +3,312 @@ import { latLngToVector3 } from '../utils/geo.js';
 import { CITY_DATA, getCityColor } from '../data/cities.js';
 
 const EARTH_RADIUS = 1.9;
-const MIN_HEIGHT = 0.22;
-const MAX_HEIGHT = 0.42;
+const ARC_MIN_HEIGHT = 0.25;
+const ARC_MAX_HEIGHT = 0.5;
+const ARC_SEGMENTS = 40;
+const PARTICLES_PER_ARC = 24;
+const LABEL_SIZE = 0.12;
 
-function createNoiseTexture(size = 256) {
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#000000';
-  ctx.fillRect(0, 0, size, size);
-  for (let i = 0; i < 3; i++) {
-    const scale = Math.pow(2, i);
-    const opacity = 1 / (scale * 1.5);
-    const imageData = ctx.createImageData(size, size);
-    const data = imageData.data;
-    for (let j = 0; j < data.length; j += 4) {
-      const val = Math.random() * 255;
-      data[j] = val;
-      data[j + 1] = val;
-      data[j + 2] = val;
-      data[j + 3] = 255 * opacity;
-    }
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = size;
-    tempCanvas.height = size;
-    const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.putImageData(imageData, 0, 0);
-    ctx.globalCompositeOperation = 'lighter';
-    ctx.drawImage(tempCanvas, 0, 0, size / scale, size / scale, 0, 0, size, size);
+const arcLineVertexShader = `
+  varying float vProgress;
+  void main() {
+    vProgress = uv.x;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
+`;
+
+const arcLineFragmentShader = `
+  uniform vec3 uColor;
+  uniform float uTime;
+  uniform float uPhase;
+  varying float vProgress;
+
+  void main() {
+    float alpha = smoothstep(0.0, 0.1, vProgress) * smoothstep(1.0, 0.85, vProgress);
+    alpha *= 0.5 + 0.3 * vProgress;
+    float pulse = 0.8 + 0.2 * sin(uTime * 2.0 + uPhase);
+    alpha *= pulse;
+    float flow = fract(vProgress - uTime * 0.3 + uPhase);
+    float trail = smoothstep(0.0, 0.15, flow) * smoothstep(0.4, 0.15, flow);
+    alpha += trail * 0.4;
+    gl_FragColor = vec4(uColor, alpha);
+  }
+`;
+
+const particleVertexShader = `
+  attribute float aAlpha;
+  varying float vAlpha;
+  void main() {
+    vAlpha = aAlpha;
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = max(1.5, 3.0 * aAlpha);
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+const particleFragmentShader = `
+  uniform vec3 uColor;
+  varying float vAlpha;
+  void main() {
+    float dist = length(gl_PointCoord - vec2(0.5));
+    if (dist > 0.5) discard;
+    float glow = 1.0 - dist * 2.0;
+    glow = pow(glow, 1.5);
+    gl_FragColor = vec4(uColor, glow * vAlpha);
+  }
+`;
+
+function createArcCurve(surfacePos, direction, height) {
+  const endPos = surfacePos.clone().add(direction.clone().multiplyScalar(height));
+  const midHeight = height * 0.6;
+  const side = new THREE.Vector3().crossVectors(direction, new THREE.Vector3(0, 1, 0)).normalize();
+  if (side.length() < 0.01) {
+    side.crossVectors(direction, new THREE.Vector3(1, 0, 0)).normalize();
+  }
+  const midPos = surfacePos.clone().add(direction.clone().multiplyScalar(midHeight)).add(side.multiplyScalar(height * 0.15));
+  return new THREE.QuadraticBezierCurve3(surfacePos, midPos, endPos);
+}
+
+function createCityLabelTexture(city, color) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 160;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = 'rgba(10, 10, 20, 0.75)';
+  const r = 12;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(128 - r, 0);
+  ctx.quadraticCurveTo(128, 0, 128, r);
+  ctx.lineTo(128, 160 - r);
+  ctx.quadraticCurveTo(128, 160, 128 - r, 160);
+  ctx.lineTo(r, 160);
+  ctx.quadraticCurveTo(0, 160, 0, 160 - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  const imgSize = 56;
+  const imgX = (128 - imgSize) / 2;
+  const imgY = 12;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(imgX + imgSize / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(imgX, imgY, imgSize, imgSize);
+  ctx.restore();
+
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(imgX + imgSize / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(city.city, 64, imgY + imgSize + 20);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.font = '11px sans-serif';
+  ctx.fillText(city.cityEn, 64, imgY + imgSize + 36);
+
+  ctx.fillStyle = color;
+  ctx.font = '9px sans-serif';
+  const listeners = city.listeners >= 1000 ? (city.listeners / 1000).toFixed(0) + 'K' : city.listeners;
+  ctx.fillText('♫ ' + listeners, 64, imgY + imgSize + 50);
+
   const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
-  tex.minFilter = THREE.LinearMipMapLinearFilter;
-  tex.generateMipmaps = true;
+  tex.minFilter = THREE.LinearFilter;
   return tex;
 }
 
-const noiseMap = createNoiseTexture(256);
-
-const beamVertexShader = `
-  uniform vec3 uCameraPos;
-  uniform float uLength;
-
-  varying vec2 vUv;
-  varying float vZAxisFade;
-  varying vec3 vWorldPos;
-
-  void main() {
-    vUv = uv;
-
-    vec4 modelPos = modelMatrix * vec4(0.0, 0.0, 0.0, 1.0);
-    vWorldPos = modelPos.xyz;
-
-    vec3 localAxis = normalize(mat3(modelMatrix) * vec3(0.0, 1.0, 0.0));
-    vec3 toCamera = normalize(uCameraPos - modelPos.xyz);
-    vec3 newRight = normalize(cross(toCamera, localAxis));
-
-    float scaleX = length(modelMatrix[0].xyz);
-    float scaleY = uLength;
-    float t = position.y + 0.5;
-    vec3 finalPos = modelPos.xyz
-      + (newRight * position.x * scaleX)
-      + (localAxis * t * scaleY);
-
-    float dotView = abs(dot(toCamera, localAxis));
-    vZAxisFade = 1.0 - smoothstep(0.92, 0.98, dotView);
-
-    gl_Position = projectionMatrix * viewMatrix * vec4(finalPos, 1.0);
-  }
-`;
-
-const beamFragmentShader = `
-  uniform vec3 uColor;
-  uniform float uConeStartWidth;
-  uniform float uConeCurve;
-  uniform float uBeamSharpness;
-  uniform float uBeamFade;
-  uniform float uPulsePhase;
-  uniform float uPulseSpeed;
-  uniform float uSurgePhase;
-  uniform float uIntensity;
-
-  uniform sampler2D uNoiseTexture;
-  uniform float uNoiseScale;
-  uniform float uNoiseIntensity;
-  uniform vec2 uNoiseScrollSpeed;
-  uniform float uNoiseDistortionIntensity;
-  uniform vec2 uNoiseDistortionScrollSpeed;
-  uniform float uTime;
-
-  varying vec2 vUv;
-  varying float vZAxisFade;
-  varying vec3 vWorldPos;
-
-  void main() {
-    float cone_progress = pow(vUv.y, 1.0 - uConeCurve);
-    float width = mix(uConeStartWidth, 1.0, cone_progress);
-    float half_width = width * 0.5;
-
-    float dist_x = abs(vUv.x - 0.5);
-    float beam_edge_start = half_width - (half_width * (1.0 - uBeamSharpness));
-    float horiz_mask = 1.0 - smoothstep(beam_edge_start, half_width, dist_x);
-
-    float vert_mask = pow(vUv.y, uBeamFade);
-    vert_mask *= smoothstep(0.0, uConeStartWidth * 0.5, 1.0 - vUv.y);
-    vert_mask *= smoothstep(0.0, 0.1, vUv.y);
-
-    vec2 worldOffset = vWorldPos.xz * 0.5 + vWorldPos.y * 0.1;
-    vec2 distortionOffset = uNoiseDistortionScrollSpeed * uTime;
-    vec2 noiseUV = (vUv * uNoiseScale) + worldOffset;
-    vec2 distSample = texture2D(uNoiseTexture, noiseUV + distortionOffset).rg;
-    vec2 distortedUV = vUv + (distSample - 0.5) * 2.0 * uNoiseDistortionIntensity;
-
-    vec2 scroll1 = uNoiseScrollSpeed * uTime;
-    vec2 scroll2 = vec2(-uNoiseScrollSpeed.x * 0.7, uNoiseScrollSpeed.y * 1.3) * uTime;
-    float n1 = texture2D(uNoiseTexture, distortedUV * uNoiseScale + scroll1 + worldOffset).r;
-    float n2 = texture2D(uNoiseTexture, distortedUV * uNoiseScale + scroll2 + worldOffset).r;
-    float combinedNoise = mix(1.0, n1 * n2, 1.0 - vert_mask);
-    horiz_mask *= mix(1.0, combinedNoise, uNoiseIntensity);
-
-    float breath = 0.75 + 0.25 * sin(uTime * uPulseSpeed + uPulsePhase);
-    float surge = pow(max(0.0, sin(uTime * 2.5 + uSurgePhase)), 10.0);
-    float surgeY = fract(uTime * 0.8 + uSurgePhase * 0.2);
-    float surgeMask = smoothstep(surgeY - 0.12, surgeY, vUv.y) * (1.0 - smoothstep(surgeY, surgeY + 0.12, vUv.y));
-    float surgeEffect = surge * surgeMask;
-
-    float alpha = horiz_mask * vert_mask * vZAxisFade;
-    alpha *= breath;
-    alpha += surgeEffect * 0.4;
-    alpha *= uIntensity;
-
-    vec3 col = uColor * (0.7 + 0.5 * vUv.y);
-    col += uColor * surgeEffect * 1.2;
-
-    gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0));
-  }
-`;
-
-function getBeamHeight(listeners) {
+function getArcHeight(listeners) {
   const minL = 40000;
   const maxL = 140000;
   const t = Math.min(1, Math.max(0, (listeners - minL) / (maxL - minL)));
-  return MIN_HEIGHT + t * (MAX_HEIGHT - MIN_HEIGHT);
+  return ARC_MIN_HEIGHT + t * (ARC_MAX_HEIGHT - ARC_MIN_HEIGHT);
 }
 
 export function createBeams(earthGroup, camera) {
   const beams = [];
+  const labels = [];
   const beamGroup = new THREE.Group();
-
-  const geometry = new THREE.PlaneGeometry(1, 1, 1, 1);
+  const loader = new THREE.TextureLoader();
 
   CITY_DATA.forEach((city) => {
     const color = getCityColor(city.region);
-    const height = getBeamHeight(city.listeners);
+    const height = getArcHeight(city.listeners);
     const phase = Math.random() * Math.PI * 2;
-    const surgePhase = Math.random() * Math.PI * 2;
-    const intensity = 0.6 + (city.listeners / 140000) * 0.4;
-    const widthScale = 0.012 + (city.listeners / 140000) * 0.008;
 
-    const material = new THREE.ShaderMaterial({
-      vertexShader: beamVertexShader,
-      fragmentShader: beamFragmentShader,
+    const surfacePos = latLngToVector3(city.lat, city.lng, EARTH_RADIUS);
+    const direction = surfacePos.clone().normalize();
+    const curve = createArcCurve(surfacePos, direction, height);
+
+    const linePoints = curve.getPoints(ARC_SEGMENTS);
+    const lineGeometry = new THREE.BufferGeometry().setFromPoints(linePoints);
+    const lineUvArr = new Float32Array((ARC_SEGMENTS + 1));
+    for (let i = 0; i <= ARC_SEGMENTS; i++) lineUvArr[i] = i / ARC_SEGMENTS;
+    lineGeometry.setAttribute('uv', new THREE.BufferAttribute(lineUvArr, 1));
+
+    const lineMaterial = new THREE.ShaderMaterial({
+      vertexShader: arcLineVertexShader,
+      fragmentShader: arcLineFragmentShader,
       uniforms: {
         uColor: { value: new THREE.Color(color.hex) },
-        uConeStartWidth: { value: 0.01 },
-        uConeCurve: { value: 0.6 },
-        uBeamSharpness: { value: 0.5 },
-        uBeamFade: { value: 1.5 },
-        uPulsePhase: { value: phase },
-        uPulseSpeed: { value: 1.5 + Math.random() * 0.5 },
-        uSurgePhase: { value: surgePhase },
-        uIntensity: { value: intensity },
-        uLength: { value: height },
-        uCameraPos: { value: new THREE.Vector3() },
-        uNoiseTexture: { value: noiseMap },
-        uNoiseScale: { value: 2.5 },
-        uNoiseIntensity: { value: 0.6 },
-        uNoiseScrollSpeed: { value: new THREE.Vector2(0.0, 0.8) },
-        uNoiseDistortionIntensity: { value: 0.08 },
-        uNoiseDistortionScrollSpeed: { value: new THREE.Vector2(0.1, 0.3) },
-        uTime: { value: 0 }
+        uTime: { value: 0 },
+        uPhase: { value: phase }
       },
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      side: THREE.DoubleSide
+      blending: THREE.AdditiveBlending
     });
 
-    const beam = new THREE.Mesh(geometry, material);
-    const surfacePos = latLngToVector3(city.lat, city.lng, EARTH_RADIUS);
-    beam.position.copy(surfacePos);
+    const line = new THREE.Line(lineGeometry, lineMaterial);
+    beamGroup.add(line);
 
-    const up = surfacePos.clone().normalize();
-    const quaternion = new THREE.Quaternion();
-    quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), up);
-    beam.quaternion.copy(quaternion);
-    beam.scale.set(widthScale, 1, 1);
+    const pCount = PARTICLES_PER_ARC;
+    const pPositions = new Float32Array(pCount * 3);
+    const pAlphas = new Float32Array(pCount);
+    for (let i = 0; i < pCount; i++) {
+      const t = i / pCount;
+      const pt = curve.getPoint(t);
+      pPositions[i * 3] = pt.x;
+      pPositions[i * 3 + 1] = pt.y;
+      pPositions[i * 3 + 2] = pt.z;
+      pAlphas[i] = 1.0 - t * 0.5;
+    }
+    const pGeometry = new THREE.BufferGeometry();
+    pGeometry.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+    pGeometry.setAttribute('aAlpha', new THREE.BufferAttribute(pAlphas, 1));
 
-    beam.userData = { city, baseHeight: height, phase, colorHex: color.hex };
-    beamGroup.add(beam);
-    beams.push(beam);
+    const pMaterial = new THREE.ShaderMaterial({
+      vertexShader: particleVertexShader,
+      fragmentShader: particleFragmentShader,
+      uniforms: { uColor: { value: new THREE.Color(color.hex) } },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+
+    const particles = new THREE.Points(pGeometry, pMaterial);
+    particles.userData = { curve, speed: 0.15 + Math.random() * 0.1, offset: Math.random(), pCount };
+    beamGroup.add(particles);
+
+    const endPos = curve.getPoint(1.0);
+    const labelTexture = createCityLabelTexture(city, color.hex);
+    const labelMaterial = new THREE.SpriteMaterial({
+      map: labelTexture,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.NormalBlending
+    });
+    const label = new THREE.Sprite(labelMaterial);
+    label.position.copy(endPos);
+    label.scale.set(LABEL_SIZE * 0.8, LABEL_SIZE, 1);
+    label.userData = { city, baseHeight: height };
+    beamGroup.add(label);
+    labels.push(label);
+
+    if (city.img) {
+      loader.load(city.img, (tex) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 128;
+        canvas.height = 160;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = 'rgba(10, 10, 20, 0.8)';
+        const r = 12;
+        ctx.beginPath();
+        ctx.moveTo(r, 0);
+        ctx.lineTo(128 - r, 0);
+        ctx.quadraticCurveTo(128, 0, 128, r);
+        ctx.lineTo(128, 160 - r);
+        ctx.quadraticCurveTo(128, 160, 128 - r, 160);
+        ctx.lineTo(r, 160);
+        ctx.quadraticCurveTo(0, 160, 0, 160 - r);
+        ctx.lineTo(0, r);
+        ctx.quadraticCurveTo(0, 0, r, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = color.hex;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        const imgSize = 56;
+        const imgX = (128 - imgSize) / 2;
+        const imgY = 12;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(imgX + imgSize / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(tex.image, imgX, imgY, imgSize, imgSize);
+        ctx.restore();
+
+        ctx.strokeStyle = color.hex;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(imgX + imgSize / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(city.city, 64, imgY + imgSize + 20);
+
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.font = '11px sans-serif';
+        ctx.fillText(city.cityEn, 64, imgY + imgSize + 36);
+
+        ctx.fillStyle = color.hex;
+        ctx.font = '9px sans-serif';
+        const listeners = city.listeners >= 1000 ? (city.listeners / 1000).toFixed(0) + 'K' : city.listeners;
+        ctx.fillText('♫ ' + listeners, 64, imgY + imgSize + 50);
+
+        const newTex = new THREE.CanvasTexture(canvas);
+        newTex.minFilter = THREE.LinearFilter;
+        labelMaterial.map = newTex;
+        labelMaterial.needsUpdate = true;
+      }, undefined, () => {});
+    }
+
+    beams.push({ line, particles, city, phase, height });
   });
 
   earthGroup.add(beamGroup);
-  return { beamGroup, beams };
+  return { beamGroup, beams, labels };
 }
 
 export function updateBeams(beams, globalTime, camera) {
-  const camPos = camera ? camera.position : new THREE.Vector3();
-  beams.forEach(beam => {
-    if (beam.material.uniforms) {
-      beam.material.uniforms.uTime.value = globalTime;
-      beam.material.uniforms.uCameraPos.value.copy(camPos);
+  beams.forEach(({ line, particles, phase }) => {
+    if (line.material.uniforms) {
+      line.material.uniforms.uTime.value = globalTime;
     }
+
+    const { curve, speed, offset, pCount } = particles.userData;
+    const positions = particles.geometry.attributes.position.array;
+    const alphaAttr = particles.geometry.attributes.aAlpha;
+    const baseT = (globalTime * speed + offset) % 1.0;
+
+    for (let i = 0; i < pCount; i++) {
+      const t = (baseT + i / pCount) % 1.0;
+      const pt = curve.getPoint(t);
+      positions[i * 3] = pt.x;
+      positions[i * 3 + 1] = pt.y;
+      positions[i * 3 + 2] = pt.z;
+      alphaAttr.array[i] = 1.0 - (i / pCount) * 0.6;
+    }
+    particles.geometry.attributes.position.needsUpdate = true;
+    alphaAttr.needsUpdate = true;
   });
 }

@@ -18,6 +18,7 @@ class App {
     this.earthGroup = null;
     this.beamGroup = null;
     this.beams = null;
+    this.beamLabels = null;
     this.clock = new THREE.Clock();
     this.useComposer = true;
     this.isPlaying = false;
@@ -332,9 +333,10 @@ class App {
   }
 
   addBeams() {
-    const { beamGroup, beams } = createBeams(this.earthGroup, this.camera);
+    const { beamGroup, beams, labels } = createBeams(this.earthGroup, this.camera);
     this.beamGroup = beamGroup;
     this.beams = beams;
+    this.beamLabels = labels;
   }
 
   onResize() {
