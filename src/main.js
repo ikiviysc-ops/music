@@ -129,14 +129,14 @@ class App {
   }
   
   setupPlayerUI() {
+    this.musicPlayer = document.getElementById('musicPlayer');
     const fpPlayerWrap = document.getElementById('fpPlayerWrap');
     const fpPlayerCard = document.getElementById('fpPlayerCard');
     const fpProgressFill = document.getElementById('fpProgressFill');
     
     if (fpPlayerWrap) {
       fpPlayerWrap.addEventListener('click', () => {
-        this.isPlaying = !this.isPlaying;
-        this.updatePlayerUI();
+        this.togglePlay();
       });
     }
     
@@ -148,10 +148,50 @@ class App {
         if (fpProgressFill) {
           fpProgressFill.style.width = `${Math.max(0, Math.min(100, percent * 100))}%`;
         }
+        if (this.musicPlayer && this.musicPlayer.duration > 0) {
+          this.musicPlayer.currentTime = percent * this.musicPlayer.duration;
+        }
+      });
+    }
+    
+    if (this.musicPlayer) {
+      this.musicPlayer.addEventListener('timeupdate', () => {
+        this.updateProgress();
+      });
+      
+      this.musicPlayer.addEventListener('loadedmetadata', () => {
+        this.updateTimeDisplay();
+      });
+      
+      this.musicPlayer.addEventListener('ended', () => {
+        this.isPlaying = false;
+        this.updatePlayerUI();
+      });
+      
+      this.musicPlayer.addEventListener('play', () => {
+        this.isPlaying = true;
+        this.updatePlayerUI();
+      });
+      
+      this.musicPlayer.addEventListener('pause', () => {
+        this.isPlaying = false;
+        this.updatePlayerUI();
       });
     }
     
     this.animateWave();
+  }
+  
+  togglePlay() {
+    if (!this.musicPlayer) return;
+    
+    if (this.isPlaying) {
+      this.musicPlayer.pause();
+    } else {
+      this.musicPlayer.play().catch(e => {
+        console.error('Playback failed:', e);
+      });
+    }
   }
   
   updatePlayerUI() {
@@ -163,6 +203,37 @@ class App {
     } else {
       fpPlayerWrap.classList.remove('playing');
     }
+  }
+  
+  updateProgress() {
+    if (!this.musicPlayer || this.musicPlayer.duration === 0) return;
+    
+    const fpProgressFill = document.getElementById('fpProgressFill');
+    const progress = (this.musicPlayer.currentTime / this.musicPlayer.duration) * 100;
+    
+    if (fpProgressFill) {
+      fpProgressFill.style.width = `${progress}%`;
+    }
+    
+    this.updateTimeDisplay();
+  }
+  
+  updateTimeDisplay() {
+    if (!this.musicPlayer) return;
+    
+    const fpTimeDisplay = document.getElementById('fpTimeDisplay');
+    if (!fpTimeDisplay) return;
+    
+    const currentTime = this.formatTime(this.musicPlayer.currentTime);
+    const duration = this.musicPlayer.duration > 0 ? this.formatTime(this.musicPlayer.duration) : '0:00';
+    
+    fpTimeDisplay.textContent = `${currentTime} / ${duration}`;
+  }
+  
+  formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
   
   animateWave() {
