@@ -29,12 +29,26 @@ const arcLineFragmentShader = `
   void main() {
     float alpha = smoothstep(0.0, 0.1, vProgress) * smoothstep(1.0, 0.85, vProgress);
     alpha *= 0.5 + 0.3 * vProgress;
-    float pulse = 0.8 + 0.2 * sin(uTime * 2.0 + uPhase);
-    alpha *= pulse;
+
+    float breath = 0.75 + 0.25 * sin(uTime * 1.8 + uPhase);
+    alpha *= breath;
+
     float flow = fract(vProgress - uTime * 0.3 + uPhase);
     float trail = smoothstep(0.0, 0.15, flow) * smoothstep(0.4, 0.15, flow);
     alpha += trail * 0.4;
-    gl_FragColor = vec4(uColor, alpha);
+
+    float p1 = fract(vProgress - uTime * 0.8 + uPhase);
+    float pulse1 = pow(smoothstep(0.15, 0.0, p1) * smoothstep(-0.02, 0.02, p1), 2.0);
+    float p2 = fract(vProgress - uTime * 0.5 + uPhase + 0.33);
+    float pulse2 = pow(smoothstep(0.12, 0.0, p2) * smoothstep(-0.02, 0.02, p2), 2.0);
+    float p3 = fract(vProgress - uTime * 1.2 + uPhase + 0.66);
+    float pulse3 = pow(smoothstep(0.1, 0.0, p3) * smoothstep(-0.02, 0.02, p3), 2.0);
+    float pulse = (pulse1 * 1.2 + pulse2 * 0.8 + pulse3 * 0.6);
+
+    vec3 col = uColor * (1.0 + pulse * 2.0);
+    alpha += pulse * 0.6;
+
+    gl_FragColor = vec4(col, alpha);
   }
 `;
 
