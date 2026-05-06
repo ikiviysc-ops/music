@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-const EARTH_RADIUS = 1.9;
+const EARTH_RADIUS = 1.6;
 const ROTATION_SPEED = 0.0003;
 
 // 地球显示模式
