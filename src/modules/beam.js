@@ -209,13 +209,12 @@ export function createBeams(earthGroup, camera) {
       map: labelTexture,
       transparent: true,
       depthWrite: false,
-      depthTest: false,
-      sizeAttenuation: false,
+      depthTest: true,
+      sizeAttenuation: true,
       blending: THREE.NormalBlending
     });
     const label = new THREE.Sprite(labelMaterial);
     label.position.copy(endPos);
-    label.renderOrder = 999;
     label.scale.set(LABEL_SIZE * 0.8, LABEL_SIZE, 1);
     label.userData = { city, baseHeight: height };
     beamGroup.add(label);
@@ -269,13 +268,4 @@ export function updateBeams(beams, globalTime, camera) {
 }
 
 export function updateLabels(labels, camera) {
-  if (!camera) return;
-  const camPos = camera.position;
-  const refDist = 4.0;
-  labels.forEach(label => {
-    const dist = label.position.distanceTo(camPos);
-    const s = refDist / Math.max(dist, 0.1);
-    const screenScale = 0.08 + s * 0.04;
-    label.scale.set(screenScale * 0.8, screenScale, 1);
-  });
 }
