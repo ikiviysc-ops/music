@@ -129,40 +129,72 @@ class App {
   }
   
   setupPlayerUI() {
-    const playBtn = document.querySelector('.player-btn-play');
-    const progressBar = document.querySelector('.player-progress');
+    const fpPlayerWrap = document.getElementById('fpPlayerWrap');
+    const fpPlayerCard = document.getElementById('fpPlayerCard');
+    const fpProgressFill = document.getElementById('fpProgressFill');
     
-    if (playBtn) {
-      playBtn.addEventListener('click', () => {
+    if (fpPlayerWrap) {
+      fpPlayerWrap.addEventListener('click', () => {
         this.isPlaying = !this.isPlaying;
         this.updatePlayerUI();
       });
     }
     
-    if (progressBar) {
-      progressBar.addEventListener('click', (e) => {
-        const rect = progressBar.getBoundingClientRect();
+    if (fpPlayerCard) {
+      fpPlayerCard.addEventListener('click', (e) => {
+        if (e.target.closest('#fpPlayerWrap')) return;
+        const rect = fpPlayerCard.getBoundingClientRect();
         const percent = (e.clientX - rect.left) / rect.width;
-        const progressFill = progressBar.querySelector('.progress-fill');
-        if (progressFill) {
-          progressFill.style.width = `${Math.max(0, Math.min(100, percent * 100))}%`;
+        if (fpProgressFill) {
+          fpProgressFill.style.width = `${Math.max(0, Math.min(100, percent * 100))}%`;
         }
       });
     }
+    
+    this.animateWave();
   }
   
   updatePlayerUI() {
-    const playBtn = document.querySelector('.player-btn-play');
-    if (!playBtn) return;
+    const fpPlayerWrap = document.getElementById('fpPlayerWrap');
+    if (!fpPlayerWrap) return;
     
-    const icon = playBtn.querySelector('svg');
-    if (icon) {
-      if (this.isPlaying) {
-        icon.innerHTML = `<circle cx="12" cy="12" r="8"/>`;
-      } else {
-        icon.innerHTML = `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`;
-      }
+    if (this.isPlaying) {
+      fpPlayerWrap.classList.add('playing');
+    } else {
+      fpPlayerWrap.classList.remove('playing');
     }
+  }
+  
+  animateWave() {
+    const wave1 = document.getElementById('fpWave1');
+    const wave2 = document.getElementById('fpWave2');
+    if (!wave1 || !wave2) return;
+    
+    let time = 0;
+    const animate = () => {
+      time += 0.02;
+      
+      const amplitude = this.isPlaying ? 2.5 + Math.sin(time * 2) * 0.5 : 1.5;
+      const frequency = this.isPlaying ? 0.15 : 0.08;
+      
+      let path1 = '';
+      let path2 = '';
+      for (let x = 0; x <= 32; x++) {
+        const y1 = 16 + Math.sin((x + time * 30) * frequency * Math.PI) * amplitude * 0.8;
+        const y2 = 16 + Math.sin((x + time * 25 + 10) * frequency * Math.PI) * amplitude;
+        path1 += (x === 0 ? 'M' : 'L') + x + ',' + y1 + ' ';
+        path2 += (x === 0 ? 'M' : 'L') + x + ',' + y2 + ' ';
+      }
+      path1 += 'L32,32 L0,32 Z';
+      path2 += 'L32,32 L0,32 Z';
+      
+      wave1.setAttribute('d', path1);
+      wave2.setAttribute('d', path2);
+      
+      requestAnimationFrame(animate);
+    };
+    
+    animate();
   }
   
   setupNavUI() {
