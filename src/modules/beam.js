@@ -69,24 +69,23 @@ function createArcCurve(surfacePos, direction, height, city) {
   const north = new THREE.Vector3().crossVectors(direction, east).normalize();
   const lngRad = (city.lng * Math.PI) / 180;
   const latRad = (city.lat * Math.PI) / 180;
-  const bendAngle = lngRad * 0.8 + latRad * 0.3;
-  const tangent = east.clone().multiplyScalar(Math.cos(bendAngle))
+  const bendAngle = lngRad * 0.6 + latRad * 0.2;
+  const bendDir = east.clone().multiplyScalar(Math.cos(bendAngle))
     .add(north.clone().multiplyScalar(Math.sin(bendAngle)))
     .normalize();
 
-  const spread = height * 0.9;
-  const peakHeight = height * 1.1;
+  const straightUp = surfacePos.clone().add(direction.clone().multiplyScalar(height * 0.65));
   const peakPos = surfacePos.clone()
-    .add(direction.clone().multiplyScalar(peakHeight))
-    .add(tangent.clone().multiplyScalar(spread));
-  const endPos = peakPos.clone()
-    .sub(direction.clone().multiplyScalar(height * 0.35))
-    .add(tangent.clone().multiplyScalar(spread * 0.2));
-  const cp1 = surfacePos.clone()
-    .add(direction.clone().multiplyScalar(height * 0.5))
-    .add(tangent.clone().multiplyScalar(spread * 0.7));
+    .add(direction.clone().multiplyScalar(height * 0.95))
+    .add(bendDir.clone().multiplyScalar(height * 0.15));
+  const endPos = surfacePos.clone()
+    .add(direction.clone().multiplyScalar(height * 0.55))
+    .add(bendDir.clone().multiplyScalar(height * 0.7));
+
+  const cp1 = straightUp.clone();
   const cp2 = peakPos.clone()
-    .add(tangent.clone().multiplyScalar(spread * 0.4));
+    .add(bendDir.clone().multiplyScalar(height * 0.25));
+
   return { curve: new THREE.CubicBezierCurve3(surfacePos, cp1, cp2, endPos), endPos };
 }
 
