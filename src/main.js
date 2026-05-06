@@ -332,7 +332,7 @@ class App {
   }
 
   addBeams() {
-    const { beamGroup, beams } = createBeams(this.scene);
+    const { beamGroup, beams } = createBeams(this.earthGroup);
     this.beamGroup = beamGroup;
     this.beams = beams;
   }
