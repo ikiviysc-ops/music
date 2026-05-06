@@ -61,25 +61,32 @@ const particleFragmentShader = `
   }
 `;
 
-function createArcCurve(surfacePos, direction, height, cityIndex) {
-  const baseTangent = new THREE.Vector3().crossVectors(direction, new THREE.Vector3(0, 1, 0)).normalize();
-  if (baseTangent.length() < 0.01) {
-    baseTangent.crossVectors(direction, new THREE.Vector3(1, 0, 0)).normalize();
+function createArcCurve(surfacePos, direction, height, city) {
+  const east = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).normalize();
+  if (east.length() < 0.01) {
+    east.crossVectors(new THREE.Vector3(1, 0, 0), direction).normalize();
   }
-  const angle = (cityIndex / CITY_DATA.length) * Math.PI * 2 + (cityIndex * 1.618) * Math.PI;
-  const tangent = baseTangent.clone().applyAxisAngle(direction, angle);
-  const spread = height * 0.55;
+  const north = new THREE.Vector3().crossVectors(direction, east).normalize();
+  const lngRad = (city.lng * Math.PI) / 180;
+  const latRad = (city.lat * Math.PI) / 180;
+  const bendAngle = lngRad * 0.8 + latRad * 0.3;
+  const tangent = east.clone().multiplyScalar(Math.cos(bendAngle))
+    .add(north.clone().multiplyScalar(Math.sin(bendAngle)))
+    .normalize();
+
+  const spread = height * 0.9;
+  const peakHeight = height * 1.1;
   const peakPos = surfacePos.clone()
-    .add(direction.clone().multiplyScalar(height * 0.85))
+    .add(direction.clone().multiplyScalar(peakHeight))
     .add(tangent.clone().multiplyScalar(spread));
   const endPos = peakPos.clone()
-    .sub(direction.clone().multiplyScalar(height * 0.25))
-    .add(tangent.clone().multiplyScalar(spread * 0.15));
+    .sub(direction.clone().multiplyScalar(height * 0.35))
+    .add(tangent.clone().multiplyScalar(spread * 0.2));
   const cp1 = surfacePos.clone()
-    .add(direction.clone().multiplyScalar(height * 0.4))
-    .add(tangent.clone().multiplyScalar(spread * 0.6));
+    .add(direction.clone().multiplyScalar(height * 0.5))
+    .add(tangent.clone().multiplyScalar(spread * 0.7));
   const cp2 = peakPos.clone()
-    .add(tangent.clone().multiplyScalar(spread * 0.3));
+    .add(tangent.clone().multiplyScalar(spread * 0.4));
   return { curve: new THREE.CubicBezierCurve3(surfacePos, cp1, cp2, endPos), endPos };
 }
 
@@ -157,13 +164,13 @@ export function createBeams(earthGroup, camera) {
 
     const surfacePos = latLngToVector3(city.lat, city.lng, EARTH_RADIUS);
     const direction = surfacePos.clone().normalize();
-    const { curve, endPos } = createArcCurve(surfacePos, direction, height, cityIndex);
+    const { curve, endPos } = createArcCurve(surfacePos, direction, height, city);
 
-    const tubeRadius = Math.max(0.008, 0.005 + (city.listeners / 140000) * 0.01);
-    const tubeGeometry = new THREE.TubeGeometry(curve, ARC_SEGMENTS, tubeRadius, 6, false);
-    const lineUvArr = new Float32Array(tubeGeometry.attributes.uv.count);
-    for (let i = 0; i < tubeGeometry.attributes.uv.count; i++) lineUvArr[i] = tubeGeometry.attributes.uv.getX(i);
-    tubeGeometry.setAttribute('aProgress', new THREE.BufferAttribute(lineUvArr, 1));
+    const linePoints = curve.getPoints(ARC_SEGMENTS);
+    const lineGeometry = new THREE.BufferGeometry().setFromPoints(linePoints);
+    const lineUvArr = new Float32Array((ARC_SEGMENTS + 1));
+    for (let i = 0; i <= ARC_SEGMENTS; i++) lineUvArr[i] = i / ARC_SEGMENTS;
+    lineGeometry.setAttribute('aProgress', new THREE.BufferAttribute(lineUvArr, 1));
 
     const lineMaterial = new THREE.ShaderMaterial({
       vertexShader: arcLineVertexShader,
@@ -178,7 +185,7 @@ export function createBeams(earthGroup, camera) {
       blending: THREE.AdditiveBlending
     });
 
-    const line = new THREE.Mesh(tubeGeometry, lineMaterial);
+    const line = new THREE.Line(lineGeometry, lineMaterial);
     beamGroup.add(line);
 
     const pCount = PARTICLES_PER_ARC;
