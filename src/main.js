@@ -6,6 +6,8 @@ import { createControls } from './core/controls.js';
 import { createEarth, updateEarth, setEarthMode, getCurrentEarthMode, getAvailableEarthModes, EARTH_MODES } from './modules/earth.js';
 import { createBeams, updateBeams, updateLabels, updateBeamConfig, setBeamDimensions, getBeamConfig } from './modules/beam.js';
 import { createComposer, updateComposerSize } from './effects/bloom.js';
+import { createParticles, updateParticles } from './modules/particles.js';
+import { createArcs, updateArcs } from './modules/arc.js';
 import { getMusicEngine } from './modules/ambient-music.js';
 
 class App {
@@ -20,6 +22,8 @@ class App {
     this.beamGroup = null;
     this.beams = null;
     this.beamLabels = null;
+    this.particleData = null;
+    this.arcData = null;
     this.clock = new THREE.Clock();
     this.useComposer = true;
     this.isPlaying = false;
@@ -58,6 +62,8 @@ class App {
     this.addLights();
     this.addEarth();
     this.addBeams();
+    this.addParticles();
+    this.addArcs();
 
     console.log('Scene children:', this.scene.children.length);
     console.log('Camera position:', this.camera.position);
@@ -528,6 +534,14 @@ class App {
     this.beamLabels = labels;
   }
 
+  addParticles() {
+    this.particleData = createParticles(this.scene);
+  }
+
+  addArcs() {
+    this.arcData = createArcs(this.scene);
+  }
+
   onResize() {
     updateCameraAspect(this.camera, this.container);
     updateRendererSize(this.renderer, this.container);
@@ -551,6 +565,14 @@ class App {
       if (this.beamLabels) {
         updateLabels(this.beamLabels, this.camera);
       }
+    }
+
+    if (this.particleData) {
+      updateParticles(this.particleData, elapsed, delta);
+    }
+
+    if (this.arcData) {
+      updateArcs(this.arcData.arcs, elapsed);
     }
 
     this.controls.update();

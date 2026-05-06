@@ -14,6 +14,7 @@ export const EARTH_MODES = {
 };
 
 let currentMode = EARTH_MODES.STANDARD;
+const MODE_INDEX = Object.values(EARTH_MODES);
 
 // ========== 大气层（固定半径，密集粒子） ==========
 function createAtmosphere() {
@@ -232,7 +233,7 @@ function createEarthMesh() {
       uTopologyTexture: { value: null },
       uEmissiveIntensity: { value: 3.5 },
       uTime: { value: 0.0 },
-      uMode: { value: currentMode }
+      uMode: { value: 0 }
     },
     lights: false, // 确保不受场景灯光影响
     vertexShader: `
@@ -521,7 +522,7 @@ export function setEarthMode(earthGroup, mode) {
     continents.visible = false;
   } else {
     // 更新uniform
-    const modeIndex = modeValues.indexOf(mode);
+    const modeIndex = MODE_INDEX.indexOf(mode);
     earth.material.uniforms.uMode.value = modeIndex;
     
     // 处理透明模式

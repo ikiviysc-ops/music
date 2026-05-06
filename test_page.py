@@ -12,7 +12,7 @@ with sync_playwright() as p:
     page.wait_for_load_state('networkidle')
     page.wait_for_timeout(5000)
     
-    page.screenshot(path='/workspace/test_final.png')
+    page.screenshot(path='/workspace/test_final2.png')
     
     result = page.evaluate('''() => {
         const canvas = document.querySelector("#canvas-container canvas");
@@ -21,27 +21,39 @@ with sync_playwright() as p:
         if (!gl) return { error: "no webgl context" };
         const d = new Uint8Array(4);
         gl.readPixels(195, 400, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, d);
-        const d2 = new Uint8Array(4);
-        gl.readPixels(195, 700, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, d2);
         return {
             canvasSize: { w: canvas.width, h: canvas.height },
             centerPixel: Array.from(d),
-            bottomPixel: Array.from(d2),
-            rendererInfo: gl.getParameter(gl.RENDERER),
-            sceneChildren: window.app ? window.app.scene.children.length : -1
+            sceneChildren: window.app ? window.app.scene.children.length : -1,
+            hasEarth: window.app && window.app.earthGroup ? true : false,
+            hasParticles: window.app && window.app.particleData ? true : false,
+            hasArcs: window.app && window.app.arcData ? true : false,
         };
     }''')
     print(f"WebGL result: {result}")
     
-    all_errors = [m for m in console_msgs if '[error]' in m or '[PAGE_ERROR]' in m]
-    non_cors = [e for e in all_errors if 'CORS' not in e and 'ERR_FAILED' not in e and 'mchost.guru' not in e]
+    nav_lis = page.query_selector_all('.gooey-nav-container li')
+    print(f"\nNav items: {len(nav_lis)}")
+    for i, li in enumerate(nav_lis):
+        is_active = li.evaluate('el => el.classList.contains("active")')
+        print(f"  li[{i}] active: {is_active}")
+    
+    second_li = nav_lis[1] if len(nav_lis) > 1 else None
+    if second_li:
+        link = second_li.query_selector('a')
+        if link:
+            print("\nClicking second nav item...")
+            link.click(force=True)
+            page.wait_for_timeout(500)
+            
+            for i, li in enumerate(nav_lis):
+                is_active = li.evaluate('el => el.classList.contains("active")')
+                print(f"  li[{i}] active: {is_active}")
+    
+    errors = [m for m in console_msgs if '[error]' in m or '[PAGE_ERROR]' in m]
+    non_cors = [e for e in errors if 'CORS' not in e and 'ERR_FAILED' not in e and 'mchost.guru' not in e and 'net::' not in e]
     print(f"\nNon-CORS errors ({len(non_cors)}):")
     for e in non_cors[:10]:
         print(f"  {e}")
-    
-    all_logs = [m for m in console_msgs if '[log]' in m]
-    print(f"\nAll logs ({len(all_logs)}):")
-    for l in all_logs[:15]:
-        print(f"  {l}")
     
     browser.close()
