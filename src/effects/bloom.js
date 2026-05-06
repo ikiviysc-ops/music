@@ -9,7 +9,7 @@ import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 const BLOOM_CONFIG = {
   strength: 0.2,
   radius: 0.1,
-  threshold: 0.7
+  threshold: 0.85
 };
 
 const VIGNETTE_SHADER = {

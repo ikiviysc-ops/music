@@ -123,6 +123,14 @@ function drawLabelCanvas(ctx, city, color, imgSource) {
     ctx.clip();
     ctx.drawImage(imgSource, imgX, imgY, imgSize, imgSize);
     ctx.restore();
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(imgX + imgSize / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillRect(imgX, imgY, imgSize, imgSize);
+    ctx.restore();
   } else {
     ctx.save();
     ctx.beginPath();
@@ -134,12 +142,12 @@ function drawLabelCanvas(ctx, city, color, imgSource) {
     ctx.restore();
   }
 
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#cccccc';
   ctx.font = 'bold 32px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText(city.city, TEX_W / 2, imgY + imgSize + 40);
 
-  ctx.fillStyle = 'rgba(255,255,255,0.65)';
+  ctx.fillStyle = 'rgba(200,200,200,0.65)';
   ctx.font = '22px sans-serif';
   ctx.fillText(city.cityEn, TEX_W / 2, imgY + imgSize + 72);
 
