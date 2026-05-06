@@ -240,32 +240,34 @@ function createBeamMesh(surfacePos, direction, height, color, phase) {
   const beamH = height;
   const beamW = BEAM_WIDTH;
 
-  const geometry = new THREE.PlaneGeometry(beamW, beamH, 1, 32);
-  geometry.translate(0, beamH / 2, 0);
+  const uniforms = {
+    uTime: { value: 0 },
+    uColor: { value: new THREE.Color(color.hex) },
+    uPhase: { value: phase },
+    uWispDensity: { value: _beamConfig.wispDensity },
+    uWispSpeed: { value: _beamConfig.wispSpeed },
+    uWispIntensity: { value: _beamConfig.wispIntensity },
+    uFlowSpeed: { value: _beamConfig.flowSpeed },
+    uFlowStrength: { value: _beamConfig.flowStrength },
+    uFogIntensity: { value: _beamConfig.fogIntensity },
+    uFogScale: { value: _beamConfig.fogScale },
+    uFogFallSpeed: { value: _beamConfig.fogFallSpeed },
+    uDecay: { value: _beamConfig.decay },
+    uFalloffStart: { value: _beamConfig.falloffStart }
+  };
 
   const material = new THREE.ShaderMaterial({
     vertexShader: beamVertexShader,
     fragmentShader: beamFragmentShader,
-    uniforms: {
-      uTime: { value: 0 },
-      uColor: { value: new THREE.Color(color.hex) },
-      uPhase: { value: phase },
-      uWispDensity: { value: _beamConfig.wispDensity },
-      uWispSpeed: { value: _beamConfig.wispSpeed },
-      uWispIntensity: { value: _beamConfig.wispIntensity },
-      uFlowSpeed: { value: _beamConfig.flowSpeed },
-      uFlowStrength: { value: _beamConfig.flowStrength },
-      uFogIntensity: { value: _beamConfig.fogIntensity },
-      uFogScale: { value: _beamConfig.fogScale },
-      uFogFallSpeed: { value: _beamConfig.fogFallSpeed },
-      uDecay: { value: _beamConfig.decay },
-      uFalloffStart: { value: _beamConfig.falloffStart }
-    },
+    uniforms,
     transparent: true,
     depthWrite: false,
     side: THREE.DoubleSide,
     blending: THREE.AdditiveBlending
   });
+
+  const geometry = new THREE.PlaneGeometry(beamW, beamH, 1, 32);
+  geometry.translate(0, beamH / 2, 0);
 
   const frontPlane = new THREE.Mesh(geometry, material);
   group.add(frontPlane);
@@ -274,11 +276,16 @@ function createBeamMesh(surfacePos, direction, height, color, phase) {
   sideGeo.translate(0, beamH / 2, 0);
   sideGeo.rotateY(Math.PI / 2);
 
-  const sideMat = material.clone();
-  sideMat.uniforms = { ...material.uniforms };
-  for (const key in material.uniforms) {
-    sideMat.uniforms[key] = { value: material.uniforms[key].value };
-  }
+  const sideMat = new THREE.ShaderMaterial({
+    vertexShader: beamVertexShader,
+    fragmentShader: beamFragmentShader,
+    uniforms,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending
+  });
+
   const sidePlane = new THREE.Mesh(sideGeo, sideMat);
   group.add(sidePlane);
 
@@ -288,7 +295,7 @@ function createBeamMesh(surfacePos, direction, height, color, phase) {
   const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), up);
   group.quaternion.copy(quat);
 
-  return { group, materials: [material, sideMat] };
+  return { group, materials: [material, sideMat], uniforms };
 }
 
 export function updateBeams(beams, globalTime, camera) {
@@ -305,14 +312,13 @@ export function updateLabels(labels, camera) {
 }
 
 export function updateBeamConfig(key, value) {
-  _beamConfig[key] = value;
+  const configKey = key.startsWith('u') ? key.charAt(0).toLowerCase() + key.slice(1) : key;
+  _beamConfig[configKey] = value;
   if (!_globalBeams) return;
-  _globalBeams.forEach(({ materials }) => {
-    materials.forEach(mat => {
-      if (mat.uniforms && mat.uniforms[key]) {
-        mat.uniforms[key].value = value;
-      }
-    });
+  _globalBeams.forEach(({ uniforms }) => {
+    if (uniforms && uniforms[key]) {
+      uniforms[key].value = value;
+    }
   });
 }
 
@@ -381,7 +387,7 @@ export function createBeams(earthGroup, camera) {
       }, undefined, () => {});
     }
 
-    beams.push({ group, materials, city, phase, height, direction, surfacePos });
+    beams.push({ group, materials, uniforms, city, phase, height, direction, surfacePos });
   });
 
   earthGroup.add(beamGroup);

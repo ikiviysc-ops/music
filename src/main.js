@@ -342,6 +342,14 @@ class App {
         }
         if (config.type === 'shader') {
           updateBeamConfig(config.uniform, val);
+        } else if (config.type === 'dim') {
+          const wSlider = document.getElementById('beam-width');
+          const minHSlider = document.getElementById('beam-min-h');
+          const maxHSlider = document.getElementById('beam-max-h');
+          const w = wSlider ? parseFloat(wSlider.value) : BEAM_WIDTH;
+          const minH = minHSlider ? parseFloat(minHSlider.value) : BEAM_MIN_HEIGHT;
+          const maxH = maxHSlider ? parseFloat(maxHSlider.value) : BEAM_MAX_HEIGHT;
+          setBeamDimensions(w, minH, maxH);
         }
       });
     });
