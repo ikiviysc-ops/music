@@ -137,16 +137,14 @@ class App {
     const doTogglePlay = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      console.log('Play button clicked!');
+      e.stopImmediatePropagation();
       this.togglePlay();
     };
 
     if (fpPlayerWrap) {
-      fpPlayerWrap.addEventListener('click', doTogglePlay);
-      const innerBtn = fpPlayerWrap.querySelector('div[style*="cursor: pointer"]');
-      if (innerBtn) innerBtn.addEventListener('click', doTogglePlay);
-      const svgEl = fpPlayerWrap.querySelector('svg');
-      if (svgEl) svgEl.addEventListener('click', doTogglePlay);
+      fpPlayerWrap.style.cursor = 'pointer';
+      fpPlayerWrap.addEventListener('click', doTogglePlay, true);
+      fpPlayerWrap.addEventListener('touchend', doTogglePlay, true);
     }
 
     if (fpPlayerCard) {
@@ -192,47 +190,17 @@ class App {
   }
   
   togglePlay() {
-    if (!this.musicPlayer) {
-      console.error('Audio element not found');
-      return;
-    }
-
-    console.log('togglePlay called, isPlaying:', this.isPlaying);
-    console.log('Audio src:', this.musicPlayer.currentSrc || 'none');
-    console.log('Audio readyState:', this.musicPlayer.readyState);
+    if (!this.musicPlayer) return;
 
     if (this.isPlaying) {
       this.musicPlayer.pause();
     } else {
-      const playPromise = this.musicPlayer.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          console.log('Playback started!');
-          this.isPlaying = true;
-          this.updatePlayerUI();
-        }).catch((err) => {
-          console.error('Play error:', err.name, err.message);
+      const p = this.musicPlayer.play();
+      if (p && p.catch) {
+        p.catch(() => {
           this.isPlaying = false;
           this.updatePlayerUI();
         });
-      }
-    }
-  }
-  
-  tryNextSource() {
-    const sources = this.musicPlayer.querySelectorAll('source');
-    let currentSrc = this.musicPlayer.currentSrc;
-    
-    for (let i = 0; i < sources.length; i++) {
-      if (sources[i].src !== currentSrc) {
-        console.log('Trying next source:', sources[i].src);
-        this.musicPlayer.src = sources[i].src;
-        this.musicPlayer.play().then(() => {
-          console.log('Playback started with fallback source');
-        }).catch(e => {
-          console.error('Fallback source failed:', e);
-        });
-        break;
       }
     }
   }
