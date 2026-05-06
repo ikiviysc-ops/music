@@ -3,12 +3,15 @@ import { createScene } from './core/scene.js';
 import { createCamera, updateCameraAspect } from './core/camera.js';
 import { createRenderer, updateRendererSize } from './core/renderer.js';
 import { createControls } from './core/controls.js';
-import { createEarth, updateEarth, setEarthMode, getCurrentEarthMode, getAvailableEarthModes, EARTH_MODES } from './modules/earth.js';
-import { createBeams, updateBeams, updateLabels, updateBeamConfig, setBeamDimensions, getBeamConfig } from './modules/beam.js';
-import { createComposer, updateComposerSize } from './effects/bloom.js';
-import { createParticles, updateParticles } from './modules/particles.js';
-import { createArcs, updateArcs } from './modules/arc.js';
-import { getMusicEngine } from './modules/ambient-music.js';
+import { createEarth, updateEarth } from './modules/earth.js';
+// 暂时禁用复杂组件，先确保地球可见
+// import { createBeams, updateBeams, updateLabels, updateBeamConfig, setBeamDimensions, getBeamConfig } from './modules/beam.js';
+// import { createComposer, updateComposerSize } from './effects/bloom.js';
+// import { createParticles, updateParticles } from './modules/particles.js';
+// import { createArcs, updateArcs } from './modules/arc.js';
+// import { getMusicEngine } from './modules/ambient-music.js';
+
+console.log('=== 地球音乐可视化系统 ===');
 
 class App {
   constructor() {
@@ -19,25 +22,18 @@ class App {
     this.composer = null;
     this.controls = null;
     this.earthGroup = null;
-    this.beamGroup = null;
-    this.beams = null;
-    this.beamLabels = null;
-    this.particleData = null;
-    this.arcData = null;
-    this.clock = new THREE.Clock();
-    this.useComposer = true;
-    this.isPlaying = false;
+    this.useComposer = false; // 暂时禁用后处理
   }
 
   init() {
-    console.log('=== App.init() called');
+    console.log('🚀 App.init() called');
     
     this.container = document.getElementById('canvas-container');
     if (!this.container) {
-      console.error('❌ canvas-container not found');
+      console.error('❌ canvas-container not found!');
       return;
     }
-    console.log('✅ canvas-container found:', this.container);
+    console.log('✅ canvas-container found');
 
     // 确保容器尺寸就绪
     const w = this.container.clientWidth;
@@ -48,494 +44,69 @@ class App {
       return;
     }
 
-    console.log('Creating scene...');
+    // 场景
     this.scene = createScene();
-    console.log('✅ Scene created:', this.scene);
+    console.log('✅ Scene created');
 
-    console.log('Creating camera...');
+    // 相机
     this.camera = createCamera(this.container);
     console.log('✅ Camera created, position:', this.camera.position);
 
-    console.log('Creating renderer...');
-    try {
-      this.renderer = createRenderer(this.container);
-      console.log('✅ Renderer created');
-    } catch (e) {
-      console.error('❌ Failed to create renderer:', e);
-      return;
-    }
+    // 渲染器
+    this.renderer = createRenderer(this.container);
+    console.log('✅ Renderer created');
 
-    try {
-      console.log('Creating EffectComposer...');
-      this.composer = createComposer(this.renderer, this.scene, this.camera);
-      this.useComposer = true;
-      console.log('✅ EffectComposer created');
-    } catch (e) {
-      console.error('❌ EffectComposer failed, falling back to direct render:', e);
-      this.useComposer = false;
-    }
-
-    console.log('Creating controls...');
+    // 控制器
     this.controls = createControls(this.camera, this.renderer);
     console.log('✅ Controls created');
 
-    console.log('Adding lights...');
-    this.addLights();
-    console.log('✅ Lights added');
-
-    console.log('Adding earth...');
+    // 添加地球 - 最简单的
     this.addEarth();
-    console.log('✅ Earth added');
 
-    console.log('Adding beams...');
-    this.addBeams();
-    console.log('✅ Beams added');
+    console.log('✅ Scene children count:', this.scene.children.length);
+    console.log('Scene children:', this.scene.children);
 
-    console.log('Adding particles...');
-    this.addParticles();
-    console.log('✅ Particles added');
-
-    console.log('Adding arcs...');
-    this.addArcs();
-    console.log('✅ Arcs added');
-
-    console.log('=== Scene children:', this.scene);
-    console.log('=== Scene children count:', this.scene.children.length);
-    this.scene.children.forEach((child, i) => {
-      console.log(`  [${i}]', child.name || child.type, child);
-    });
-    console.log('=== Camera position:', this.camera.position);
-    console.log('=== Earth group:', this.earthGroup);
-
+    // 窗口大小变化处理
     window.addEventListener('resize', this.onResize.bind(this));
-    
-    // 设置模式选择UI
-    this.setupModeUI();
-    
-    // 设置播放器UI
-    this.setupPlayerUI();
-    
-    this.setupBeamPanel();
-    
-    // 设置导航UI
-    this.setupNavUI();
-    
-    setTimeout(() => {
-      this.onResize();
-    }, 50);
-    
+
+    // 开始动画
     this.animate();
-  }
-  
-  setupModeUI() {
-    const modeBtn = document.getElementById('mode-btn');
-    const modeMenu = document.getElementById('mode-menu');
-    const modeItems = document.querySelectorAll('.mode-item');
     
-    if (!modeBtn || !modeMenu || !modeItems.length) return;
-    
-    // 切换菜单显示
-    modeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      modeMenu.classList.toggle('show');
-      modeBtn.classList.toggle('active');
-    });
-    
-    // 点击菜单项
-    modeItems.forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const mode = item.dataset.mode;
-        
-        const modeMap = {
-          'standard': EARTH_MODES.STANDARD,
-          'translucent': EARTH_MODES.TRANSLUCENT,
-          'daytime': EARTH_MODES.DAYTIME,
-          'clouds': EARTH_MODES.CLOUDS,
-          'points': EARTH_MODES.POINTS,
-          'cityLights': EARTH_MODES.CITY_LIGHTS
-        };
-        
-        if (modeMap[mode]) {
-          this.setEarthMode(modeMap[mode]);
-          this.updateModeUI(mode);
-        }
-        
-        modeMenu.classList.remove('show');
-        modeBtn.classList.remove('active');
-      });
-    });
-    
-    document.addEventListener('click', () => {
-      modeMenu.classList.remove('show');
-      modeBtn.classList.remove('active');
-    });
-    
-    const currentMode = getCurrentEarthMode();
-    const modeKey = Object.keys(EARTH_MODES).find(k => EARTH_MODES[k] === currentMode) || 'cityLights';
-    this.updateModeUI(modeKey.toLowerCase());
-  }
-  
-  setupPlayerUI() {
-    this.musicPlayer = getMusicEngine();
-    const fpPlayerWrap = document.getElementById('fpPlayerWrap');
-    const fpPlayerCard = document.getElementById('fpPlayerCard');
-    const fpProgressFill = document.getElementById('fpProgressFill');
-
-    const doTogglePlay = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      this.togglePlay();
-    };
-
-    if (fpPlayerWrap) {
-      fpPlayerWrap.style.cursor = 'pointer';
-      fpPlayerWrap.addEventListener('click', doTogglePlay, true);
-      fpPlayerWrap.addEventListener('touchend', doTogglePlay, true);
-    }
-
-    if (fpPlayerCard) {
-      fpPlayerCard.addEventListener('click', (e) => {
-        if (e.target.closest('#fpPlayerWrap')) return;
-        const rect = fpPlayerCard.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        if (fpProgressFill) {
-          fpProgressFill.style.width = `${Math.max(0, Math.min(100, percent * 100))}%`;
-        }
-        if (this.musicPlayer && this.musicPlayer.duration > 0) {
-          this.musicPlayer.currentTime = percent * this.musicPlayer.duration;
-        }
-      });
-    }
-    
-    if (this.musicPlayer) {
-      this.musicPlayer.addEventListener('timeupdate', () => {
-        this.updateProgress();
-      });
-      
-      this.musicPlayer.addEventListener('loadedmetadata', () => {
-        this.updateTimeDisplay();
-      });
-      
-      this.musicPlayer.addEventListener('ended', () => {
-        this.isPlaying = false;
-        this.updatePlayerUI();
-      });
-      
-      this.musicPlayer.addEventListener('play', () => {
-        this.isPlaying = true;
-        this.updatePlayerUI();
-      });
-      
-      this.musicPlayer.addEventListener('pause', () => {
-        this.isPlaying = false;
-        this.updatePlayerUI();
-      });
-    }
-    
-    this.animateWave();
-  }
-  
-  togglePlay() {
-    if (!this.musicPlayer) return;
-
-    if (this.isPlaying) {
-      this.musicPlayer.pause();
-    } else {
-      const p = this.musicPlayer.play();
-      if (p && p.catch) {
-        p.catch(() => {
-          this.isPlaying = false;
-          this.updatePlayerUI();
-        });
-      }
-    }
-  }
-  
-  updatePlayerUI() {
-    const fpPlayerWrap = document.getElementById('fpPlayerWrap');
-    const fpMusicCover = document.getElementById('fpMusicCover');
-    if (!fpPlayerWrap) return;
-    
-    if (this.isPlaying) {
-      fpPlayerWrap.classList.add('playing');
-      if (fpMusicCover) {
-        fpMusicCover.classList.add('playing');
-      }
-    } else {
-      fpPlayerWrap.classList.remove('playing');
-      if (fpMusicCover) {
-        fpMusicCover.classList.remove('playing');
-      }
-    }
-  }
-  
-  updateProgress() {
-    if (!this.musicPlayer || this.musicPlayer.duration === 0) return;
-    
-    const fpProgressFill = document.getElementById('fpProgressFill');
-    const progress = (this.musicPlayer.currentTime / this.musicPlayer.duration) * 100;
-    
-    if (fpProgressFill) {
-      fpProgressFill.style.width = `${progress}%`;
-    }
-    
-    this.updateTimeDisplay();
-  }
-  
-  updateTimeDisplay() {
-    if (!this.musicPlayer) return;
-    
-    const fpTimeDisplay = document.getElementById('fpTimeDisplay');
-    if (!fpTimeDisplay) return;
-    
-    const currentTime = this.formatTime(this.musicPlayer.currentTime);
-    const duration = this.musicPlayer.duration > 0 ? this.formatTime(this.musicPlayer.duration) : '0:00';
-    
-    fpTimeDisplay.textContent = `${currentTime} / ${duration}`;
-  }
-  
-  formatTime(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  }
-  
-  animateWave() {
-    const wave1 = document.getElementById('fpWave1');
-    const wave2 = document.getElementById('fpWave2');
-    if (!wave1 || !wave2) return;
-    
-    let time = 0;
-    const animate = () => {
-      time += 0.02;
-      
-      const amplitude = this.isPlaying ? 2.5 + Math.sin(time * 2) * 0.5 : 1.5;
-      const frequency = this.isPlaying ? 0.15 : 0.08;
-      
-      let path1 = '';
-      let path2 = '';
-      for (let x = 0; x <= 32; x++) {
-        const y1 = 16 + Math.sin((x + time * 30) * frequency * Math.PI) * amplitude * 0.8;
-        const y2 = 16 + Math.sin((x + time * 25 + 10) * frequency * Math.PI) * amplitude;
-        path1 += (x === 0 ? 'M' : 'L') + x + ',' + y1 + ' ';
-        path2 += (x === 0 ? 'M' : 'L') + x + ',' + y2 + ' ';
-      }
-      path1 += 'L32,32 L0,32 Z';
-      path2 += 'L32,32 L0,32 Z';
-      
-      wave1.setAttribute('d', path1);
-      wave2.setAttribute('d', path2);
-      
-      requestAnimationFrame(animate);
-    };
-    
-    animate();
-  }
-
-  setupBeamPanel() {
-    const panel = document.getElementById('beam-panel');
-    const btn = document.getElementById('beam-settings-btn');
-    const closeBtn = document.getElementById('beam-panel-close');
-    if (!panel || !btn) return;
-
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      panel.classList.toggle('show');
-    });
-
-    if (closeBtn) {
-      closeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        panel.classList.remove('show');
-      });
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!panel.contains(e.target) && e.target !== btn) {
-        panel.classList.remove('show');
-      }
-    });
-
-    const sliderMap = {
-      'beam-width': { key: 'beamWidth', type: 'dim' },
-      'beam-min-h': { key: 'beamMinH', type: 'dim' },
-      'beam-max-h': { key: 'beamMaxH', type: 'dim' },
-      'wisp-density': { key: 'wispDensity', type: 'shader', uniform: 'uWispDensity' },
-      'wisp-speed': { key: 'wispSpeed', type: 'shader', uniform: 'uWispSpeed' },
-      'wisp-intensity': { key: 'wispIntensity', type: 'shader', uniform: 'uWispIntensity' },
-      'flow-speed': { key: 'flowSpeed', type: 'shader', uniform: 'uFlowSpeed' },
-      'flow-strength': { key: 'flowStrength', type: 'shader', uniform: 'uFlowStrength' },
-      'fog-intensity': { key: 'fogIntensity', type: 'shader', uniform: 'uFogIntensity' },
-      'fog-scale': { key: 'fogScale', type: 'shader', uniform: 'uFogScale' },
-      'fog-fall-speed': { key: 'fogFallSpeed', type: 'shader', uniform: 'uFogFallSpeed' },
-      'decay': { key: 'decay', type: 'shader', uniform: 'uDecay' },
-      'falloff-start': { key: 'falloffStart', type: 'shader', uniform: 'uFalloffStart' }
-    };
-
-    Object.entries(sliderMap).forEach(([sliderId, config]) => {
-      const slider = document.getElementById(sliderId);
-      const valSpan = document.getElementById(sliderId + '-val');
-      if (!slider) return;
-
-      slider.addEventListener('input', () => {
-        const val = parseFloat(slider.value);
-        if (valSpan) {
-          valSpan.textContent = val % 1 === 0 ? val.toString() : val.toFixed(2);
-        }
-        if (config.type === 'shader') {
-          updateBeamConfig(config.uniform, val);
-        } else if (config.type === 'dim') {
-          const wSlider = document.getElementById('beam-width');
-          const minHSlider = document.getElementById('beam-min-h');
-          const maxHSlider = document.getElementById('beam-max-h');
-          const cfg = getBeamConfig();
-          const w = wSlider ? parseFloat(wSlider.value) : cfg.beamWidth;
-          const minH = minHSlider ? parseFloat(minHSlider.value) : cfg.beamMinH;
-          const maxH = maxHSlider ? parseFloat(maxHSlider.value) : cfg.beamMaxH;
-          setBeamDimensions(w, minH, maxH);
-        }
-      });
-    });
-  }
-
-  setupNavUI() {
-    const container = document.getElementById('gooeyNav');
-    if (!container) return;
-
-    const lis = container.querySelectorAll('li');
-    lis.forEach((li) => {
-      const link = li.querySelector('a');
-      if (!link) return;
-
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        lis.forEach(l => l.classList.remove('active'));
-        li.classList.add('active');
-      });
-    });
-  }
-  
-  updateModeUI(activeMode) {
-    const modeItems = document.querySelectorAll('.mode-item');
-    modeItems.forEach(item => {
-      item.classList.remove('active');
-      if (item.dataset.mode === activeMode) {
-        item.classList.add('active');
-      }
-    });
-  }
-
-  addLights() {
-    const ambientLight = new THREE.AmbientLight(0x445566, 1.2);
-    this.scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-    directionalLight.position.set(5, 3, 5);
-    this.scene.add(directionalLight);
-
-    const pointLight = new THREE.PointLight(0x4488ff, 0.8, 50);
-    pointLight.position.set(-5, 2, -5);
-    this.scene.add(pointLight);
-
-    const backLight = new THREE.DirectionalLight(0x223344, 0.5);
-    backLight.position.set(-3, -2, -5);
-    this.scene.add(backLight);
+    console.log('=== 初始化完成！===');
+    console.log('💡 你应该能看到一个旋转的蓝色地球');
   }
 
   addEarth() {
     this.earthGroup = createEarth();
     this.scene.add(this.earthGroup);
-  }
-
-  addBeams() {
-    const { beamGroup, beams, labels } = createBeams(this.earthGroup, this.camera);
-    this.beamGroup = beamGroup;
-    this.beams = beams;
-    this.beamLabels = labels;
-  }
-
-  addParticles() {
-    this.particleData = createParticles(this.scene);
-  }
-
-  addArcs() {
-    this.arcData = createArcs(this.scene);
+    console.log('✅ Earth group added to scene');
   }
 
   onResize() {
     updateCameraAspect(this.camera, this.container);
     updateRendererSize(this.renderer, this.container);
-    if (this.useComposer && this.composer) {
-      updateComposerSize(this.composer, this.container, this.renderer);
-    }
   }
 
   animate() {
     requestAnimationFrame(this.animate.bind(this));
 
-    const delta = this.clock.getDelta();
-    const elapsed = this.clock.getElapsedTime();
+    const delta = 0.016; // 固定delta先简化
+    const elapsed = performance.now() / 1000;
 
     if (this.earthGroup) {
       updateEarth(this.earthGroup, delta, elapsed, this.camera);
     }
 
-    if (this.beams) {
-      updateBeams(this.beams, elapsed, this.camera);
-      if (this.beamLabels) {
-        updateLabels(this.beamLabels, this.camera);
-      }
-    }
-
-    if (this.particleData) {
-      updateParticles(this.particleData, elapsed, delta);
-    }
-
-    if (this.arcData) {
-      updateArcs(this.arcData.arcs, elapsed);
-    }
-
     this.controls.update();
 
-    if (this.useComposer && this.composer) {
-      this.composer.render();
-    } else {
-      this.renderer.render(this.scene, this.camera);
-    }
-  }
-  
-  // 地球模式切换
-  setEarthMode(mode) {
-    if (this.earthGroup) {
-      setEarthMode(this.earthGroup, mode);
-    }
-  }
-  
-  getEarthMode() {
-    return getCurrentEarthMode();
-  }
-  
-  listEarthModes() {
-    return getAvailableEarthModes();
+    // 直接渲染，暂时不用后处理
+    this.renderer.render(this.scene, this.camera);
   }
 }
 
-const app = new App();
-app.init();
-
-// 暴露到全局，方便在控制台使用
-window.app = app;
-window.EARTH_MODES = EARTH_MODES;
-window.setEarthMode = (mode) => app.setEarthMode(mode);
-window.getEarthMode = () => app.getEarthMode();
-window.listEarthModes = () => app.listEarthModes();
-
-console.log('=== 地球模式控制系统 ===');
-console.log('可用模式:', EARTH_MODES);
-console.log('使用方式:');
-console.log('  window.listEarthModes() - 列出所有模式');
-console.log('  window.setEarthMode(EARTH_MODES.STANDARD) - 切换模式');
-console.log('  window.getEarthMode() - 获取当前模式');
-console.log('========================');
+// 启动！
+window.addEventListener('DOMContentLoaded', () => {
+  const app = new App();
+  app.init();
+  window.app = app;
+});

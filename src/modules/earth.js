@@ -21,52 +21,41 @@ export function getAvailableEarthModes() {
   return EARTH_MODES;
 }
 
-// 最简单、最基础的地球 - 绝对能显示的版本
 export function createEarth() {
-  console.log('[Earth] Creating simple, 100% working earth...');
+  console.log('🌍 [Earth] Creating simple earth...');
   
   const group = new THREE.Group();
   group.name = 'EarthGroup';
   
-  // 最简单的球体
+  // 创建一个最简单的球体，使用纯色
   const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 64, 64);
-  
-  // 最简单的材质 - 纯色，不用任何纹理，绝对安全
   const material = new THREE.MeshBasicMaterial({
-    color: 0x1a3a5c,
-    wireframe: false
+    color: 0x1a3a5c
   });
-  
   const earthMesh = new THREE.Mesh(geometry, material);
   earthMesh.name = 'EarthMesh';
-  
   group.add(earthMesh);
   
-  console.log('[Earth] Simple earth mesh added');
+  console.log('🌍 [Earth] Simple earth mesh added');
   
   // 添加大气层
-  const atmosphereGeometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.05, 64, 64);
-  const atmosphereMaterial = new THREE.MeshBasicMaterial({
+  const atmoGeo = new THREE.SphereGeometry(EARTH_RADIUS * 1.05, 64, 64);
+  const atmoMat = new THREE.MeshBasicMaterial({
     color: 0x4488ff,
     transparent: true,
     opacity: 0.15,
     side: THREE.BackSide
   });
-  const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+  const atmosphere = new THREE.Mesh(atmoGeo, atmoMat);
   atmosphere.name = 'Atmosphere';
   group.add(atmosphere);
   
-  console.log('[Earth] Atmosphere added');
-  
-  // 保存材质
   group.userData = {
     earthMesh,
-    atmosphere,
-    rotationSpeed: 0.05
+    atmosphere
   };
   
-  console.log('[Earth] Earth group created successfully:', group);
-  
+  console.log('🌍 [Earth] Earth created!');
   return group;
 }
 
@@ -77,6 +66,6 @@ export function updateEarth(group, delta, elapsed, camera) {
 }
 
 export function setEarthMode(group, mode) {
-  console.log('[Earth] setEarthMode called, but keeping it's simple version - no changes');
+  console.log('[Earth] Mode change not implemented in simple version');
   currentMode = mode;
 }
