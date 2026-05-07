@@ -8,7 +8,7 @@ const BEAM_MAX_HEIGHT = 1.3;
 const BEAM_WIDTH = 0.12;
 const LABEL_SIZE = 1.0;
 const TEX_W = 256;
-const TEX_H = 160;
+const TEX_H = 80;
 
 const _beamConfig = {
   wispDensity: 3.0,
@@ -348,7 +348,7 @@ export function createBeams(earthGroup, camera) {
     const label = new THREE.Sprite(labelMaterial);
     const labelPos = surfacePos.clone().add(direction.clone().multiplyScalar(height));
     label.position.copy(labelPos);
-    label.scale.set(LABEL_SIZE, LABEL_SIZE / 1.6, 1);
+    label.scale.set(LABEL_SIZE, LABEL_SIZE / 3.2, 1);
     label.userData = { city, baseHeight: height };
     beamGroup.add(label);
     labels.push(label);
