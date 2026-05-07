@@ -343,7 +343,7 @@ export function createBeams(earthGroup, camera) {
       blending: THREE.NormalBlending
     });
     const label = new THREE.Sprite(labelMaterial);
-    const labelPos = surfacePos.clone().add(direction.clone().multiplyScalar(height + 0.15));
+    const labelPos = surfacePos.clone().add(direction.clone().multiplyScalar(height));
     label.position.copy(labelPos);
     label.scale.set(LABEL_SIZE * 0.8, LABEL_SIZE, 1);
     label.userData = { city, baseHeight: height };
