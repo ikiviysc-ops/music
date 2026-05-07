@@ -6,7 +6,7 @@ const EARTH_RADIUS = 1.6;
 const BEAM_MIN_HEIGHT = 0.8;
 const BEAM_MAX_HEIGHT = 1.3;
 const BEAM_WIDTH = 0.12;
-const LABEL_SIZE = 0.55;
+const LABEL_SIZE = 0.28;
 const TEX_W = 256;
 const TEX_H = 320;
 
