@@ -3,24 +3,24 @@ import { latLngToVector3 } from '../utils/geo.js';
 import { CITY_DATA, getCityColor } from '../data/cities.js';
 
 const EARTH_RADIUS = 1.6;
-const BEAM_MIN_HEIGHT = 0.8;
-const BEAM_MAX_HEIGHT = 1.8;
-const BEAM_WIDTH = 0.18;
+const BEAM_MIN_HEIGHT = 0;
+const BEAM_MAX_HEIGHT = 0;
+const BEAM_WIDTH = 0;
 const LABEL_SIZE = 0.55;
 const TEX_W = 256;
 const TEX_H = 320;
 
 const _beamConfig = {
-  wispDensity: 3.0,
-  wispSpeed: 18.0,
-  wispIntensity: 8.0,
+  wispDensity: 0,
+  wispSpeed: 0,
+  wispIntensity: 0,
   flowSpeed: 0.5,
-  flowStrength: 0.2,
-  fogIntensity: 0.4,
-  fogScale: 0.3,
-  fogFallSpeed: 0.5,
-  decay: 1.1,
-  falloffStart: 1.0
+  flowStrength: 1.0,
+  fogIntensity: 0,
+  fogScale: 0,
+  fogFallSpeed: 0,
+  decay: 3.0,
+  falloffStart: 0
 };
 
 const beamVertexShader = `
