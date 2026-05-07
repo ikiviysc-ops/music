@@ -8,7 +8,7 @@ const BEAM_MAX_HEIGHT = 1.3;
 const BEAM_WIDTH = 0.12;
 const LABEL_SIZE = 1.0;
 const TEX_W = 256;
-const TEX_H = 40;
+const TEX_H = 64;
 
 const _beamConfig = {
   wispDensity: 3.0,
@@ -168,8 +168,8 @@ void main() {
 function drawLabelCanvas(ctx, city, color, imgSource) {
   ctx.clearRect(0, 0, TEX_W, TEX_H);
 
-  const imgSize = 60;
-  const imgX = 12;
+  const imgSize = 36;
+  const imgX = 8;
   const imgY = (TEX_H - imgSize) / 2;
 
   if (imgSource) {
@@ -199,22 +199,22 @@ function drawLabelCanvas(ctx, city, color, imgSource) {
     ctx.restore();
   }
 
-  const textX = imgX + imgSize + 14;
-  const textW = TEX_W - textX - 10;
+  const textX = imgX + imgSize + 10;
+  const textW = TEX_W - textX - 8;
   ctx.textAlign = 'left';
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 22px sans-serif';
-  ctx.fillText(city.city, textX, imgY + 22, textW);
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText(city.city, textX, imgY + 14, textW);
 
   ctx.fillStyle = 'rgba(200,200,200,0.65)';
-  ctx.font = '15px sans-serif';
-  ctx.fillText(city.cityEn, textX, imgY + 42, textW);
+  ctx.font = '11px sans-serif';
+  ctx.fillText(city.cityEn, textX, imgY + 28, textW);
 
   ctx.fillStyle = color;
-  ctx.font = '13px sans-serif';
+  ctx.font = '10px sans-serif';
   const listeners = city.listeners >= 1000 ? (city.listeners / 1000).toFixed(0) + 'K' : city.listeners;
-  ctx.fillText('♫ ' + listeners, textX, imgY + 58, textW);
+  ctx.fillText('♫ ' + listeners, textX, imgY + 40, textW);
 }
 
 function createCityLabelTexture(city, color) {
@@ -348,7 +348,7 @@ export function createBeams(earthGroup, camera) {
     const label = new THREE.Sprite(labelMaterial);
     const labelPos = surfacePos.clone().add(direction.clone().multiplyScalar(height));
     label.position.copy(labelPos);
-    label.scale.set(LABEL_SIZE, LABEL_SIZE / 6.4, 1);
+    label.scale.set(LABEL_SIZE, LABEL_SIZE * (TEX_H / TEX_W), 1);
     label.userData = { city, baseHeight: height };
     beamGroup.add(label);
     labels.push(label);
