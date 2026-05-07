@@ -8,7 +8,7 @@ const BEAM_MAX_HEIGHT = 1.3;
 const BEAM_WIDTH = 0.12;
 const LABEL_SIZE = 0.7;
 const TEX_W = 256;
-const TEX_H = 320;
+const TEX_H = 160;
 
 const _beamConfig = {
   wispDensity: 3.0,
@@ -168,9 +168,9 @@ void main() {
 function drawLabelCanvas(ctx, city, color, imgSource) {
   ctx.clearRect(0, 0, TEX_W, TEX_H);
 
-  const imgSize = 100;
-  const imgX = (TEX_W - imgSize) / 2;
-  const imgY = 16;
+  const imgSize = 60;
+  const imgX = 12;
+  const imgY = (TEX_H - imgSize) / 2;
 
   if (imgSource) {
     ctx.save();
@@ -199,19 +199,22 @@ function drawLabelCanvas(ctx, city, color, imgSource) {
     ctx.restore();
   }
 
-  ctx.fillStyle = '#cccccc';
-  ctx.font = 'bold 30px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(city.city, TEX_W / 2, imgY + imgSize + 38);
+  const textX = imgX + imgSize + 14;
+  const textW = TEX_W - textX - 10;
+  ctx.textAlign = 'left';
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillText(city.city, textX, imgY + 22, textW);
 
   ctx.fillStyle = 'rgba(200,200,200,0.65)';
-  ctx.font = '20px sans-serif';
-  ctx.fillText(city.cityEn, TEX_W / 2, imgY + imgSize + 66);
+  ctx.font = '15px sans-serif';
+  ctx.fillText(city.cityEn, textX, imgY + 42, textW);
 
   ctx.fillStyle = color;
-  ctx.font = '16px sans-serif';
+  ctx.font = '13px sans-serif';
   const listeners = city.listeners >= 1000 ? (city.listeners / 1000).toFixed(0) + 'K' : city.listeners;
-  ctx.fillText('♫ ' + listeners, TEX_W / 2, imgY + imgSize + 92);
+  ctx.fillText('♫ ' + listeners, textX, imgY + 58, textW);
 }
 
 function createCityLabelTexture(city, color) {
@@ -345,7 +348,7 @@ export function createBeams(earthGroup, camera) {
     const label = new THREE.Sprite(labelMaterial);
     const labelPos = surfacePos.clone().add(direction.clone().multiplyScalar(height));
     label.position.copy(labelPos);
-    label.scale.set(LABEL_SIZE * 0.8, LABEL_SIZE * 0.5, 1);
+    label.scale.set(LABEL_SIZE, LABEL_SIZE / 1.6, 1);
     label.userData = { city, baseHeight: height };
     beamGroup.add(label);
     labels.push(label);
