@@ -6,7 +6,7 @@ const EARTH_RADIUS = 1.6;
 const BEAM_MIN_HEIGHT = 0.8;
 const BEAM_MAX_HEIGHT = 1.3;
 const BEAM_WIDTH = 0.12;
-const LABEL_SIZE = 0.28;
+const LABEL_SIZE = 0.7;
 const TEX_W = 256;
 const TEX_H = 320;
 
@@ -345,7 +345,7 @@ export function createBeams(earthGroup, camera) {
     const label = new THREE.Sprite(labelMaterial);
     const labelPos = surfacePos.clone().add(direction.clone().multiplyScalar(height));
     label.position.copy(labelPos);
-    label.scale.set(LABEL_SIZE * 0.8, LABEL_SIZE, 1);
+    label.scale.set(LABEL_SIZE * 0.8, LABEL_SIZE * 0.5, 1);
     label.userData = { city, baseHeight: height };
     beamGroup.add(label);
     labels.push(label);
