@@ -345,10 +345,11 @@ export function createBeams(earthGroup, camera) {
       sizeAttenuation: true,
       blending: THREE.NormalBlending
     });
+    const labelH = LABEL_SIZE * (TEX_H / TEX_W);
     const label = new THREE.Sprite(labelMaterial);
-    const labelPos = surfacePos.clone().add(direction.clone().multiplyScalar(height));
+    const labelPos = surfacePos.clone().add(direction.clone().multiplyScalar(height + labelH / 2));
     label.position.copy(labelPos);
-    label.scale.set(LABEL_SIZE, LABEL_SIZE * (TEX_H / TEX_W), 1);
+    label.scale.set(LABEL_SIZE, labelH, 1);
     label.userData = { city, baseHeight: height };
     beamGroup.add(label);
     labels.push(label);
