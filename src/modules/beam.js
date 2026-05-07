@@ -3,14 +3,14 @@ import { latLngToVector3 } from '../utils/geo.js';
 import { CITY_DATA, getCityColor } from '../data/cities.js';
 
 const EARTH_RADIUS = 1.6;
-let BEAM_MIN_HEIGHT = 0.8;
-let BEAM_MAX_HEIGHT = 1.8;
-let BEAM_WIDTH = 0.18;
+const BEAM_MIN_HEIGHT = 0.8;
+const BEAM_MAX_HEIGHT = 1.8;
+const BEAM_WIDTH = 0.18;
 const LABEL_SIZE = 0.55;
 const TEX_W = 256;
 const TEX_H = 320;
 
-let _beamConfig = {
+const _beamConfig = {
   wispDensity: 3.0,
   wispSpeed: 18.0,
   wispIntensity: 8.0,
@@ -311,36 +311,11 @@ export function updateBeams(beams, globalTime, camera) {
 export function updateLabels(labels, camera) {
 }
 
-export function updateBeamConfig(key, value) {
-  const configKey = key.startsWith('u') ? key.charAt(0).toLowerCase() + key.slice(1) : key;
-  _beamConfig[configKey] = value;
-  if (!_globalBeams) return;
-  _globalBeams.forEach(({ uniforms }) => {
-    if (uniforms && uniforms[key]) {
-      uniforms[key].value = value;
-    }
-  });
+export function getBeamConfig() {
+  return { ..._beamConfig, beamWidth: BEAM_WIDTH, beamMinH: BEAM_MIN_HEIGHT, beamMaxH: BEAM_MAX_HEIGHT };
 }
-
-export function setBeamDimensions(width, minH, maxH) {
-  BEAM_WIDTH = width;
-  BEAM_MIN_HEIGHT = minH;
-  BEAM_MAX_HEIGHT = maxH;
-}
-
-export function getBeamDefaults() {
-  return { BEAM_WIDTH, BEAM_MIN_HEIGHT, BEAM_MAX_HEIGHT };
-}
-
-let _globalBeams = null;
-let _globalEarthGroup = null;
-let _globalCamera = null;
-let _globalBeamGroup = null;
 
 export function createBeams(earthGroup, camera) {
-  _globalEarthGroup = earthGroup;
-  _globalCamera = camera;
-
   const beams = [];
   const labels = [];
   const beamGroup = new THREE.Group();
@@ -395,11 +370,5 @@ export function createBeams(earthGroup, camera) {
   });
 
   earthGroup.add(beamGroup);
-  _globalBeams = beams;
-  _globalBeamGroup = beamGroup;
   return { beamGroup, beams, labels };
-}
-
-export function getBeamConfig() {
-  return { ..._beamConfig, beamWidth: BEAM_WIDTH, beamMinH: BEAM_MIN_HEIGHT, beamMaxH: BEAM_MAX_HEIGHT };
 }

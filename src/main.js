@@ -4,7 +4,7 @@ import { createCamera, updateCameraAspect } from './core/camera.js';
 import { createRenderer, updateRendererSize } from './core/renderer.js';
 import { createControls } from './core/controls.js';
 import { createEarth, updateEarth, setEarthMode, getCurrentEarthMode, getAvailableEarthModes, EARTH_MODES } from './modules/earth.js';
-import { createBeams, updateBeams, updateLabels, updateBeamConfig, setBeamDimensions, getBeamConfig, getBeamDefaults } from './modules/beam.js';
+import { createBeams, updateBeams, updateLabels, getBeamConfig } from './modules/beam.js';
 import { createComposer, updateComposerSize } from './effects/bloom.js';
 import { getMusicEngine } from './modules/ambient-music.js';
 
@@ -68,12 +68,8 @@ class App {
     // 设置模式选择UI
     this.setupModeUI();
     
-    // 设置播放器UI
     this.setupPlayerUI();
     
-    this.setupBeamPanel();
-    
-    // 设置导航UI
     this.setupNavUI();
     
     setTimeout(() => {
@@ -288,72 +284,6 @@ class App {
     };
     
     animate();
-  }
-
-  setupBeamPanel() {
-    const panel = document.getElementById('beam-panel');
-    const btn = document.getElementById('beam-settings-btn');
-    const closeBtn = document.getElementById('beam-panel-close');
-    if (!panel || !btn) return;
-
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      panel.classList.toggle('show');
-    });
-
-    if (closeBtn) {
-      closeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        panel.classList.remove('show');
-      });
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!panel.contains(e.target) && e.target !== btn) {
-        panel.classList.remove('show');
-      }
-    });
-
-    const sliderMap = {
-      'beam-width': { key: 'beamWidth', type: 'dim' },
-      'beam-min-h': { key: 'beamMinH', type: 'dim' },
-      'beam-max-h': { key: 'beamMaxH', type: 'dim' },
-      'wisp-density': { key: 'wispDensity', type: 'shader', uniform: 'uWispDensity' },
-      'wisp-speed': { key: 'wispSpeed', type: 'shader', uniform: 'uWispSpeed' },
-      'wisp-intensity': { key: 'wispIntensity', type: 'shader', uniform: 'uWispIntensity' },
-      'flow-speed': { key: 'flowSpeed', type: 'shader', uniform: 'uFlowSpeed' },
-      'flow-strength': { key: 'flowStrength', type: 'shader', uniform: 'uFlowStrength' },
-      'fog-intensity': { key: 'fogIntensity', type: 'shader', uniform: 'uFogIntensity' },
-      'fog-scale': { key: 'fogScale', type: 'shader', uniform: 'uFogScale' },
-      'fog-fall-speed': { key: 'fogFallSpeed', type: 'shader', uniform: 'uFogFallSpeed' },
-      'decay': { key: 'decay', type: 'shader', uniform: 'uDecay' },
-      'falloff-start': { key: 'falloffStart', type: 'shader', uniform: 'uFalloffStart' }
-    };
-
-    Object.entries(sliderMap).forEach(([sliderId, config]) => {
-      const slider = document.getElementById(sliderId);
-      const valSpan = document.getElementById(sliderId + '-val');
-      if (!slider) return;
-
-      slider.addEventListener('input', () => {
-        const val = parseFloat(slider.value);
-        if (valSpan) {
-          valSpan.textContent = val % 1 === 0 ? val.toString() : val.toFixed(2);
-        }
-        if (config.type === 'shader') {
-          updateBeamConfig(config.uniform, val);
-        } else if (config.type === 'dim') {
-          const wSlider = document.getElementById('beam-width');
-          const minHSlider = document.getElementById('beam-min-h');
-          const maxHSlider = document.getElementById('beam-max-h');
-          const defaults = getBeamDefaults();
-          const w = wSlider ? parseFloat(wSlider.value) : defaults.BEAM_WIDTH;
-          const minH = minHSlider ? parseFloat(minHSlider.value) : defaults.BEAM_MIN_HEIGHT;
-          const maxH = maxHSlider ? parseFloat(maxHSlider.value) : defaults.BEAM_MAX_HEIGHT;
-          setBeamDimensions(w, minH, maxH);
-        }
-      });
-    });
   }
 
   setupNavUI() {

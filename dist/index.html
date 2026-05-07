@@ -394,144 +394,6 @@
       background: white;
     }
 
-    .beam-panel {
-      position: absolute;
-      right: 70px;
-      top: 50%;
-      transform: translateY(-50%) translateX(10px);
-      width: 260px;
-      background: rgba(10, 10, 20, 0.92);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      z-index: 30;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    }
-
-    .beam-panel.show {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      transform: translateY(-50%) translateX(0);
-    }
-
-    .beam-panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 16px 10px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .beam-panel-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .beam-panel-close {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 14px;
-      padding: 2px 6px;
-      border-radius: 6px;
-      transition: all 0.2s;
-    }
-
-    .beam-panel-close:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
-    }
-
-    .beam-panel-body {
-      padding: 10px 16px 16px;
-      max-height: 60vh;
-      overflow-y: auto;
-    }
-
-    .beam-panel-body::-webkit-scrollbar {
-      width: 3px;
-    }
-
-    .beam-panel-body::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 3px;
-    }
-
-    .beam-param-group {
-      margin-bottom: 10px;
-    }
-
-    .beam-param-label {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 500;
-    }
-
-    .beam-param-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .beam-slider {
-      flex: 1;
-      -webkit-appearance: none;
-      appearance: none;
-      height: 4px;
-      border-radius: 2px;
-      background: rgba(255, 255, 255, 0.1);
-      outline: none;
-    }
-
-    .beam-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--primary-purple);
-      cursor: pointer;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      transition: transform 0.15s;
-    }
-
-    .beam-slider::-webkit-slider-thumb:hover {
-      transform: scale(1.2);
-    }
-
-    .beam-slider::-moz-range-thumb {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--primary-purple);
-      cursor: pointer;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .beam-param-value {
-      font-size: 11px;
-      color: var(--text-secondary);
-      min-width: 32px;
-      text-align: right;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-    }
-
-    .beam-param-divider {
-      height: 1px;
-      background: rgba(255, 255, 255, 0.06);
-      margin: 12px 0;
-    }
-
     .hot-tracks {
       position: absolute;
       left: 12px;
@@ -1047,7 +909,7 @@
       }
     }
   </style>
-  <script type="module" crossorigin src="/music/assets/index-B24-Q14A.js"></script>
+  <script type="module" crossorigin src="/music/assets/index-CQBWrHkF.js"></script>
 </head>
 <body>
   <div id="canvas-container"></div>
@@ -1101,13 +963,6 @@
             <path d="M4 17h16"/>
           </svg>
         </button>
-        <button class="control-btn" id="beam-settings-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
-          </svg>
-        </button>
       </div>
       
       <div class="mode-menu interactive" id="mode-menu">
@@ -1135,110 +990,6 @@
         <div class="mode-item" data-mode="cityLights">
           <div class="mode-check"></div>
           <span>城市灯光</span>
-        </div>
-      </div>
-      
-      <div class="beam-panel interactive" id="beam-panel">
-        <div class="beam-panel-header">
-          <span class="beam-panel-title">⚡ 光柱调节器</span>
-          <button class="beam-panel-close" id="beam-panel-close">✕</button>
-        </div>
-        <div class="beam-panel-body">
-          <div class="beam-param-group">
-            <div class="beam-param-label">光柱宽度</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="beam-width" min="0.05" max="0.5" step="0.01" value="0.18">
-              <span class="beam-param-value" id="beam-width-val">0.18</span>
-            </div>
-          </div>
-          <div class="beam-param-group">
-            <div class="beam-param-label">最小高度</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="beam-min-h" min="0.2" max="2.0" step="0.1" value="0.8">
-              <span class="beam-param-value" id="beam-min-h-val">0.8</span>
-            </div>
-          </div>
-          <div class="beam-param-group">
-            <div class="beam-param-label">最大高度</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="beam-max-h" min="0.5" max="3.0" step="0.1" value="1.8">
-              <span class="beam-param-value" id="beam-max-h-val">1.8</span>
-            </div>
-          </div>
-          <div class="beam-param-divider"></div>
-          <div class="beam-param-group">
-            <div class="beam-param-label">微光条密度</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="wisp-density" min="0" max="4" step="0.1" value="3.0">
-              <span class="beam-param-value" id="wisp-density-val">3.0</span>
-            </div>
-          </div>
-          <div class="beam-param-group">
-            <div class="beam-param-label">微光条速度</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="wisp-speed" min="0" max="30" step="0.5" value="18">
-              <span class="beam-param-value" id="wisp-speed-val">18</span>
-            </div>
-          </div>
-          <div class="beam-param-group">
-            <div class="beam-param-label">微光条亮度</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="wisp-intensity" min="0" max="15" step="0.5" value="8">
-              <span class="beam-param-value" id="wisp-intensity-val">8</span>
-            </div>
-          </div>
-          <div class="beam-param-divider"></div>
-          <div class="beam-param-group">
-            <div class="beam-param-label">流动速度</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="flow-speed" min="0" max="2" step="0.05" value="0.5">
-              <span class="beam-param-value" id="flow-speed-val">0.50</span>
-            </div>
-          </div>
-          <div class="beam-param-group">
-            <div class="beam-param-label">流动强度</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="flow-strength" min="0" max="0.5" step="0.01" value="0.20">
-              <span class="beam-param-value" id="flow-strength-val">0.20</span>
-            </div>
-          </div>
-          <div class="beam-param-divider"></div>
-          <div class="beam-param-group">
-            <div class="beam-param-label">雾气强度</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="fog-intensity" min="0" max="1" step="0.05" value="0.40">
-              <span class="beam-param-value" id="fog-intensity-val">0.40</span>
-            </div>
-          </div>
-          <div class="beam-param-group">
-            <div class="beam-param-label">雾气缩放</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="fog-scale" min="0.05" max="1" step="0.05" value="0.30">
-              <span class="beam-param-value" id="fog-scale-val">0.30</span>
-            </div>
-          </div>
-          <div class="beam-param-group">
-            <div class="beam-param-label">雾气飘落速度</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="fog-fall-speed" min="0" max="2" step="0.05" value="0.50">
-              <span class="beam-param-value" id="fog-fall-speed-val">0.50</span>
-            </div>
-          </div>
-          <div class="beam-param-divider"></div>
-          <div class="beam-param-group">
-            <div class="beam-param-label">顶部衰减</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="decay" min="0.3" max="3" step="0.1" value="1.1">
-              <span class="beam-param-value" id="decay-val">1.1</span>
-            </div>
-          </div>
-          <div class="beam-param-group">
-            <div class="beam-param-label">衰减起始</div>
-            <div class="beam-param-row">
-              <input type="range" class="beam-slider" id="falloff-start" min="0.3" max="2" step="0.1" value="1.0">
-              <span class="beam-param-value" id="falloff-start-val">1.0</span>
-            </div>
-          </div>
         </div>
       </div>
       
