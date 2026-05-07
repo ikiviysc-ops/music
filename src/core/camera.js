@@ -23,11 +23,6 @@ export function createCamera(container) {
 }
 
 export function updateCameraAspect(camera, container) {
-  const isMobile = window.innerWidth <= 480;
   camera.aspect = container.clientWidth / container.clientHeight;
-  camera.fov = isMobile ? CONFIG.mobileFov : CONFIG.fov;
-  const pos = isMobile ? CONFIG.mobilePosition : CONFIG.position;
-  camera.position.set(pos.x, pos.y, pos.z);
-  camera.lookAt(0, 0, 0);
   camera.updateProjectionMatrix();
 }

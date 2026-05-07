@@ -6,12 +6,12 @@ export function createControls(camera, renderer) {
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
   controls.rotateSpeed = 0.3;
-  controls.enableZoom = false;
+  controls.enableZoom = true;
   controls.enablePan = false;
   controls.autoRotate = false;
   controls.target.set(0, 0, 0);
-  controls.minDistance = camera.position.length();
-  controls.maxDistance = camera.position.length();
+  controls.minDistance = 4;
+  controls.maxDistance = 15;
   controls.update();
 
   return controls;

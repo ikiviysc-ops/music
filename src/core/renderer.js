@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 const CONFIG = {
   antialias: true,
-  pixelRatio: 3
+  pixelRatio: 2
 };
 
 export function createRenderer(container) {

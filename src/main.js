@@ -4,7 +4,7 @@ import { createCamera, updateCameraAspect } from './core/camera.js';
 import { createRenderer, updateRendererSize } from './core/renderer.js';
 import { createControls } from './core/controls.js';
 import { createEarth, updateEarth, setEarthMode, getCurrentEarthMode, getAvailableEarthModes, EARTH_MODES } from './modules/earth.js';
-import { createBeams, updateBeams, updateLabels, updateBeamConfig, setBeamDimensions, getBeamConfig } from './modules/beam.js';
+import { createBeams, updateBeams, updateLabels, updateBeamConfig, setBeamDimensions, getBeamConfig, getBeamDefaults } from './modules/beam.js';
 import { createComposer, updateComposerSize } from './effects/bloom.js';
 import { getMusicEngine } from './modules/ambient-music.js';
 
@@ -346,9 +346,10 @@ class App {
           const wSlider = document.getElementById('beam-width');
           const minHSlider = document.getElementById('beam-min-h');
           const maxHSlider = document.getElementById('beam-max-h');
-          const w = wSlider ? parseFloat(wSlider.value) : BEAM_WIDTH;
-          const minH = minHSlider ? parseFloat(minHSlider.value) : BEAM_MIN_HEIGHT;
-          const maxH = maxHSlider ? parseFloat(maxHSlider.value) : BEAM_MAX_HEIGHT;
+          const defaults = getBeamDefaults();
+          const w = wSlider ? parseFloat(wSlider.value) : defaults.BEAM_WIDTH;
+          const minH = minHSlider ? parseFloat(minHSlider.value) : defaults.BEAM_MIN_HEIGHT;
+          const maxH = maxHSlider ? parseFloat(maxHSlider.value) : defaults.BEAM_MAX_HEIGHT;
           setBeamDimensions(w, minH, maxH);
         }
       });

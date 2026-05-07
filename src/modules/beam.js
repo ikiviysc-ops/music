@@ -328,6 +328,10 @@ export function setBeamDimensions(width, minH, maxH) {
   BEAM_MAX_HEIGHT = maxH;
 }
 
+export function getBeamDefaults() {
+  return { BEAM_WIDTH, BEAM_MIN_HEIGHT, BEAM_MAX_HEIGHT };
+}
+
 let _globalBeams = null;
 let _globalEarthGroup = null;
 let _globalCamera = null;

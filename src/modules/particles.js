@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 const PARTICLE_COUNT = 600;
-const GLOBE_RADIUS = 1.5;
+const GLOBE_RADIUS = 1.6;
 
 const particleVertexShader = `
   attribute float aLife;
