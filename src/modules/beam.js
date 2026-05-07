@@ -3,9 +3,9 @@ import { latLngToVector3 } from '../utils/geo.js';
 import { CITY_DATA, getCityColor } from '../data/cities.js';
 
 const EARTH_RADIUS = 1.6;
-const BEAM_MIN_HEIGHT = 0.3;
-const BEAM_MAX_HEIGHT = 0.8;
-const BEAM_WIDTH = 0.1;
+const BEAM_MIN_HEIGHT = 0.7;
+const BEAM_MAX_HEIGHT = 1.2;
+const BEAM_WIDTH = 0.4;
 const LABEL_SIZE = 0.55;
 const TEX_W = 256;
 const TEX_H = 320;
