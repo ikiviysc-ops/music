@@ -169,7 +169,11 @@ function drawLabelCanvas(ctx, city, color, imgSource) {
   ctx.clearRect(0, 0, TEX_W, TEX_H);
 
   const imgSize = 36;
-  const imgX = 8;
+  const gap = 10;
+  const textW = 120;
+  const contentW = imgSize + gap + textW;
+  const startX = (TEX_W - contentW) / 2;
+  const imgX = startX;
   const imgY = (TEX_H - imgSize) / 2;
 
   if (imgSource) {
@@ -199,8 +203,7 @@ function drawLabelCanvas(ctx, city, color, imgSource) {
     ctx.restore();
   }
 
-  const textX = imgX + imgSize + 10;
-  const textW = TEX_W - textX - 8;
+  const textX = imgX + imgSize + gap;
   ctx.textAlign = 'left';
 
   ctx.fillStyle = '#ffffff';
