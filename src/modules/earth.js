@@ -220,10 +220,10 @@ function createEarthMesh() {
   const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 128, 128);
 
   const loader = new THREE.TextureLoader();
-  const nightUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg';
+  const nightUrl = 'https://www.solarsystemscope.com/textures/download/8k_earth_nightmap.jpg';
   const dayUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-blue-marble.jpg';
   const topologyUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png';
-  const cloudsUrl = 'https://unpkg.com/three-globe@2.31.0/example/clouds/clouds.png';
+  const cloudsUrl = 'https://www.solarsystemscope.com/textures/download/8k_earth_clouds.jpg';
 
   const material = new THREE.ShaderMaterial({
     uniforms: {
@@ -361,8 +361,8 @@ export function createEarth() {
 
   // 创建云图
   const loader = new THREE.TextureLoader();
-  const nightUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg';
-  const cloudsUrl = 'https://unpkg.com/three-globe@2.31.0/example/clouds/clouds.png';
+  const nightUrl = 'https://www.solarsystemscope.com/textures/download/8k_earth_nightmap.jpg';
+  const cloudsUrl = 'https://www.solarsystemscope.com/textures/download/8k_earth_clouds.jpg';
   const cloudsGeometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.015, 64, 64);
   const cloudsMaterial = new THREE.MeshBasicMaterial({
     color: 0x4488ff,
