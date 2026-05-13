@@ -217,7 +217,7 @@ function createContinentParticles() {
 
 // ========== 地球本体 ==========
 function createEarthMesh() {
-  const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 64, 64);
+  const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 128, 128);
 
   const loader = new THREE.TextureLoader();
   const nightUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg';
@@ -317,6 +317,9 @@ function createEarthMesh() {
 
   loader.load(nightUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = true;
     material.uniforms.uNightTexture.value = texture;
     material.uniforms.uEmissiveIntensity.value = 3.5;
     material.needsUpdate = true;
@@ -327,6 +330,9 @@ function createEarthMesh() {
 
   loader.load(dayUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = true;
     material.uniforms.uDayTexture.value = texture;
     material.needsUpdate = true;
     console.log('Day texture loaded successfully');
@@ -335,6 +341,9 @@ function createEarthMesh() {
   });
 
   loader.load(topologyUrl, (texture) => {
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = true;
     material.uniforms.uTopologyTexture.value = texture;
     material.needsUpdate = true;
     console.log('Topology texture loaded successfully');
@@ -365,6 +374,9 @@ export function createEarth() {
   // 加载黑夜纹理
   loader.load(nightUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = true;
     if (earth.material.uniforms && earth.material.uniforms.uNightTexture) {
       earth.material.uniforms.uNightTexture.value = texture;
       earth.material.uniforms.uEmissiveIntensity.value = 3.5;
@@ -378,6 +390,9 @@ export function createEarth() {
   // 加载云图纹理
   loader.load(cloudsUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = true;
     cloudsMaterial.map = texture;
     cloudsMaterial.color.setHex(0xffffff);
     cloudsMaterial.transparent = true;
@@ -445,6 +460,9 @@ export function createEarth() {
   const dayUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-blue-marble.jpg';
   loader.load(dayUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = true;
     // 云图模式使用简单材质
     if (wireframeDayMaterial) {
       wireframeDayMaterial.map = texture;
