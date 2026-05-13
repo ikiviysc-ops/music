@@ -217,13 +217,13 @@ function createContinentParticles() {
 
 // ========== 地球本体 ==========
 function createEarthMesh() {
-  const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 128, 128);
+  const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 256, 256);
 
   const loader = new THREE.TextureLoader();
-  const nightUrl = 'https://www.solarsystemscope.com/textures/download/8k_earth_nightmap.jpg';
-  const dayUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-blue-marble.jpg';
-  const topologyUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png';
-  const cloudsUrl = 'https://www.solarsystemscope.com/textures/download/8k_earth_clouds.jpg';
+  const nightUrl = 'https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/img/earth-night.jpg';
+  const dayUrl = 'https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/img/earth-blue-marble.jpg';
+  const topologyUrl = 'https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/img/earth-topology.png';
+  const cloudsUrl = 'https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/clouds/clouds.png';
 
   const material = new THREE.ShaderMaterial({
     uniforms: {
@@ -361,9 +361,9 @@ export function createEarth() {
 
   // 创建云图
   const loader = new THREE.TextureLoader();
-  const nightUrl = 'https://www.solarsystemscope.com/textures/download/8k_earth_nightmap.jpg';
-  const cloudsUrl = 'https://www.solarsystemscope.com/textures/download/8k_earth_clouds.jpg';
-  const cloudsGeometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.015, 64, 64);
+  const nightUrl = 'https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/img/earth-night.jpg';
+  const cloudsUrl = 'https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/clouds/clouds.png';
+  const cloudsGeometry = new THREE.SphereGeometry(EARTH_RADIUS * 1.015, 128, 128);
   const cloudsMaterial = new THREE.MeshBasicMaterial({
     color: 0x4488ff,
     transparent: false
@@ -457,7 +457,7 @@ export function createEarth() {
   continents.visible = false;
 
   // 加载白天纹理到云图和点模式
-  const dayUrl = 'https://unpkg.com/three-globe@2.31.0/example/img/earth-blue-marble.jpg';
+  const dayUrl = 'https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/img/earth-blue-marble.jpg';
   loader.load(dayUrl, (texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
